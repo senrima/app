@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Pengguna</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+        .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8" x-data="profileApp()" x-init="init()">
+
+    <div class="max-w-5xl mx-auto">
+        <div x-show="status === 'loading'" x-cloak class="text-center py-20">
+            <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="mt-4 text-gray-600">Memuat profil...</p>
+        </div>
+
+        <div x-show="status === 'not_found'" x-cloak class="text-center py-20 bg-white rounded-lg shadow">
+            <h2 class="text-2xl font-bold text-gray-800">Pengguna Tidak Ditemukan</h2>
+            <p class="mt-2 text-gray-500" x-text="message"></p>
+        </div>
+        
+        <div x-show="status === 'error'" x-cloak class="text-center py-20 bg-white rounded-lg shadow">
+            <h2 class="text-2xl font-bold text-red-600">Terjadi Kesalahan</h2>
+            <p class="mt-2 text-gray-500" x-text="message"></p>
+        </div>
+
+        <div x-show="status === 'found'" x-cloak class="space-y-8">
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <div class="mx-auto w-24 h-24 rounded-full bg-gray-200 mb-4 flex items-center justify-center">
+                    <span class="text-4xl text-gray-400" x-text="profile.nama ? profile.nama.charAt(0).toUpperCase() : '?'"></span>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900" x-text="profile.nama"></h1>
+                <p class="text-md text-gray-500 mt-1" x-text="'@' + profile.username"></p>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Aset Digital</h2>
+                
+                <div x-show="isLoadingAssets" class="text-center py-10"><p>Memuat aset...</p></div>
+
+                <div x-show="!isLoadingAssets && assets.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <template x-for="asset in assets" :key="asset.IDapp">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+                            <div class="aspect-video bg-gray-200"><img :src="asset.URLGambar" :alt="asset.NamaAset" class="w-full h-full object-cover"></div>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
+                                <p class="text-gray-600 text-sm flex-grow line-clamp-3" x-text="asset.Deskripsi"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="!isLoadingAssets && assets.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow">
+                    <p class="text-gray-500">Pengguna ini belum memiliki aset digital publik.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_ENDPOINT = "https://api.senrima.web.id"; // Sesuaikan jika perlu
+
+        function profileApp() {
+            return {
+                status: 'loading', // loading, found, not_found, error
+                message: '',
+                profile: { nama: '', username: '' },
+                assets: [],
+                isLoadingAssets: true,
+
+                init() {
+                    const username = new URLSearchParams(window.location.search).get('user');
+                    if (!username) {
+                        this.status = 'error';
+                        this.message = 'Username tidak ditemukan di URL. Tambahkan ?user=nama_pengguna di akhir URL.';
+                        return;
+                    }
+                    this.loadProfile(username);
+                },
+
+                async loadProfile(username) {
+                    try {
+                        const response = await fetch(API_ENDPOINT, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ kontrol: 'proteksi', action: 'getPublicProfile', username: username })
+                        });
+                        const result = await response.json();
+
+                        if (result.status === 'success') {
+                            this.status = 'found';
+                            this.profile = result.data;
+                            // Setelah profil ditemukan, baru muat asetnya
+                            this.loadAssets(username);
+                        } else if (result.status === 'not_found') {
+                            this.status = 'not_found';
+                            this.message = result.message;
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } catch (err) {
+                        this.status = 'error';
+                        this.message = err.message || 'Gagal memuat profil.';
+                    }
+                },
+
+                async loadAssets(username) {
+                    this.isLoadingAssets = true;
+                    try {
+                        const response = await fetch(API_ENDPOINT, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            // PERHATIKAN: 'getPublicAssets' adalah action BARU yang perlu dibuat di server
+                            body: JSON.stringify({ kontrol: 'proteksi', action: 'getPublicAssets', username: username })
+                        });
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            this.assets = result.data;
+                        } else {
+                            // Tidak menampilkan error jika aset gagal dimuat, cukup kosongkan
+                            this.assets = [];
+                            console.error('Gagal memuat aset:', result.message);
+                        }
+                    } catch (err) {
+                        console.error('Error koneksi saat memuat aset:', err.message);
+                    } finally {
+                        this.isLoadingAssets = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

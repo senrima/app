@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial - Senrima Tools</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .tab-active { background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+        .aspect-w-16 { position: relative; padding-bottom: 56.25%; }
+        .aspect-w-16 > * { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    </style>
+</head>
+<body class="bg-gray-100" x-data="tutorialApp()" x-init="init()" x-cloak>
+    
+    <div x-show="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/80 backdrop-blur-sm">
+        <div class="text-center">
+            <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <h2 class="text-xl font-semibold text-gray-700">Memuat Tutorial...</h2>
+        </div>
+    </div>
+
+    <div x-show="!isLoading" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-3xl font-bold text-gray-800">Pusat Pembelajaran</h1>
+        <h2 x-show="judulTutor" class="text-xl font-medium text-blue-600 mt-1" x-text="judulTutor"></h2>
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 bg-white rounded-lg shadow-md p-4 h-full max-h-[80vh] overflow-y-auto">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-3">Daftar Video</h2>
+                <div class="space-y-2">
+                    <template x-for="(video, index) in videos" :key="index">
+                        <button @click="selectVideo(video)" class="w-full text-left p-4 rounded-lg border-l-4 transition-all duration-200 flex items-center gap-4" :class="activeVideo && activeVideo['Judul Video'] === video['Judul Video'] ? 'tab-active' : 'border-transparent hover:bg-gray-50 text-gray-600'">
+                            <svg class="flex-shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h15a3 3 0 003-3v-9a3 3 0 00-3-3h-15z" clip-rule="evenodd" fill-rule="evenodd"></path><path d="M8.25 8.625a1.5 1.5 0 011.5 1.5v3.75a1.5 1.5 0 01-3 0v-3.75a1.5 1.5 0 011.5-1.5z"></path><path d="M12.75 8.625a1.5 1.5 0 011.5 1.5v3.75a1.5 1.5 0 01-3 0v-3.75a1.5 1.5 0 011.5-1.5z"></path><path d="M17.25 8.625a1.5 1.5 0 011.5 1.5v3.75a1.5 1.5 0 01-3 0v-3.75a1.5 1.5 0 011.5-1.5z"></path></svg>
+                            <span class="font-semibold" x-text="video['Judul Video']"></span>
+                        </button>
+                    </template>
+                    <div x-show="videos.length === 0" class="text-center text-gray-500 py-8">
+                        <p>Tidak ada tutorial yang tersedia untuk Anda saat ini.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div x-show="activeVideo" class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="aspect-w-16 aspect-h-9 bg-black">
+                        <iframe :src="activeVideo ? getEmbedUrl(activeVideo['Link Youtube']) : ''" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full inset-0"></iframe>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-900" x-text="activeVideo ? activeVideo['Judul Video'] : ''"></h3>
+                        <p class="text-gray-700 mt-4" x-text="activeVideo ? activeVideo.Deskripsi : ''"></p>
+                        <div x-show="isLastVideo() && overallStatus !== 'sudah ditonton'" class="mt-6 border-t pt-4">
+                            <button @click="completeTutorial()" class="px-5 py-2 rounded-md font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors">Selesaikan & Tandai Semua Tutorial</button>
+                        </div>
+                        <div x-show="overallStatus === 'sudah ditonton'" class="mt-6 border-t pt-4">
+                            <p class="p-3 text-center rounded-md font-semibold text-green-800 bg-green-100">✅ Anda sudah menyelesaikan set tutorial ini.</p>
+                        </div>
+                    </div>
+                </div>
+                <div x-show="!activeVideo" class="flex items-center justify-center h-full bg-white rounded-lg shadow-md p-8">
+                    <p class="text-gray-600 text-lg">Pilih video dari daftar untuk memulai.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="modal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" x-cloak>
+        <div @click.outside="modal.isOpen = false" class="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full" :class="modal.isError ? 'bg-red-100' : 'bg-blue-100'">
+                <svg class="h-6 w-6" :class="modal.isError ? 'text-red-600' : 'text-blue-600'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+            </div>
+            <h3 class="mt-4 text-lg font-medium text-gray-900" x-text="modal.title"></h3>
+            <p class="mt-2 text-sm text-gray-600" x-text="modal.message"></p>
+            <div class="mt-6 space-y-3 sm:space-y-0 sm:flex sm:justify-center sm:gap-3">
+                <template x-if="modal.isConfirmDialog">
+                    <button @click="modal.onConfirm()" type="button" class="w-full sm:w-auto rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700" x-text="modal.confirmText"></button>
+                    <button @click="modal.isOpen = false" type="button" class="w-full sm:w-auto rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" x-text="modal.cancelText"></button>
+                </template>
+                <template x-if="!modal.isConfirmDialog">
+                    <button @click="modal.isOpen = false" type="button" class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">Oke</button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const API_ENDPOINT = "https://api.senrima.web.id";
+
+    function tutorialApp() {
+        return {
+            isLoading: true,
+            judulTutor: '',
+            videos: [],
+            activeVideo: null,
+            sessionToken: null,
+            overallStatus: '',
+            modal: {
+                isOpen: false, title: 'Pemberitahuan', message: '',
+                isConfirmDialog: false, isError: false,
+                confirmText: 'Ya, Selesaikan', cancelText: 'Batal',
+                onConfirm: () => {}
+            },
+
+            async init() {
+                const urlParams = new URLSearchParams(window.location.search);
+                this.sessionToken = urlParams.get('token');
+                const idTutor = urlParams.get('idtutor');
+                
+                if (!this.sessionToken || !idTutor) {
+                    this.showNotification('Sesi atau ID Tutor tidak valid. Anda akan diarahkan.', true);
+                    setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+                    return;
+                }
+
+                const response = await this.callApi({ action: 'getTutorials', idtutor: idTutor });
+                this.isLoading = false;
+                
+                if (response.status === 'success') {
+                    this.judulTutor = response.data.judulTutor;
+                    this.videos = response.data.videos;
+                    this.overallStatus = response.data.overallStatus;
+                    if (this.videos.length > 0) {
+                        this.activeVideo = this.videos[0];
+                    }
+                } else {
+                    this.showNotification(response.message || 'Gagal memuat data tutorial.', true);
+                }
+            },
+
+            showNotification(message, isError = false) {
+                this.modal.title = isError ? 'Terjadi Kesalahan' : 'Pemberitahuan';
+                this.modal.message = message;
+                this.modal.isConfirmDialog = false;
+                this.modal.isError = isError;
+                this.modal.isOpen = true;
+            },
+
+            showConfirm(message, onConfirmCallback) {
+                this.modal.title = 'Konfirmasi Tindakan';
+                this.modal.message = message;
+                this.modal.isConfirmDialog = true;
+                this.modal.isError = false;
+                this.modal.onConfirm = () => {
+                    this.modal.isOpen = false;
+                    onConfirmCallback();
+                };
+                this.modal.isOpen = true;
+            },
+
+            selectVideo(video) {
+                this.activeVideo = video;
+            },
+
+            getEmbedUrl(youtubeLink) {
+                if (!youtubeLink) return '';
+                try {
+                    const url = new URL(youtubeLink);
+                    let videoId = url.searchParams.get('v');
+                    if (videoId) { return `https://www.youtube.com/embed/${videoId}`; }
+                    if (url.hostname === 'youtu.be') { return `https://www.youtube.com/embed/${url.pathname.substring(1)}`; }
+                } catch (e) { console.error("Invalid YouTube URL:", youtubeLink, e); return ''; }
+                return '';
+            },
+            
+            isLastVideo() {
+                if (!this.activeVideo || this.videos.length === 0) return false;
+                const lastVideoInList = this.videos[this.videos.length - 1];
+                return this.activeVideo['Judul Video'] === lastVideoInList['Judul Video'];
+            },
+
+            async completeTutorial() {
+                if (this.overallStatus === 'sudah ditonton') return;
+                
+                this.showConfirm(
+                    'Anda yakin ingin menandai semua tutorial ini sebagai selesai?',
+                    async () => {
+                        const response = await this.callApi({
+                            action: 'completeTutorial',
+                            payload: { idtutor: this.activeVideo.IDTutor }
+                        });
+
+                        if (response.status === 'success') {
+                            this.overallStatus = 'sudah ditonton';
+                            this.showNotification('Luar biasa! Anda telah menyelesaikan set tutorial ini.');
+                        } else {
+                            this.showNotification(response.message || 'Gagal memperbarui status.', true);
+                        }
+                    }
+                );
+            },
+
+            async callApi(payload) {
+                try {
+                    const headers = { 'Content-Type': 'application/json' };
+                    const body = JSON.stringify({ ...payload, kontrol: 'proteksi', token: this.sessionToken });
+                    const response = await fetch(API_ENDPOINT, { method: 'POST', headers, body });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        return { status: 'error', message: result.message || 'Terjadi kesalahan di server.' };
+                    }
+                    return result;
+                } catch (e) {
+                    return { status: 'error', message: `Koneksi ke server gagal: ${e.message}` };
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>

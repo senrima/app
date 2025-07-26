@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Proteksi Senrima</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .menu-active { background-color: #eff6ff; color: #2563eb; font-weight: 600; }
+        [x-cloak] { display: none !important; }
+        .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+        .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="dashboardApp()" x-init="init()" x-cloak>
+    
+    <div x-show="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/80 backdrop-blur-sm">
+        <div class="text-center">
+            <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+            <h2 class="text-xl font-semibold text-gray-700">Memuat Sesi Anda...</h2>
+        </div>
+    </div>
+
+    <div x-show="!isLoading" class="flex h-screen w-full bg-gray-50">
+        <div x-show="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"></div>
+        
+        <nav 
+            class="fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col flex-shrink-0 transform bg-white border-r transition-transform duration-300 ease-in-out lg:static lg:translate-x-0"
+            :class="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}"
+        >
+            <div class="p-4 flex items-center justify-center border-b h-16"><span class="text-2xl font-bold text-gray-800">Dashboard</span></div>
+            <div class="flex-1 mt-6 px-4 space-y-2">
+                <a href="#" @click.prevent="activeView = 'beranda'; isSidebarOpen = false" :class="activeView === 'beranda' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Beranda</a>
+                <a href="#" @click.prevent="activeView = 'aset'; loadDigitalAssets(); isSidebarOpen = false" :class="activeView === 'aset' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Aset Digital</a>
+                <a href="#" @click.prevent="activeView = 'bonus'; loadBonuses(); isSidebarOpen = false" :class="activeView === 'bonus' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Bonus</a>
+                <a href="#" @click.prevent="activeView = 'akun'; isSidebarOpen = false" :class="activeView === 'akun' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Akun Saya</a>
+            </div>
+            <div class="p-4 border-t"><button @click="logout()" class="w-full flex items-center justify-center px-4 py-2.5 text-red-600 hover:bg-red-100 rounded-lg font-semibold">Keluar</button></div>
+        </nav>
+        
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="flex justify-between items-center p-4 bg-white border-b shadow-sm h-16">
+                <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+                <div class="flex items-center bg-gray-100 hover:bg-gray-200 rounded-full pl-4 pr-2 py-2 ml-auto cursor-pointer">
+                    <span class="font-semibold text-gray-700 text-sm mr-3" x-text="userData.nama || 'Pengguna'"></span>
+                    <img class="w-8 h-8 rounded-full" src="favicon.ico" alt="Ikon Pengguna">
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+                <div x-show="activeView === 'beranda'">
+                    <template x-if="!userData.isTelegramConnected">
+                        <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                            <p class="font-bold">Aktifkan Notifikasi Telegram!</p>
+                            <p class="text-sm">Untuk keamanan dan kemudahan menerima notifikasi penting seperti OTP, hubungkan akun Anda ke Telegram sekarang.</p>
+                            <button @click="activeView = 'akun'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
+                                Pergi ke Halaman Akun →
+                            </button>
+                        </div>
+                    </template>
+                    <h3 class="text-gray-700 text-3xl font-medium">Beranda</h3>
+                </div>
+                
+                <div x-show="activeView === 'aset'">
+                    <h3 class="text-gray-800 text-3xl font-medium">Aset Digital Anda</h3>
+                    <div x-show="isAssetsLoading" class="mt-8 text-center"><p>Memuat aset...</p></div>
+                    <div x-show="!isAssetsLoading && digitalAssets.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <template x-for="(asset, index) in digitalAssets" :key="index">
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+                                <div class="aspect-video bg-gray-200"><img :src="asset.URLGambar" :alt="asset.NamaAset" class="w-full h-full object-cover"></div>
+                                <div class="p-4 flex flex-col flex-grow">
+                                    <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
+                                    <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="asset.Deskripsi"></p>
+                                    <a :href="`${asset.URLTujuan}?idapp=${asset.IDapp}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Akses Sekarang</a>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="!isAssetsLoading && digitalAssets.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Anda belum memiliki aset digital.</p></div>
+                </div>
+
+                <div x-show="activeView === 'bonus'">
+                    <h3 class="text-gray-800 text-3xl font-medium">Bonus Untuk Anda</h3>
+                    <div x-show="isBonusesLoading" class="mt-8 text-center"><p>Memuat bonus...</p></div>
+                    <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="(bonus, index) in bonuses" :key="index">
+                            <div class="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
+                                <h4 class="text-xl font-semibold text-gray-800 line-clamp-2 mb-2" x-text="bonus.Judul"></h4>
+                                <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="bonus.Deskripsi"></p>
+                                <a :href="`${bonus.Url}?idbonus=${bonus.IDbonus}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Ambil Bonus</a>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
+                </div>
+                
+                <div x-show="activeView === 'akun'">
+                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Akun Saya</h3>
+                
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Informasi Profil</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="nama" class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                        <input type="text" id="nama" x-model="userData.nama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
+                                        <input type="email" id="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                                    </div>
+                                    <div class="text-right pt-2">
+                                        <button class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Simpan Perubahan</button>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Ganti Password</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="pass-lama" class="block text-sm font-medium text-gray-600">Password Lama</label>
+                                        <input type="password" id="pass-lama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="pass-baru" class="block text-sm font-medium text-gray-600">Password Baru</label>
+                                        <input type="password" id="pass-baru" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="text-right pt-2">
+                                        <button class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Ubah Password</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Preferensi Notifikasi</h4>
+                            
+                            <div class="space-y-3">
+                                <h5 class="font-semibold text-gray-700">Telegram</h5>
+                                <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan info penting lainnya melalui Telegram.</p>
+
+                                <div x-show="!userData.isTelegramConnected" class="space-y-2">
+                                    <p class="text-xs ...">Status: Belum Terhubung</p>
+                                    <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600">
+                                        Hubungkan ke Telegram
+                                    </button>
+                                </div>
+                                
+                                <div x-show="userData.isTelegramConnected">
+                                     <p class="text-xs text-green-600 bg-green-100 p-2 rounded-md">Status: Terhubung</p>
+                                     <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
+                                        Putuskan Hubungan
+                                     </button>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-6">
+                
+                            <div class="space-y-3">
+                                <h5 class="font-semibold text-gray-700">WhatsApp</h5>
+                                <p class="text-sm text-gray-500">Fitur notifikasi via WhatsApp akan segera hadir. Tunggu update dari kami ya, Bro!</p>
+                                <button disabled class="mt-2 w-full text-center bg-gray-300 text-gray-500 py-2 px-4 rounded-md cursor-not-allowed">
+                                    Segera Hadir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            
+            </main>
+        </div>
+    </div>
+    
+    <div x-show="modal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" x-cloak>
+        <div @click.outside="modal.isOpen = false" class="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full" :class="modal.isError ? 'bg-red-100' : 'bg-blue-100'">
+                <svg class="h-6 w-6" :class="modal.isError ? 'text-red-600' : 'text-blue-600'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+            </div>
+    
+            <h3 class="mt-4 text-lg font-medium text-gray-900" x-text="modal.title"></h3>
+            <p class="mt-2 text-sm text-gray-600" x-text="modal.message"></p>
+            
+            <div class="mt-6 space-y-3 sm:space-y-0 sm:flex sm:flex-row-reverse sm:gap-3">
+                <template x-if="modal.isConfirmDialog">
+                    <button @click="modal.onConfirm()" type="button" class="w-full sm:w-auto rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700" x-text="modal.confirmText"></button>
+                    <button @click="modal.isOpen = false" type="button" class="w-full sm:w-auto rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" x-text="modal.cancelText"></button>
+                </template>
+                <template x-if="!modal.isConfirmDialog">
+                    <button @click="modal.isOpen = false" type="button" class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">Oke</button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
