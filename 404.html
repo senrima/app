@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Halaman Tidak Ditemukan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Poppins untuk seluruh halaman */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-white flex items-center justify-center h-screen m-0">
+    <!-- Kontainer Utama -->
+    <div class="text-center p-8 max-w-md mx-4">
+        <!-- Ilustrasi atau Ikon -->
+        <div class="mb-8">
+            <!-- Ikon Tautan Rusak (Rantai) -->
+            <svg class="mx-auto h-32 w-32 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+        </div>
+
+        <!-- Judul Error -->
+        <h1 class="text-6xl md:text-9xl font-bold text-blue-600">404</h1>
+
+        <!-- Pesan Error -->
+        <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 mt-4">Halaman Tidak Ditemukan</h2>
+        <p class="text-gray-600 mt-2 mb-8">
+            Maaf, halaman yang Anda cari tidak ada atau telah dipindahkan.
+        </p>
+
+        <!-- Tombol Kembali ke Beranda -->
+        <a href="index.html" 
+           class="inline-block px-8 py-3 text-lg font-semibold text-white bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform transform hover:scale-105 duration-300 ease-in-out">
+            Kembali ke Beranda
+        </a>
+    </div>
+</body>
+</html>
