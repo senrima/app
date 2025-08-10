@@ -56,6 +56,28 @@ function dashboardApp() {
             }
         },
 
+        // --- FUNGSI NOTIFIKASI BARU ---
+
+        async loadNotifications() {
+            const response = await this.callApi({ action: 'getnotifikasi' });
+            if (response.status === 'success') {
+                this.notifications = response.data;
+                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
+            } else {
+                console.error("Gagal memuat notifikasi.");
+            }
+        },
+
+        async markNotificationsAsRead() {
+            if (this.unreadCount === 0) return;
+            
+            // Update tampilan langsung
+            this.unreadCount = 0;
+            
+            // Kirim request ke server untuk update status di database
+            await this.callApi({ action: 'tandainotifikasidibaca' });
+        },
+        
         // --- FUNGSI MODAL (PEMBERITAHUAN & KONFIRMASI) ---
 
         showNotification(message, isError = false) {
@@ -162,3 +184,4 @@ function dashboardApp() {
         }
     };
 }
+
