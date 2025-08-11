@@ -15,6 +15,7 @@ function dashboardApp() {
         notifications: [],
         unreadCount: 0,
         passwordFields: { old: '', new: '' }, 
+        notificationIntervalId: null,
         modal: {
             isOpen: false,
             title: 'Pemberitahuan',
@@ -39,11 +40,16 @@ function dashboardApp() {
             this.sessionToken = initialToken; 
             try {
                 await this.getDashboardData();
-                // --- PERBAIKAN DI SINI ---
-                // Memanggil fungsi untuk memuat notifikasi saat halaman dibuka
                 await this.loadNotifications(); 
-                // --- AKHIR PERBAIKAN ---
                 this.isLoading = false;
+
+                // --- TAMBAHAN BARU: MULAI INTERVAL REFRESH ---
+                this.notificationIntervalId = setInterval(() => {
+                    console.log('Refreshing notifications...'); // Untuk debugging, bisa dihapus nanti
+                    this.refreshNotifications();
+                }, 60000); // 60000 milidetik = 1 menit
+                // --- AKHIR TAMBAHAN ---
+                
             } catch (e) {
                 this.showNotification('Gagal verifikasi sesi.', true);
                 setTimeout(() => window.location.href = 'index.html', 2000);
@@ -136,6 +142,28 @@ function dashboardApp() {
             this.isBonusesLoading = false;
         },
 
+        async refreshNotifications() {
+            // Fungsi ini tidak menyetel isLoading, jadi berjalan di latar belakang
+            const response = await this.callApi({ action: 'getnotifikasi' });
+        
+            if (response.status === 'sukses' && response.data) {
+                const notificationsData = (typeof response.data === 'string') 
+                    ? JSON.parse(response.data) 
+                    : response.data;
+                
+                // Cek jika ada notifikasi baru untuk memberikan efek visual (opsional)
+                if (notificationsData.length > this.notifications.length) {
+                    // Anda bisa menambahkan sedikit efek visual di sini jika mau
+                    // Misalnya, membuat ikon lonceng sedikit bergetar.
+                }
+        
+                this.notifications = notificationsData || [];
+                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
+            } 
+            // Tidak ada 'else' untuk console.error agar tidak memenuhi log saat berjalan di background
+        },
+
+        
         async updateProfile() {
             if (!this.userData.nama.trim()) {
                 this.showNotification('Nama tidak boleh kosong.', true);
@@ -215,6 +243,13 @@ function dashboardApp() {
         },
         
         async logout(callServer = true) {
+            // --- TAMBAHAN BARU: HENTIKAN INTERVAL ---
+            if (this.notificationIntervalId) {
+                clearInterval(this.notificationIntervalId);
+                console.log('Notification interval stopped.');
+            }
+            // --- AKHIR TAMBAHAN ---
+            
             if (callServer) {
                 await this.callApi({ action: 'logout' });
             }
@@ -248,6 +283,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
