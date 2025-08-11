@@ -36,10 +36,61 @@
         >
             <div class="p-4 flex items-center justify-center border-b h-16"><span class="text-2xl font-bold text-gray-800">Dashboard</span></div>
             <div class="flex-1 mt-6 px-4 space-y-2">
+ 
                 <a href="#" @click.prevent="activeView = 'beranda'; isSidebarOpen = false" :class="activeView === 'beranda' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Beranda</a>
-                <a href="#" @click.prevent="activeView = 'aset'; loadDigitalAssets(); isSidebarOpen = false" :class="activeView === 'aset' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Aset Digital</a>
-                <a href="#" @click.prevent="activeView = 'bonus'; loadBonuses(); isSidebarOpen = false" :class="activeView === 'bonus' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Bonus</a>
-                <a href="#" @click.prevent="activeView = 'akun'; isSidebarOpen = false" :class="activeView === 'akun' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Akun Saya</a>
+
+                <div x-data="{ open: activeView.startsWith('aset') }" @click="open = !open">
+                    <button type="button" class="w-full flex items-center justify-between px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                        <span>Aset Digital</span>
+                        <svg class="w-5 h-5 transition-transform duration-300" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-collapse class="mt-2 space-y-1 pl-4">
+                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'produk'; loadDigitalAssets(); isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'aset' && assetSubView === 'produk'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Produk Saya
+                        </a>
+                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'bonus'; loadBonuses(); isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'aset' && assetSubView === 'bonus'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Bonus
+                        </a>
+                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'klaim'; isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'aset' && assetSubView === 'klaim'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Klaim Produk
+                        </a>
+                    </div>
+                </div>
+                
+                <div x-data="{ open: activeView.startsWith('akun') }" @click="open = !open">
+                    <button type="button" class="w-full flex items-center justify-between px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                        <span>Akun Saya</span>
+                        <svg class="w-5 h-5 transition-transform duration-300" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-collapse class="mt-2 space-y-1 pl-4">
+                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'profile'; isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'akun' && activeSubView === 'profile'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Profile
+                        </a>
+                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'notifikasi'; isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'akun' && activeSubView === 'notifikasi'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Notifikasi
+                        </a>
+                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'pembelian'; isSidebarOpen = false"
+                           :class="{'menu-active': activeView === 'akun' && activeSubView === 'pembelian'}"
+                           class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">
+                           Riwayat Pembelian
+                        </a>
+                    </div>
+                </div>
+                
             </div>
             <div class="p-4 border-t"><button @click="logout()" class="w-full flex items-center justify-center px-4 py-2.5 text-red-600 hover:bg-red-100 rounded-lg font-semibold">Keluar</button></div>
         </nav>
@@ -87,122 +138,150 @@
                         <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
                             <p class="font-bold">Aktifkan Notifikasi Telegram!</p>
                             <p class="text-sm">Untuk keamanan dan kemudahan menerima notifikasi penting seperti OTP, hubungkan akun Anda ke Telegram sekarang.</p>
-                            <button @click="activeView = 'akun'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
+                            <button @click="activeSubView = 'notifikasi'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
                                 Pergi ke Halaman Akun →
                             </button>
                         </div>
                     </template>
                     <h3 class="text-gray-700 text-3xl font-medium">Beranda</h3>
                 </div>
-                
-                <div x-show="activeView === 'aset'">
-                    <h3 class="text-gray-800 text-3xl font-medium">Aset Digital Anda</h3>
-                    <div x-show="isAssetsLoading" class="mt-8 text-center"><p>Memuat aset...</p></div>
-                    <div x-show="!isAssetsLoading && digitalAssets.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <template x-for="(asset, index) in digitalAssets" :key="index">
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
-                                <div class="aspect-video bg-gray-200"><img :src="asset.URLGambar" :alt="asset.NamaAset" class="w-full h-full object-cover"></div>
-                                <div class="p-4 flex flex-col flex-grow">
-                                    <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
-                                    <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="asset.Deskripsi"></p>
-                                    <a :href="`${asset.URLTujuan}?idapp=${asset.IDapp}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Akses Sekarang</a>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                    <div x-show="!isAssetsLoading && digitalAssets.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Anda belum memiliki aset digital.</p></div>
-                </div>
 
-                <div x-show="activeView === 'bonus'">
-                    <h3 class="text-gray-800 text-3xl font-medium">Bonus Untuk Anda</h3>
-                    <div x-show="isBonusesLoading" class="mt-8 text-center"><p>Memuat bonus...</p></div>
-                    <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <template x-for="(bonus, index) in bonuses" :key="index">
-                            <div class="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
-                                <h4 class="text-xl font-semibold text-gray-800 line-clamp-2 mb-2" x-text="bonus.Judul"></h4>
-                                <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="bonus.Deskripsi"></p>
-                                <a :href="`${bonus.Url}?idbonus=${bonus.IDbonus}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Ambil Bonus</a>
+                <div x-show="activeView === 'aset'">  
+                    <div x-show="assetSubView === 'produk'">
+                        <h3 class="text-gray-800 text-3xl font-medium">Produk Digital Anda</h3>
+                        <div x-show="isAssetsLoading" class="mt-8 text-center"><p>Memuat produk...</p></div>
+                            <div x-show="!isAssetsLoading && digitalAssets.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <template x-for="(asset, index) in digitalAssets" :key="index">
+                                    <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+                                        <div class="aspect-video bg-gray-200"><img :src="asset.URLGambar" :alt="asset.NamaAset" class="w-full h-full object-cover"></div>
+                                        <div class="p-4 flex flex-col flex-grow">
+                                            <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
+                                            <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="asset.Deskripsi"></p>
+                                            <a :href="`${asset.URLTujuan}?idapp=${asset.IDapp}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Akses Sekarang</a>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                        </template>
-                    </div>
-                    <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
-                </div>
-                
-                <div x-show="activeView === 'akun'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Akun Saya</h3>
-                
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 space-y-8">
-                            <div class="bg-white p-6 rounded-lg shadow-md">
-                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Informasi Profil</h4>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="nama" class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                        <input type="text" id="nama" x-model="userData.nama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div>
-                                        <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
-                                        <input type="email" id="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                                    </div>
-                                    <div class="text-right pt-2">
-                                        <button @click="updateProfile()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Simpan Perubahan</button>
-                                    </div>
-                                </div>
-                            </div>
-                
-                            <div class="bg-white p-6 rounded-lg shadow-md">
-                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Ganti Password</h4>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="pass-lama" class="block text-sm font-medium text-gray-600">Password Lama</label>
-                                        <input type="password" id="pass-lama" x-model="passwordFields.old" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div>
-                                        <label for="pass-baru" class="block text-sm font-medium text-gray-600">Password Baru</label>
-                                        <input type="password" id="pass-baru" x-model="passwordFields.new" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div class="text-right pt-2">
-                                        <button @click="changePassword()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Ubah Password</button>
-                                    </div>
-                                </div>
-                            </div>
+                            <div x-show="!isAssetsLoading && digitalAssets.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Anda belum memiliki aset digital.</p></div>                        
                         </div>
                 
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Preferensi Notifikasi</h4>
-                            
-                            <div class="space-y-3">
-                                <h5 class="font-semibold text-gray-700">Telegram</h5>
-                                <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan info penting lainnya melalui Telegram.</p>
+                    <div x-show="assetSubView === 'bonus'">
+                        <h3 class="text-gray-800 text-3xl font-medium">Bonus Untuk Anda</h3>
+                        <div x-show="isBonusesLoading" class="mt-8 text-center"><p>Memuat bonus...</p></div>
+                            <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <template x-for="(bonus, index) in bonuses" :key="index">
+                                    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
+                                        <h4 class="text-xl font-semibold text-gray-800 line-clamp-2 mb-2" x-text="bonus.Judul"></h4>
+                                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="bonus.Deskripsi"></p>
+                                        <a :href="`${bonus.Url}?idbonus=${bonus.IDbonus}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Ambil Bonus</a>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
+                        </div>
+                
+                    <div x-show="assetSubView === 'klaim'">
+                        <h3 class="text-gray-800 text-3xl font-medium">Klaim Produk atau Bonus</h3>
+                        <div class="mt-8 bg-white p-8 rounded-lg shadow text-center">
+                            <p class="text-gray-500">Fitur untuk klaim produk dengan kode unik akan segera hadir!</p>
+                            </div>
+                    </div>
+                </div>
+                
 
-                                <div x-show="!userData.isTelegramConnected" class="space-y-2">
-                                    <p class="text-xs ...">Status: Belum Terhubung</p>
-                                    <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600">
-                                        Hubungkan ke Telegram
-                                    </button>
+                <div x-show="activeView === 'akun'">
+                    <div x-show="activeSubView === 'profile'">
+                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Profile Akun</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-8">
+                                
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Informasi Profil</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="nama" class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                            <input type="text" id="nama" x-model="userData.nama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
+                                            <input type="email" id="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                                        </div>
+                                        <div class="text-right pt-2">
+                                            <button @click="updateProfile()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Simpan Perubahan</button>
+                                        </div>
+                                    </div>        
                                 </div>
                                 
-                                <div x-show="userData.isTelegramConnected">
-                                     <p class="text-xs text-green-600 bg-green-100 p-2 rounded-md">Status: Terhubung</p>
-                                     <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
-                                        Putuskan Hubungan
-                                     </button>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Ganti Password</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="pass-lama" class="block text-sm font-medium text-gray-600">Password Lama</label>
+                                            <input type="password" id="pass-lama" x-model="passwordFields.old" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="pass-baru" class="block text-sm font-medium text-gray-600">Password Baru</label>
+                                            <input type="password" id="pass-baru" x-model="passwordFields.new" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        <div class="text-right pt-2">
+                                            <button @click="changePassword()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Ubah Password</button>
+                                        </div>
+                                    </div>
                                 </div>
+                                
                             </div>
-                            
-                            <hr class="my-6">
+                            <div class="lg:col-span-1">
+                                </div>
+                        </div>
+                    </div>
                 
-                            <div class="space-y-3">
-                                <h5 class="font-semibold text-gray-700">WhatsApp</h5>
-                                <p class="text-sm text-gray-500">Fitur notifikasi via WhatsApp akan segera hadir. Tunggu update dari kami ya, Bro!</p>
-                                <button disabled class="mt-2 w-full text-center bg-gray-300 text-gray-500 py-2 px-4 rounded-md cursor-not-allowed">
-                                    Segera Hadir
-                                </button>
+                    <div x-show="activeSubView === 'notifikasi'">
+                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Pengaturan Notifikasi</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Preferensi Notifikasi</h4>
+                                    
+                                    <div class="space-y-3">
+                                        <h5 class="font-semibold text-gray-700">Telegram</h5>
+                                        <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan info penting lainnya melalui Telegram.</p>
+        
+                                        <div x-show="!userData.isTelegramConnected" class="space-y-2">
+                                            <p class="text-xs ...">Status: Belum Terhubung</p>
+                                            <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600">
+                                                Hubungkan ke Telegram
+                                            </button>
+                                        </div>
+                                        
+                                        <div x-show="userData.isTelegramConnected">
+                                             <p class="text-xs text-green-600 bg-green-100 p-2 rounded-md">Status: Terhubung</p>
+                                             <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
+                                                Putuskan Hubungan
+                                             </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-6">
+                        
+                                    <div class="space-y-3">
+                                        <h5 class="font-semibold text-gray-700">WhatsApp</h5>
+                                        <p class="text-sm text-gray-500">Fitur notifikasi via WhatsApp akan segera hadir. Tunggu update dari kami ya, Bro!</p>
+                                        <button disabled class="mt-2 w-full text-center bg-gray-300 text-gray-500 py-2 px-4 rounded-md cursor-not-allowed">
+                                            Segera Hadir
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                
+                    <div x-show="activeSubView === 'pembelian'">
+                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Pembelian</h3>
+                        <div class="bg-white p-8 rounded-lg shadow text-center">
+                            <p class="text-gray-500">Fitur riwayat pembelian akan segera hadir!</p>
+                        </div>
+                    </div>
                 </div>
-
             
             </main>
         </div>
@@ -234,6 +313,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
