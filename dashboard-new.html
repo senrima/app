@@ -277,8 +277,74 @@
                 
                     <div x-show="activeSubView === 'pembelian'">
                         <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Pembelian</h3>
-                        <div class="bg-white p-8 rounded-lg shadow text-center">
-                            <p class="text-gray-500">Fitur riwayat pembelian akan segera hadir!</p>
+                    
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                            <input x-model.debounce.300ms="pembelianSearchQuery" type="text" placeholder="Cari No. Invoice atau Status..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <button @click="riwayatPembelian = []; loadRiwayatPembelian()" :disabled="isPembelianLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75 disabled:cursor-wait">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isPembelianLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                <span>Segarkan</span>
+                            </button>
+                        </div>
+                    
+                        <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <template x-if="isPembelianLoading">
+                                            <template x-for="i in 5">
+                                                <tr>
+                                                    <td class="py-4 px-6" colspan="6"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                        
+                                        <template x-if="!isPembelianLoading && paginatedPembelian.length === 0">
+                                            <tr><td colspan="6" class="text-center p-6 text-gray-500" x-text="riwayatPembelian.length === 0 ? 'Anda belum memiliki riwayat pembelian.' : 'Data tidak ditemukan.'"></td></tr>
+                                        </template>
+                                        
+                                        <template x-if="!isPembelianLoading">
+                                            <template x-for="item in paginatedPembelian" :key="item.NomorInvoice">
+                                                <tr class="hover:bg-gray-50 transition">
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900" x-text="item.NomorInvoice"></td>
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="new Date(item.TanggalTerbit).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })"></td>
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm">
+                                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                              :class="{
+                                                                  'bg-green-100 text-green-800': ['SUCCESS', 'BERHASIL'].includes(item.Status.toUpperCase()),
+                                                                  'bg-yellow-100 text-yellow-800': item.Status.toUpperCase() === 'PENDING',
+                                                                  'bg-red-100 text-red-800': ['FAILED', 'EXPIRED', 'GAGAL'].includes(item.Status.toUpperCase())
+                                                              }"
+                                                              x-text="item.Status">
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 font-medium" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.TotalPembayaran)"></td>
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="item.MetodePembayaran"></td>
+                                                    <td class="py-4 px-6 whitespace-nowrap text-sm font-medium space-x-4">
+                                                        <a :href="item.UrlBayar" target="_blank" class="text-indigo-600 hover:text-indigo-900" x-show="item.Status.toUpperCase() === 'PENDING'">Bayar</a>
+                                                        <a :href="item.UrlInvoice" target="_blank" class="text-gray-600 hover:text-gray-900">Invoice</a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                    
+                            <div x-show="!isPembelianLoading && totalPembelianPages > 1" class="mt-4 flex justify-between items-center">
+                                <button @click="prevPembelianPage()" :disabled="pembelianCurrentPage === 1" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Sebelumnya</button>
+                                <span class="text-sm text-gray-700">Halaman <span x-text="pembelianCurrentPage" class="font-medium"></span> dari <span x-text="totalPembelianPages" class="font-medium"></span></span>
+                                <button @click="nextPembelianPage()" :disabled="pembelianCurrentPage >= totalPembelianPages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Berikutnya</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -313,6 +379,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
