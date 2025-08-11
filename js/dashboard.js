@@ -36,6 +36,10 @@ function dashboardApp() {
             this.sessionToken = initialToken; 
             try {
                 await this.getDashboardData();
+                // --- PERBAIKAN DI SINI ---
+                // Memanggil fungsi untuk memuat notifikasi saat halaman dibuka
+                await this.loadNotifications(); 
+                // --- AKHIR PERBAIKAN ---
                 this.isLoading = false;
             } catch (e) {
                 this.showNotification('Gagal verifikasi sesi.', true);
@@ -184,4 +188,5 @@ function dashboardApp() {
         }
     };
 }
+
 
