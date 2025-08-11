@@ -12,6 +12,8 @@ function dashboardApp() {
         sessionToken: null,
         isAssetsLoading: false,
         isBonusesLoading: false,
+        notifications: [],
+        unreadCount: 0,
         modal: {
             isOpen: false,
             title: 'Pemberitahuan',
@@ -188,5 +190,6 @@ function dashboardApp() {
         }
     };
 }
+
 
 
