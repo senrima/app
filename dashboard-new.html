@@ -63,7 +63,7 @@
                                     <p class="text-center text-gray-500 py-6">Tidak ada notifikasi.</p>
                                 </template>
                                 <template x-for="notif in notifications" :key="notif.Timestamp">
-                                    <a :href="notif.Link || '#'" @click="notif.Link ? null : $event.preventDefault()" class="block px-4 py-3 hover:bg-gray-100 border-b">
+                                    <a :href="notif.Link || '#'" class="block px-4 py-3 hover:bg-gray-100 border-b">
                                         <p class="font-semibold text-gray-800 text-sm" x-text="notif.Judul"></p>
                                         <p class="text-xs text-gray-600" x-text="notif.Pesan"></p>
                                         <p class="text-xs text-gray-400 mt-1" x-text="new Date(notif.Timestamp).toLocaleString('id-ID')"></p>
@@ -234,4 +234,5 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
