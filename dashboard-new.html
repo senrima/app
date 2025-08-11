@@ -138,7 +138,7 @@
                         <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
                             <p class="font-bold">Aktifkan Notifikasi Telegram!</p>
                             <p class="text-sm">Untuk keamanan dan kemudahan menerima notifikasi penting seperti OTP, hubungkan akun Anda ke Telegram sekarang.</p>
-                            <button @click="activeSubView = 'notifikasi'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
+                            <button @click.prevent="activeView = 'akun'; activeSubView = 'pembelian'; isSidebarOpen = false class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
                                 Pergi ke Halaman Akun →
                             </button>
                         </div>
@@ -313,6 +313,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
