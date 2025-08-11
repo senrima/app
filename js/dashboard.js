@@ -16,12 +16,16 @@ function dashboardApp() {
         unreadCount: 0,
         passwordFields: { old: '', new: '' }, 
         notificationIntervalId: null,
-
         isAkunMenuOpen: false, 
         activeSubView: 'profile',
-
         isAssetMenuOpen: false,
         assetSubView: 'produk',
+
+        riwayatPembelian: [],
+        isPembelianLoading: false,
+        pembelianSearchQuery: '',
+        pembelianCurrentPage: 1,
+        pembelianItemsPerPage: 5, // Tampilkan 5 item per halaman
         
         modal: {
             isOpen: false,
@@ -34,6 +38,38 @@ function dashboardApp() {
             onConfirm: () => {}
         },
 
+        get filteredPembelian() {
+            if (this.pembelianSearchQuery === '') return this.riwayatPembelian;
+            this.pembelianCurrentPage = 1;
+            const searchLower = this.pembelianSearchQuery.toLowerCase();
+            return this.riwayatPembelian.filter(item => 
+                item.NomorInvoice.toLowerCase().includes(searchLower) ||
+                item.Status.toLowerCase().includes(searchLower)
+            );
+        },
+        get paginatedPembelian() {
+            const start = (this.pembelianCurrentPage - 1) * this.pembelianItemsPerPage;
+            const end = start + this.pembelianItemsPerPage;
+            return this.filteredPembelian.slice(start, end);
+        },
+        get totalPembelianPages() {
+            return Math.ceil(this.filteredPembelian.length / this.pembelianItemsPerPage);
+        },
+
+        async loadRiwayatPembelian() {
+            if (this.riwayatPembelian.length > 0) return; // Cache sederhana
+            this.isPembelianLoading = true;
+            const response = await this.callApi({ action: 'getRiwayatPembelian' });
+            if (response.status === 'sukses') {
+                this.riwayatPembelian = response.data || [];
+            }
+            this.isPembelianLoading = false;
+        },
+        // Metode paginasi
+        nextPembelianPage() { if (this.pembelianCurrentPage < this.totalPembelianPages) this.pembelianCurrentPage++; },
+        prevPembelianPage() { if (this.pembelianCurrentPage > 1) this.pembelianCurrentPage--; },
+
+        
         // --- FUNGSI UTAMA ---
 
         async init() {
@@ -290,6 +326,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
