@@ -26,6 +26,7 @@ function dashboardApp() {
         pembelianSearchQuery: '',
         pembelianCurrentPage: 1,
         pembelianItemsPerPage: 5, // Tampilkan 5 item per halaman
+        dashboardSummary: {},
         
         modal: {
             isOpen: false,
@@ -326,6 +327,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
