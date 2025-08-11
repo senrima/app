@@ -16,6 +16,13 @@ function dashboardApp() {
         unreadCount: 0,
         passwordFields: { old: '', new: '' }, 
         notificationIntervalId: null,
+
+        isAkunMenuOpen: false, 
+        activeSubView: 'profile',
+
+        isAssetMenuOpen: false,
+        assetSubView: 'produk',
+        
         modal: {
             isOpen: false,
             title: 'Pemberitahuan',
@@ -283,6 +290,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
