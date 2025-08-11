@@ -132,8 +132,15 @@
                     </div>
                     
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="block w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-blue-500 focus:outline-none focus:border-blue-500 transition">
-                            <svg class="w-full h-full text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <button @click="open = !open" 
+                                class="relative w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-all duration-300 hover:ring-2 hover:ring-blue-500 hover:ring-offset-2">
+                            
+                            <img class="rounded-full" 
+                                 :src="`https://ui-avatars.com/api/?name=${userData.nama || 'Pengguna'}&background=random&color=fff&size=128`" 
+                                 :alt="userData.nama" 
+                                 x-show="userData.nama">
+                                 
+                            <svg class="h-6 w-6 text-gray-500" x-show="!userData.nama" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                               <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                             </svg>
                         </button>
@@ -431,6 +438,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
