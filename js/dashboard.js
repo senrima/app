@@ -67,8 +67,11 @@ function dashboardApp() {
         async loadNotifications() {
             const response = await this.callApi({ action: 'getnotifikasi' });
             if (response.status === 'success') {
-                this.notifications = response.data;
-                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
+                // Baris ini yang mungkin menjadi masalah
+                this.notifications = response.data; 
+        
+                // Error terjadi di baris ini karena 'this.notifications' adalah undefined
+                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length; 
             } else {
                 console.error("Gagal memuat notifikasi.");
             }
@@ -190,6 +193,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
