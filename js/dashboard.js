@@ -65,16 +65,22 @@ function dashboardApp() {
         // --- FUNGSI NOTIFIKASI BARU ---
 
         async loadNotifications() {
-            const response = await this.callApi({ action: 'getnotifikasi' });
-            if (response.status === 'success') {
-                // Baris ini yang mungkin menjadi masalah
-                this.notifications = response.data; 
+          const response = await this.callApi({ action: 'getnotifikasi' });
         
-                // Error terjadi di baris ini karena 'this.notifications' adalah undefined
-                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length; 
-            } else {
-                console.error("Gagal memuat notifikasi.");
-            }
+          if (response.status === 'sukses' && response.data) {
+            // Kode ini aman, bisa menangani jika server mengirim string atau array
+            const notificationsData = (typeof response.data === 'string') 
+                ? JSON.parse(response.data) 
+                : response.data;
+        
+            this.notifications = notificationsData || [];
+            this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
+        
+          } else {
+            this.notifications = [];
+            this.unreadCount = 0;
+            console.error("Gagal memuat notifikasi atau tidak ada data.");
+          }
         },
 
         async markNotificationsAsRead() {
@@ -193,6 +199,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
