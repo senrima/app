@@ -14,6 +14,7 @@ function dashboardApp() {
         isBonusesLoading: false,
         notifications: [],
         unreadCount: 0,
+        passwordFields: { old: '', new: '' }, 
         modal: {
             isOpen: false,
             title: 'Pemberitahuan',
@@ -135,7 +136,55 @@ function dashboardApp() {
             this.isBonusesLoading = false;
         },
 
-        // --- FUNGSI AKSI PENGGUNA (TELEGRAM & LOGOUT) ---
+        async updateProfile() {
+            if (!this.userData.nama.trim()) {
+                this.showNotification('Nama tidak boleh kosong.', true);
+                return;
+            }
+        
+            this.showNotification('Menyimpan perubahan...');
+            const response = await this.callApi({ 
+                action: 'updateProfile', 
+                payload: { newName: this.userData.nama } 
+            });
+        
+            if (response.status === 'success') {
+                this.showNotification('Profil berhasil diperbarui.');
+            } else {
+                this.showNotification(response.message || 'Gagal memperbarui profil.', true);
+            }
+        },
+        
+        async changePassword() {
+            const { old: oldPassword, new: newPassword } = this.passwordFields;
+        
+            if (!oldPassword || !newPassword) {
+                this.showNotification('Password lama dan baru wajib diisi.', true);
+                return;
+            }
+            if (newPassword.length < 6) {
+                this.showNotification('Password baru minimal harus 6 karakter.', true);
+                return;
+            }
+        
+            this.showNotification('Mengubah password...');
+            const response = await this.callApi({
+                action: 'changePassword',
+                payload: { oldPassword, newPassword }
+            });
+        
+            if (response.status === 'success') {
+                this.showNotification('Password berhasil diubah.');
+                // Kosongkan field setelah berhasil
+                this.passwordFields = { old: '', new: '' }; 
+                // Muat ulang data dashboard jika status berubah dari 'Wajib Ganti Password'
+                if (this.userData.status === 'Wajib Ganti Password') {
+                    await this.getDashboardData();
+                }
+            } else {
+                this.showNotification(response.message || 'Gagal mengubah password.', true);
+            }
+        },
 
         async startTelegramVerification() {
             this.showNotification('Membuat link aman...');
@@ -199,6 +248,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
