@@ -159,9 +159,9 @@
             isSidebarOpen: false,
             activeView: 'beranda',
             adminSessionToken: null,
-            adminData: {}, // Untuk menyimpan data admin (misal: nama, email)
+            adminData: {},
 
-            // --- STATE BARU UNTUK MANAJEMEN PENGGUNA ---
+            // State untuk Manajemen Pengguna
             users: [],
             isUsersLoading: false,
             usersSearchQuery: '',
@@ -169,9 +169,7 @@
             usersItemsPerPage: 10,
             isUserModalOpen: false,
             userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
-            // --- AKHIR STATE BARU ---
 
-            // Fungsi inisialisasi yang baru
             async init() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
@@ -181,15 +179,13 @@
                     window.location.href = 'index.html';
                     return;
                 }
-
                 this.adminSessionToken = token;
                 
-                // Panggil server untuk verifikasi token dan ambil data admin
                 try {
                     const response = await this.callApi({ action: 'verifySession' });
                     if (response.status === 'success') {
                         this.adminData = response.adminData;
-                        this.isLoading = false; // Tampilkan dasbor HANYA JIKA verifikasi berhasil
+                        this.isLoading = false;
                     } else {
                         throw new Error(response.message || 'Sesi admin tidak valid.');
                     }
@@ -199,6 +195,7 @@
                 }
             },
 
+            // Computed Properties & Fungsi untuk Manajemen Pengguna
             get filteredUsers() {
                 if (!this.usersSearchQuery) return this.users;
                 this.usersCurrentPage = 1;
@@ -234,7 +231,7 @@
                     ID: user.ID,
                     Status: user.Status,
                     Username: user.Username,
-                    NotifReferensi: user.NotifReferensi // Pastikan nama kolom ini benar
+                    NotifReferensi: user.NotifReferensi
                 };
                 this.isUserModalOpen = true;
             },
@@ -248,19 +245,16 @@
                 });
 
                 if (response.status === 'success') {
-                    alert('Data berhasil diperbarui!'); // Ganti dengan notifikasi modal jika mau
+                    alert('Data berhasil diperbarui!');
                     this.closeUserModal();
-                    // Muat ulang data untuk menampilkan perubahan
                     this.users = []; 
                     await this.loadUsers();
                 } else {
                     alert('Gagal memperbarui: ' + response.message);
                 }
-            }
+            }, // <-- INI KOMA YANG HILANG
 
-
-            
-            // Fungsi helper untuk semua panggilan API admin di masa depan
+            // Fungsi helper untuk API
             async callApi(payload) {
                 const headers = { 'Content-Type': 'application/json' };
                 const body = JSON.stringify({
@@ -273,7 +267,7 @@
                 return await response.json();
             },
 
-            // Fungsi logout (jika diperlukan nanti)
+            // Fungsi logout
             logout() {
                 console.log('Logout admin...');
                 window.location.href = 'index.html';
@@ -284,4 +278,5 @@
 </body>
 
 </html>
+
 
