@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Akses Admin - S-Tools ID</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Poppins', sans-serif; } 
+        [x-cloak] { display: none !important; } 
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4" x-data="adminOtpApp()">
+    
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
+        <h1 class="text-2xl font-bold text-gray-800">Verifikasi Akses Admin</h1>
+        <p class="text-gray-500 mt-2 mb-8">Masukkan 6 digit kode OTP yang dikirim ke email admin Anda untuk melanjutkan.</p>
+        
+        <form @submit.prevent="submit()">
+            <div class="mb-6">
+                <input id="otp-code" type="text" x-model="otp" maxlength="6" class="w-full p-3 text-center text-3xl tracking-[0.5em] border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500" required>
+            </div>
+            
+            <button type="submit" :disabled="isLoading" class="w-full bg-yellow-500 text-gray-900 py-3 px-4 rounded-lg hover:bg-yellow-600 font-semibold transition flex justify-center items-center">
+                <span x-show="!isLoading">Verifikasi & Masuk</span>
+                <svg x-show="isLoading" class="animate-spin h-5 w-5" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </button>
+        </form>
+        
+        <div x-show="status.message" x-cloak class="mt-4 p-4 rounded-lg border-l-4" :class="status.success ? 'bg-green-100 border-green-400 text-green-800' : 'bg-red-100 border-red-400 text-red-800'">
+            <span class="font-medium" x-text="status.message"></span>
+        </div>
+    </div>
+
+    <script>
+        // Definisikan URL API Anda di sini
+        const API_ENDPOINT = "https://api.senrima.web.id";
+
+        function adminOtpApp() {
+            return {
+                isLoading: false,
+                otp: '',
+                status: { message: '', success: false },
+                
+                async submit() {
+                    this.isLoading = true;
+                    this.status = { message: '', success: false };
+                    
+                    const email = sessionStorage.getItem('adminEmailForOTP');
+                    
+                    if (!email) {
+                        this.status.message = 'Sesi admin tidak ditemukan. Silakan minta akses ulang dari dasbor.';
+                        this.status.success = false;
+                        this.isLoading = false;
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(API_ENDPOINT, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                kontrol: 'proteksi', 
+                                action: 'verifyAdminOtp', // <-- Aksi baru untuk verifikasi admin
+                                payload: { 
+                                    email: email, 
+                                    otp: this.otp 
+                                }
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success' && result.token) {
+                            this.status.message = 'Verifikasi berhasil! Mengarahkan ke dasbor admin...';
+                            this.status.success = true;
+                            
+                            // Hapus email dari session storage setelah berhasil
+                            sessionStorage.removeItem('adminEmailForOTP');
+                            
+                            // Arahkan ke dasbor admin dengan token sesi yang baru
+                            window.location.href = `Dashboard-admin.html?token=${result.token}`;
+                        } else {
+                           this.status.message = result.message || 'Terjadi kesalahan.';
+                           this.status.success = false;
+                        }
+
+                    } catch (e) {
+                        this.status.message = 'Gagal terhubung ke server.';
+                        this.status.success = false;
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>
