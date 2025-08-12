@@ -103,7 +103,11 @@ function dashboardApp() {
         async getDashboardData() {
             const response = await this.callApi({ action: 'getDashboardData' });
             if (response.status === 'success') {
-                this.userData = response.userData;
+       //         this.userData = response.userData;
+                this.userData = response.userData || {};
+                this.dashboardSummary = response.dashboardSummary || {}; 
+
+                
                 if (this.userData.status === 'Wajib Ganti Password' && this.activeView !== 'akun') {
                     this.activeView = 'akun';
                 }
@@ -327,6 +331,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
