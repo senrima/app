@@ -127,6 +127,22 @@ function dashboardApp() {
         
         // --- FUNGSI UTAMA ---
 
+        async requestAdminAccess() {
+            this.showNotification('Meminta akses admin...'); // Gunakan modal notifikasi yang sudah ada
+            
+            const response = await this.callApi({ action: 'requestAdminAccess' });
+        
+            if (response.status === 'success') {
+                // Simpan email admin untuk digunakan di halaman OTP
+                sessionStorage.setItem('adminEmailForOTP', this.userData.email);
+                
+                // Arahkan ke halaman OTP khusus admin
+                window.location.href = 'otp-admin.html'; 
+            } else {
+                this.showNotification(response.message || 'Gagal meminta akses.', true);
+            }
+        },
+        
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
             const initialToken = urlParams.get('token');
@@ -385,6 +401,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
