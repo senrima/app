@@ -282,7 +282,7 @@
                                         <div class="p-4 flex flex-col flex-grow">
                                             <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
                                             <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="asset.Deskripsi"></p>
-                                            <a :href="`${asset.URLTujuan}?idapp=${asset.IDapp}&token=${sessionToken}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Akses Sekarang</a>
+                                            <a :href="`${asset.UrlProduk}?tokenakses=${asset.TokenAkses}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-70s0">Akses Produk</a>
                                         </div>
                                     </div>
                                 </template>
@@ -515,6 +515,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
