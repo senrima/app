@@ -15,7 +15,7 @@ function dashboardApp() {
         notifications: [],
         unreadCount: 0,
         passwordFields: { old: '', new: '' }, 
-        notificationIntervalId: null,
+     //   notificationIntervalId: null,
         isAkunMenuOpen: false, 
         activeSubView: 'profile',
         isAssetMenuOpen: false,
@@ -88,10 +88,10 @@ function dashboardApp() {
                 this.isLoading = false;
 
                 // --- TAMBAHAN BARU: MULAI INTERVAL REFRESH ---
-                this.notificationIntervalId = setInterval(() => {
-                    console.log('Refreshing notifications...'); // Untuk debugging, bisa dihapus nanti
-                    this.refreshNotifications();
-                }, 60000); // 60000 milidetik = 1 menit
+             //   this.notificationIntervalId = setInterval(() => {
+             //       console.log('Refreshing notifications...'); // Untuk debugging, bisa dihapus nanti
+             //       this.refreshNotifications();
+             //   }, 60000); // 60000 milidetik = 1 menit
                 // --- AKHIR TAMBAHAN ---
                 
             } catch (e) {
@@ -288,10 +288,10 @@ function dashboardApp() {
         
         async logout(callServer = true) {
             // --- TAMBAHAN BARU: HENTIKAN INTERVAL ---
-            if (this.notificationIntervalId) {
-                clearInterval(this.notificationIntervalId);
-                console.log('Notification interval stopped.');
-            }
+       //     if (this.notificationIntervalId) {
+       //         clearInterval(this.notificationIntervalId);
+       //         console.log('Notification interval stopped.');
+       //     }
             // --- AKHIR TAMBAHAN ---
             
             if (callServer) {
@@ -327,6 +327,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
