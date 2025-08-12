@@ -219,15 +219,15 @@
                             </div>
                         </div>
                 
-                        <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                        <button @click="activeView = 'koin'; loadHistoryKoin()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-blue-500 transition-all">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Jumlah Koin</p>
                                 <p class="text-3xl font-bold text-gray-800" x-text="userData.koin || '0'"></p>
                             </div>
                             <div class="bg-yellow-100 text-yellow-600 p-3 rounded-full">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2v1m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 12V7m0 1v.01M12 10v-1m0-1V8m0 2v1m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>
+                                <svg></svg>
                             </div>
-                        </div>
+                        </button>
                 
                         <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                             <h4 class="font-semibold text-gray-800 mb-4">Akses Cepat</h4>
@@ -484,6 +484,64 @@
                     </div>
                 </div>
 
+                <div x-show="activeView === 'koin'">
+                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Koin</h3>
+                
+                    <div class.flex.flex-col.sm:flex-row.justify-between.items-center.mb-4.gap-4>
+                        <input x-model.debounce.300ms="koinSearchQuery" type="text" placeholder="Cari deskripsi..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <button @click="historyKoin = []; loadHistoryKoin()" :disabled="isKoinLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isKoinLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                            <span>Segarkan</span>
+                        </button>
+                    </div>
+                
+                    <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Saldo Akhir</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <template x-if="isKoinLoading">
+                                        <template x-for="i in 5">
+                                            <tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr>
+                                        </template>
+                                    </template>
+                                    
+                                    <template x-if="!isKoinLoading && paginatedKoin.length === 0">
+                                        <tr><td colspan="4" class="text-center p-6 text-gray-500">Belum ada riwayat transaksi koin.</td></tr>
+                                    </template>
+                                    
+                                    <template x-if="!isKoinLoading">
+                                        <template x-for="item in paginatedKoin" :key="item.IDTransaksi">
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.Tanggal).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })"></td>
+                                                <td class="py-4 px-6 text-sm text-gray-800" x-text="item.Deskripsi"></td>
+                                                <td class="py-4 px-6 text-sm font-semibold">
+                                                    <span :class="item.JenisTransaksi === 'KREDIT' ? 'text-green-600' : 'text-red-600'" 
+                                                          x-text="(item.JenisTransaksi === 'KREDIT' ? '+' : '-') + item.Jumlah">
+                                                    </span>
+                                                </td>
+                                                <td class="py-4 px-6 text-sm font-bold text-gray-600" x-text="item.SaldoSetelah"></td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                
+                        <div x-show="!isKoinLoading && totalKoinPages > 1" class="mt-4 flex justify-between items-center">
+                            <button @click="prevKoinPage()" :disabled="koinCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
+                            <span class="text-sm">Halaman <span x-text="koinCurrentPage"></span> dari <span x-text="totalKoinPages"></span></span>
+                            <button @click="nextKoinPage()" :disabled="koinCurrentPage >= totalKoinPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
+                        </div>
+                    </div>
+                </div>
                 
             </main>
         </div>
@@ -515,6 +573,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
