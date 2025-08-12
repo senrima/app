@@ -27,6 +27,14 @@ function dashboardApp() {
         pembelianCurrentPage: 1,
         pembelianItemsPerPage: 5, // Tampilkan 5 item per halaman
         dashboardSummary: {},
+
+        // --- STATE BARU UNTUK RIWAYAT KOIN ---
+        historyKoin: [],
+        isKoinLoading: false,
+        koinSearchQuery: '',
+        koinCurrentPage: 1,
+        koinItemsPerPage: 10, // Tampilkan 10 item per halaman
+        // --- AKHIR STATE BARU ---
         
         modal: {
             isOpen: false,
@@ -70,6 +78,40 @@ function dashboardApp() {
         nextPembelianPage() { if (this.pembelianCurrentPage < this.totalPembelianPages) this.pembelianCurrentPage++; },
         prevPembelianPage() { if (this.pembelianCurrentPage > 1) this.pembelianCurrentPage--; },
 
+
+        get filteredKoin() {
+            if (this.koinSearchQuery === '') return this.historyKoin;
+            this.koinCurrentPage = 1;
+            const searchLower = this.koinSearchQuery.toLowerCase();
+            return this.historyKoin.filter(item => 
+                item.Deskripsi.toLowerCase().includes(searchLower)
+            );
+        },
+        get paginatedKoin() {
+            const start = (this.koinCurrentPage - 1) * this.koinItemsPerPage;
+            const end = start + this.koinItemsPerPage;
+            return this.filteredKoin.slice(start, end);
+        },
+        get totalKoinPages() {
+            return Math.ceil(this.filteredKoin.length / this.koinItemsPerPage);
+        },
+        
+        // --- FUNGSI BARU UNTUK MEMUAT DATA ---
+        async loadHistoryKoin() {
+            // Jangan muat ulang jika data sudah ada, gunakan tombol refresh
+            if (this.historyKoin.length > 0) return; 
+        
+            this.isKoinLoading = true;
+            const response = await this.callApi({ action: 'getHistoryKoin' });
+            if (response.status === 'sukses') {
+                this.historyKoin = response.data || [];
+            }
+            this.isKoinLoading = false;
+        },
+        
+        // Metode paginasi
+        nextKoinPage() { if (this.koinCurrentPage < this.totalKoinPages) this.koinCurrentPage++; },
+        prevKoinPage() { if (this.koinCurrentPage > 1) this.koinCurrentPage--; },
         
         // --- FUNGSI UTAMA ---
 
@@ -331,6 +373,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
