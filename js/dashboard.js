@@ -66,13 +66,25 @@ function dashboardApp() {
         },
 
         async loadRiwayatPembelian() {
-            if (this.riwayatPembelian.length > 0) return; // Cache sederhana
-            this.isPembelianLoading = true;
+            const isFirstLoad = this.riwayatPembelian.length === 0;
+        
+            // Hanya tampilkan skeleton loader besar saat pertama kali dimuat
+            if (isFirstLoad) {
+                this.isPembelianLoading = true;
+            }
+        
+            // Selalu panggil API untuk mendapatkan data terbaru
             const response = await this.callApi({ action: 'getRiwayatPembelian' });
+            
+            // Matikan loader setelah data diterima
+            this.isPembelianLoading = false;
+        
             if (response.status === 'sukses') {
                 this.riwayatPembelian = response.data || [];
+            } else {
+                // Jika gagal, pastikan tabel dikosongkan agar tidak menampilkan data lama
+                this.riwayatPembelian = [];
             }
-            this.isPembelianLoading = false;
         },
         // Metode paginasi
         nextPembelianPage() { if (this.pembelianCurrentPage < this.totalPembelianPages) this.pembelianCurrentPage++; },
@@ -373,6 +385,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
