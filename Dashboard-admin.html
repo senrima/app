@@ -74,48 +74,66 @@
         </div>
     </div>
 
-    <script>
-        const API_ENDPOINT = "https://api.senrima.web.id";
+<script>
+    const API_ENDPOINT = "https://api.senrima.web.id";
 
-        function adminDashboardApp() {
-            return {
-                isLoading: true,
-                isSidebarOpen: false,
-                activeView: 'beranda',
-                adminSessionToken: null,
+    function adminDashboardApp() {
+        return {
+            isLoading: true,
+            isSidebarOpen: false,
+            activeView: 'beranda',
+            adminSessionToken: null,
+            adminData: {}, // Untuk menyimpan data admin (misal: nama, email)
 
-                // Fungsi inisialisasi
-                init() {
-                    // 1. Ambil token dari URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const token = urlParams.get('token');
+            // Fungsi inisialisasi yang baru
+            async init() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
 
-                    if (!token) {
-                        alert('Akses tidak sah. Token admin tidak ditemukan.');
-                        window.location.href = 'index.html'; // Arahkan keluar jika tidak ada token
-                        return;
+                if (!token) {
+                    alert('Akses tidak sah. Token admin tidak ditemukan.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.adminSessionToken = token;
+                
+                // Panggil server untuk verifikasi token dan ambil data admin
+                try {
+                    const response = await this.callApi({ action: 'verifySession' });
+                    if (response.status === 'success') {
+                        this.adminData = response.adminData;
+                        this.isLoading = false; // Tampilkan dasbor HANYA JIKA verifikasi berhasil
+                    } else {
+                        throw new Error(response.message || 'Sesi admin tidak valid.');
                     }
-
-                    this.adminSessionToken = token;
-                    
-                    // 2. Di aplikasi nyata, Anda akan memverifikasi token ini ke server
-                    // Untuk saat ini, kita anggap token valid dan langsung tampilkan dasbor
-                    console.log('Sesi Admin Dimulai dengan Token:', this.adminSessionToken);
-                    
-                    // Sembunyikan layar loading setelah penundaan singkat
-                    setTimeout(() => {
-                        this.isLoading = false;
-                    }, 500);
-                },
-
-                // Fungsi logout (jika diperlukan nanti)
-                logout() {
-                    // Logika untuk menghapus token sesi admin di server
-                    console.log('Logout admin...');
+                } catch (error) {
+                    alert('Sesi admin gagal diverifikasi: ' + error.message);
                     window.location.href = 'index.html';
                 }
-            };
-        }
-    </script>
+            },
+
+            // Fungsi helper untuk semua panggilan API admin di masa depan
+            async callApi(payload) {
+                const headers = { 'Content-Type': 'application/json' };
+                const body = JSON.stringify({
+                    kontrol: 'admin',
+                    token: this.adminSessionToken,
+                    ...payload
+                });
+
+                const response = await fetch(API_ENDPOINT, { method: 'POST', headers, body });
+                return await response.json();
+            },
+
+            // Fungsi logout (jika diperlukan nanti)
+            logout() {
+                console.log('Logout admin...');
+                window.location.href = 'index.html';
+            }
+        };
+    }
+</script>
 </body>
+
 </html>
