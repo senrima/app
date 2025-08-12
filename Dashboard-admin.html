@@ -38,7 +38,7 @@
 
             <div class="flex-1 mt-6 px-4 space-y-2">
                 <a href="#" @click.prevent="activeView = 'beranda'" :class="activeView === 'beranda' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Beranda Admin</a>
-                <a href="#" @click.prevent="activeView = 'pengguna'" :class="activeView === 'pengguna' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Manajemen Pengguna</a>
+                <a href="#" @click.prevent="activeView = 'pengguna'; loadUsers()" :class="activeView === 'pengguna' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Manajemen Pengguna</a>
                 <a href="#" @click.prevent="activeView = 'penjualan'" :class="activeView === 'penjualan' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Analitik Penjualan</a>
                 <a href="#" @click.prevent="activeView = 'produk'" :class="activeView === 'produk' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Manajemen Produk</a>
             </div>
@@ -70,6 +70,82 @@
                 <div x-show="activeView !== 'beranda'" class="text-center mt-16">
                     <p class="text-gray-500">Fitur ini sedang dalam pengembangan.</p>
                 </div>
+
+                <div x-show="activeView === 'pengguna'">
+                    <h3 class="text-gray-800 text-3xl font-medium">Manajemen Pengguna</h3>
+                    <div class="mt-4">
+                         <input x-model.debounce.300ms="usersSearchQuery" type="text" placeholder="Cari nama, email, atau username..." class="w-full sm:w-72 p-2 border rounded-lg">
+                    </div>
+                    <div class="mt-4 bg-white p-6 rounded-2xl shadow-xl w-full">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500">Nama</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500">Status</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500">Info Kontak</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500">Detail Akun</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <template x-if="isUsersLoading">
+                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="5"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
+                                    </template>
+                                    <template x-if="!isUsersLoading">
+                                        <template x-for="user in paginatedUsers" :key="user.ID">
+                                            <tr>
+                                                <td class="py-4 px-6"><span class="font-semibold" x-text="user.Nama"></span><br><span class="text-xs text-gray-500" x-text="user.ID"></span></td>
+                                                <td class="py-4 px-6"><span class="px-2 py-1 text-xs rounded-full" :class="user.Status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'" x-text="user.Status"></span></td>
+                                                <td class="py-4 px-6 text-sm text-gray-600" x-text="user.Email"></td>
+                                                <td class="py-4 px-6 text-sm text-gray-600">Username: <b x-text="user.Username"></b><br>Koin: <b x-text="user.Koin"></b></td>
+                                                <td class="py-4 px-6"><button @click="openUserModal(user)" class="text-indigo-600 hover:text-indigo-900 font-semibold">Edit</button></td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                         <div x-show="!isUsersLoading && totalUsersPages > 1" class="mt-4 flex justify-between items-center">
+                            <button @click="prevUsersPage()" :disabled="usersCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
+                            <span>Halaman <span x-text="usersCurrentPage"></span> dari <span x-text="totalUsersPages"></span></span>
+                            <button @click="nextUsersPage()" :disabled="usersCurrentPage >= totalUsersPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div x-show="isUserModalOpen" @keydown.escape.window="closeUserModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" x-cloak>
+                    <div @click.outside="closeUserModal()" class="bg-white rounded-lg shadow-xl w-full max-w-lg">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold">Edit Pengguna: <span x-text="userToEdit.Username"></span></h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium">Username</label>
+                                <input type="text" x-model="userToEdit.Username" class="mt-1 w-full p-2 border rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Status</label>
+                                <select x-model="userToEdit.Status" class="mt-1 w-full p-2 border rounded-md">
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Wajib Ganti Password">Wajib Ganti Password</option>
+                                    <option value="Diblokir">Diblokir</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Preferensi Notifikasi</label>
+                                <select x-model="userToEdit.NotifReferensi" class="mt-1 w-full p-2 border rounded-md">
+                                    <option value="email">Email</option>
+                                    <option value="telegram">Telegram</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 flex justify-end gap-4">
+                            <button @click="closeUserModal()" class="px-4 py-2 bg-gray-200 rounded-md">Batal</button>
+                            <button @click="saveUserUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md">Simpan Perubahan</button>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -84,6 +160,16 @@
             activeView: 'beranda',
             adminSessionToken: null,
             adminData: {}, // Untuk menyimpan data admin (misal: nama, email)
+
+            // --- STATE BARU UNTUK MANAJEMEN PENGGUNA ---
+            users: [],
+            isUsersLoading: false,
+            usersSearchQuery: '',
+            usersCurrentPage: 1,
+            usersItemsPerPage: 10,
+            isUserModalOpen: false,
+            userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
+            // --- AKHIR STATE BARU ---
 
             // Fungsi inisialisasi yang baru
             async init() {
@@ -113,6 +199,67 @@
                 }
             },
 
+            get filteredUsers() {
+                if (!this.usersSearchQuery) return this.users;
+                this.usersCurrentPage = 1;
+                const search = this.usersSearchQuery.toLowerCase();
+                return this.users.filter(user => 
+                    user.Nama.toLowerCase().includes(search) || 
+                    user.Email.toLowerCase().includes(search) ||
+                    user.Username.toLowerCase().includes(search)
+                );
+            },
+            get paginatedUsers() {
+                const start = (this.usersCurrentPage - 1) * this.usersItemsPerPage;
+                return this.filteredUsers.slice(start, start + this.usersItemsPerPage);
+            },
+            get totalUsersPages() {
+                return Math.ceil(this.filteredUsers.length / this.usersItemsPerPage);
+            },
+            nextUsersPage() { if (this.usersCurrentPage < this.totalUsersPages) this.usersCurrentPage++; },
+            prevUsersPage() { if (this.usersCurrentPage > 1) this.usersCurrentPage--; },
+
+            async loadUsers() {
+                if (this.users.length > 0) return;
+                this.isUsersLoading = true;
+                const response = await this.callApi({ action: 'adminGetAllUsers' });
+                this.isUsersLoading = false;
+                if (response.status === 'success') {
+                    this.users = response.data || [];
+                }
+            },
+
+            openUserModal(user) {
+                this.userToEdit = {
+                    ID: user.ID,
+                    Status: user.Status,
+                    Username: user.Username,
+                    NotifReferensi: user.NotifReferensi // Pastikan nama kolom ini benar
+                };
+                this.isUserModalOpen = true;
+            },
+            closeUserModal() {
+                this.isUserModalOpen = false;
+            },
+            async saveUserUpdate() {
+                const response = await this.callApi({ 
+                    action: 'adminUpdateUser', 
+                    payload: this.userToEdit 
+                });
+
+                if (response.status === 'success') {
+                    alert('Data berhasil diperbarui!'); // Ganti dengan notifikasi modal jika mau
+                    this.closeUserModal();
+                    // Muat ulang data untuk menampilkan perubahan
+                    this.users = []; 
+                    await this.loadUsers();
+                } else {
+                    alert('Gagal memperbarui: ' + response.message);
+                }
+            }
+
+
+            
             // Fungsi helper untuk semua panggilan API admin di masa depan
             async callApi(payload) {
                 const headers = { 'Content-Type': 'application/json' };
@@ -137,3 +284,4 @@
 </body>
 
 </html>
+
