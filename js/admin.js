@@ -83,6 +83,12 @@ function adminDashboardApp() {
         isUserModalOpen: false,
         userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
 
+        notifSubView: 'dashboard', // Submenu default
+        broadcast: {
+            dashboard: { judul: '', pesan: '', link: '' },
+            channel: { subjek: '', pesanTeks: '' }
+        },
+
         // Fungsi inisialisasi
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -184,6 +190,44 @@ function adminDashboardApp() {
             }
         },
 
+        async sendDashboardBroadcast() {
+            if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
+                alert('Judul dan Pesan harus diisi.');
+                return;
+            }
+            if (!confirm('Anda yakin ingin mengirim notifikasi ini ke SEMUA pengguna?')) return;
+        
+            const response = await this.callApi({
+                action: 'broadcastDashboard',
+                payload: this.broadcast.dashboard
+            });
+            alert(response.message);
+            if (response.status === 'success') {
+                this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; // Reset form
+            }
+        },
+        
+        async sendChannelBroadcast() {
+            if (!this.broadcast.channel.subjek || !this.broadcast.channel.pesanTeks) {
+                alert('Subjek dan Pesan harus diisi.');
+                return;
+            }
+            if (!confirm('Anda yakin ingin mengirim broadcast Email/Telegram ini ke SEMUA pengguna?')) return;
+        
+            const response = await this.callApi({
+                action: 'broadcastChannel',
+                payload: {
+                    subjek: this.broadcast.channel.subjek,
+                    pesanTeks: this.broadcast.channel.pesanTeks,
+                    pesanHtml: this.broadcast.channel.pesanTeks // Untuk email, kita gunakan teks yang sama
+                }
+            });
+            alert(response.message);
+            if (response.status === 'success') {
+                this.broadcast.channel = { subjek: '', pesanTeks: '' }; // Reset form
+            }
+        },
+
         // Fungsi logout
         logout() {
             console.log('Logout admin...');
@@ -191,4 +235,5 @@ function adminDashboardApp() {
         }
     };
 }
+
 
