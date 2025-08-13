@@ -122,6 +122,26 @@
 
 
                 <div x-show="activeView === 'notifikasi'">
+                    <h3 class="text-gray-800 text-3xl font-medium">Kirim Notifikasi Massal</h3>
+                
+                    <div class="my-8 max-w-sm"> <label for="template-select" class="block text-sm font-medium text-gray-700">Gunakan Template</label>
+                        <select id="template-select" x-model="selectedTemplate" @change="applyTemplate()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="">Pilih Template Pesan...</option>
+                            
+                            <optgroup label="Template Dasbor">
+                                <template x-for="template in templates.dashboard" :key="'dash-' + template.NamaTemplate">
+                                    <option :value="'dashboard|' + template.NamaTemplate" x-text="template.NamaTemplate"></option>
+                                </template>
+                            </optgroup>
+                            
+                            <optgroup label="Template Email / Telegram">
+                                <template x-for="template in templates.channel" :key="'chan-' + template.NamaTemplate">
+                                    <option :value="'channel|' + template.NamaTemplate" x-text="template.NamaTemplate"></option>
+                                </template>
+                            </optgroup>
+                        </select>
+                    </div>
+
                     <div x-show="notifSubView === 'dashboard'">
                         <h3 class="text-gray-800 text-3xl font-medium">Kirim Notifikasi ke Dasbor Pengguna</h3>
                         <div class="mt-8 bg-white p-6 rounded-xl shadow-lg max-w-2xl">
@@ -192,5 +212,6 @@
     <script src="js/admin.js"></script>
 </body>
 </html>
+
 
 
