@@ -162,18 +162,17 @@
             adminData: {},
 
             // State untuk Manajemen Pengguna
-            users: [],
-            isUsersLoading: false,
+            users: [], 
+            isUsersLoading: false, 
             usersSearchQuery: '',
-            usersCurrentPage: 1,
+            usersCurrentPage: 1, 
             usersItemsPerPage: 10,
-            isUserModalOpen: false,
+            isUserModalOpen: false, 
             userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
 
             async init() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
-
                 if (!token) {
                     alert('Akses tidak sah. Token admin tidak ditemukan.');
                     window.location.href = 'index.html';
@@ -182,12 +181,13 @@
                 this.adminSessionToken = token;
                 
                 try {
+                    // Panggil server untuk verifikasi sesi awal
                     const response = await this.callApi({ action: 'verifySession' });
                     if (response.status === 'success') {
                         this.adminData = response.adminData;
                         this.isLoading = false;
                     } else {
-                        throw new Error(response.message || 'Sesi admin tidak valid.');
+                        throw new Error(response.message);
                     }
                 } catch (error) {
                     alert('Sesi admin gagal diverifikasi: ' + error.message);
@@ -257,12 +257,13 @@
             // Fungsi helper untuk API
             async callApi(payload) {
                 const headers = { 'Content-Type': 'application/json' };
+                // Body dikirim dalam format yang bisa dibaca oleh e.postData.contents
                 const body = JSON.stringify({
                     kontrol: 'admin',
-                    token: this.adminSessionToken,
-                    ...payload
+                    token: this.adminSessionToken, // Kirim token di dalam body
+                    action: payload.action,
+                    payload: payload.payload || {}
                 });
-
                 const response = await fetch(API_ENDPOINT, { method: 'POST', headers, body });
                 return await response.json();
             },
@@ -278,5 +279,6 @@
 </body>
 
 </html>
+
 
 
