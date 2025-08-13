@@ -12,9 +12,10 @@
     
     <style>
         body { font-family: 'Poppins', sans-serif; }
-        /* Nuansa Admin: Kuning/Amber */
         .menu-active { background-color: #fef3c7; color: #b45309; font-weight: 600; }
         [x-cloak] { display: none !important; }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        .animate-shimmer { animation: shimmer 2s infinite linear; background: linear-gradient(to right, #eff1f3 4%, #e2e2e2 25%, #eff1f3 36%); background-size: 1000px 100%; }
     </style>
 </head>
 <body class="bg-gray-50" x-data="adminDashboardApp()" x-init="init()" x-cloak>
@@ -31,58 +32,40 @@
         
         <nav class="fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col flex-shrink-0 transform bg-white border-r transition-transform duration-300 lg:static lg:translate-x-0"
              :class="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}">
-            
-            <div class="p-4 flex items-center justify-center border-b h-16">
-                <span class="text-2xl font-bold text-gray-800">🔑 Admin Panel</span>
-            </div>
-
+            <div class="p-4 flex items-center justify-center border-b h-16"><span class="text-2xl font-bold text-gray-800">🔑 Admin Panel</span></div>
             <div class="flex-1 mt-6 px-4 space-y-2">
                 <a href="#" @click.prevent="activeView = 'beranda'" :class="activeView === 'beranda' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Beranda Admin</a>
                 <a href="#" @click.prevent="activeView = 'pengguna'; loadUsers()" :class="activeView === 'pengguna' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Manajemen Pengguna</a>
                 <a href="#" @click.prevent="activeView = 'penjualan'" :class="activeView === 'penjualan' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Analitik Penjualan</a>
                 <a href="#" @click.prevent="activeView = 'produk'" :class="activeView === 'produk' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Manajemen Produk</a>
             </div>
-            
-            <div class="p-4 border-t">
-                <a href="dashboard-new.html" class="w-full flex items-center justify-center px-4 py-2.5 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold">Kembali ke Dasbor</a>
-            </div>
+            <div class="p-4 border-t"><a href="dashboard-new.html" class="w-full flex items-center justify-center px-4 py-2.5 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold">Kembali ke Dasbor</a></div>
         </nav>
         
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="flex justify-between items-center p-4 bg-white border-b shadow-sm h-16">
                 <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
-                <div class="ml-auto font-semibold text-yellow-600">
-                    Mode Administrator
-                </div>
+                <div class="ml-auto font-semibold text-yellow-600">Mode Administrator</div>
             </header>
             
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
                 <div x-show="activeView === 'beranda'">
                     <h3 class="text-gray-800 text-3xl font-medium">Beranda Admin</h3>
                     <div class="mt-8 bg-white p-12 rounded-lg shadow-xl text-center">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-4">Selamat Datang, Admin!</h4>
-                        <p class="text-gray-600 max-w-2xl mx-auto">
-                            Anda telah berhasil masuk ke Panel Admin. Fitur-fitur canggih untuk mengelola platform sedang dalam pengembangan.
-                        </p>
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-4" x-text="'Selamat Datang, ' + (adminData.nama || 'Admin') + '!'"></h4>
+                        <p class="text-gray-600 max-w-2xl mx-auto">Anda telah berhasil masuk ke Panel Admin. Gunakan menu di samping untuk mengelola platform.</p>
                     </div>
                 </div>
 
-                <div x-show="activeView !== 'beranda'" class="text-center mt-16">
-                    <p class="text-gray-500">Fitur ini sedang dalam pengembangan.</p>
-                </div>
-
-
                 <div x-show="activeView === 'pengguna'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Manajemen Pengguna</h3>
-                
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                    <h3 class="text-gray-800 text-3xl font-medium">Manajemen Pengguna</h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mt-4 mb-4 gap-4">
                         <input x-model.debounce.300ms="usersSearchQuery" type="text" placeholder="Cari nama, email, atau username..." class="w-full sm:w-72 p-2 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500">
                         <button @click="users = []; loadUsers()" :disabled="isUsersLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isUsersLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
                             <span>Segarkan</span>
                         </button>
                     </div>
-                
                     <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
@@ -97,227 +80,55 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     <template x-if="isUsersLoading">
-                                        <template x-for="i in 5">
-                                            <tr>
-                                                <td class="py-4 px-6" colspan="5"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td>
-                                            </tr>
-                                        </template>
+                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="5"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
-                                    
                                     <template x-if="!isUsersLoading && paginatedUsers.length === 0">
                                         <tr><td colspan="5" class="text-center p-6 text-gray-500" x-text="users.length === 0 ? 'Belum ada data pengguna.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
-                                    
                                     <template x-if="!isUsersLoading">
                                         <template x-for="user in paginatedUsers" :key="user.ID">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6">
-                                                    <p class="font-semibold text-gray-800" x-text="user.Nama"></p>
-                                                    <p class="text-xs text-gray-500" x-text="user.ID"></p>
-                                                </td>
-                                                <td class="py-4 px-6">
-                                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" 
-                                                          :class="{
-                                                              'bg-green-100 text-green-800': user.Status === 'Aktif',
-                                                              'bg-yellow-100 text-yellow-800': user.Status === 'Wajib Ganti Password',
-                                                              'bg-red-100 text-red-800': user.Status === 'Diblokir'
-                                                          }" 
-                                                          x-text="user.Status"></span>
-                                                </td>
-                                                <td class="py-4 px-6 text-sm text-gray-600">
-                                                    <p x-text="user.Email"></p>
-                                                    <p class="text-xs" x-text="user.IDTelegram ? 'TG: ' + user.IDTelegram : ''"></p>
-                                                </td>
-                                                <td class="py-4 px-6 text-sm text-gray-600">
-                                                    <p>Username: <b class="font-medium text-gray-800" x-text="user.Username"></b></p>
-                                                    <p>Notif: <b class="font-medium text-gray-800" x-text="user.NotifReferensi"></b></p>
-                                                    <p>Koin: <b class="font-medium text-yellow-600" x-text="user.Koin"></b></p>
-                                                </td>
-                                                <td class="py-4 px-6">
-                                                    <button @click="openUserModal(user)" class="text-indigo-600 hover:text-indigo-900 font-semibold">Edit</button>
-                                                </td>
+                                            <tr>
+                                                <td class="py-4 px-6"><p class="font-semibold text-gray-800" x-text="user.Nama"></p><p class="text-xs text-gray-500" x-text="user.ID"></p></td>
+                                                <td class="py-4 px-6"><span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{'bg-green-100 text-green-800': user.Status === 'Aktif', 'bg-yellow-100 text-yellow-800': user.Status === 'Wajib Ganti Password', 'bg-red-100 text-red-800': user.Status === 'Diblokir'}" x-text="user.Status"></span></td>
+                                                <td class="py-4 px-6 text-sm text-gray-600"><p x-text="user.Email"></p><p class="text-xs" x-text="user.IDTelegram ? 'TG: ' + user.IDTelegram : ''"></p></td>
+                                                <td class="py-4 px-6 text-sm text-gray-600"><p>Username: <b class="font-medium text-gray-800" x-text="user.Username"></b></p><p>Notif: <b class="font-medium text-gray-800" x-text="user.NotifReferensi"></b></p><p>Koin: <b class="font-medium text-yellow-600" x-text="user.Koin"></b></p></td>
+                                                <td class="py-4 px-6"><button @click="openUserModal(user)" class="text-indigo-600 hover:text-indigo-900 font-semibold">Edit</button></td>
                                             </tr>
                                         </template>
                                     </template>
                                 </tbody>
                             </table>
                         </div>
-                
                         <div x-show="!isUsersLoading && totalUsersPages > 1" class="mt-4 flex justify-between items-center">
-                            <button @click="prevUsersPage()" :disabled="usersCurrentPage === 1" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Sebelumnya</button>
+                           <button @click="prevUsersPage()" :disabled="usersCurrentPage === 1" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Sebelumnya</button>
                             <span class="text-sm text-gray-700">Halaman <span x-text="usersCurrentPage"></span> dari <span x-text="totalUsersPages"></span></span>
                             <button @click="nextUsersPage()" :disabled="usersCurrentPage >= totalUsersPages" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Berikutnya</button>
                         </div>
                     </div>
                 </div>
-                
-                <div x-show="isUserModalOpen" @keydown.escape.window="closeUserModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" x-cloak>
-                    <div @click.outside="closeUserModal()" class="bg-white rounded-lg shadow-xl w-full max-w-lg">
-                        <div class="p-6 border-b">
-                            <h3 class="text-lg font-semibold">Edit Pengguna: <span class="font-bold text-indigo-600" x-text="userToEdit.Username"></span></h3>
-                        </div>
-                        <div class="p-6 space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Username</label>
-                                <input type="text" x-model="userToEdit.Username" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Status</label>
-                                <select x-model="userToEdit.Status" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Wajib Ganti Password">Wajib Ganti Password</option>
-                                    <option value="Diblokir">Diblokir</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Preferensi Notifikasi</label>
-                                <select x-model="userToEdit.NotifReferensi" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="email">Email</option>
-                                    <option value="telegram">Telegram</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-gray-50 flex justify-end gap-4">
-                            <button @click="closeUserModal()" class="px-4 py-2 bg-gray-200 rounded-md font-semibold text-gray-700 hover:bg-gray-300">Batal</button>
-                            <button @click="saveUserUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700">Simpan Perubahan</button>
-                        </div>
-                    </div>
+
+                <div x-show="activeView !== 'beranda' && activeView !== 'pengguna'" class="text-center mt-16">
+                    <p class="text-gray-500">Fitur ini sedang dalam pengembangan.</p>
                 </div>
-                
             </main>
         </div>
     </div>
 
-<script>
-    const API_ENDPOINT = "https://api.senrima.web.id";
+    <div x-show="isUserModalOpen" @keydown.escape.window="closeUserModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" x-cloak>
+        <div @click.outside="closeUserModal()" class="bg-white rounded-lg shadow-xl w-full max-w-lg">
+            <div class="p-6 border-b"><h3 class="text-lg font-semibold">Edit Pengguna: <span class="font-bold text-indigo-600" x-text="userToEdit.Username"></span></h3></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700">Username</label><input type="text" x-model="userToEdit.Username" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Status</label><select x-model="userToEdit.Status" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"><option value="Aktif">Aktif</option><option value="Wajib Ganti Password">Wajib Ganti Password</option><option value="Diblokir">Diblokir</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700">Preferensi Notifikasi</label><select x-model="userToEdit.NotifReferensi" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"><option value="email">Email</option><option value="telegram">Telegram</option></select></div>
+            </div>
+            <div class="p-4 bg-gray-50 flex justify-end gap-4">
+                <button @click="closeUserModal()" class="px-4 py-2 bg-gray-200 rounded-md font-semibold text-gray-700 hover:bg-gray-300">Batal</button>
+                <button @click="saveUserUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
 
-    function adminDashboardApp() {
-        return {
-            isLoading: true,
-            isSidebarOpen: false,
-            activeView: 'beranda',
-            adminSessionToken: null,
-            adminData: {},
-
-            // State untuk Manajemen Pengguna
-            users: [], 
-            isUsersLoading: false, 
-            usersSearchQuery: '',
-            usersCurrentPage: 1, 
-            usersItemsPerPage: 10,
-            isUserModalOpen: false, 
-            userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
-
-            async init() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token');
-                if (!token) {
-                    alert('Akses tidak sah. Token admin tidak ditemukan.');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                this.adminSessionToken = token;
-                
-                try {
-                    // Panggil server untuk verifikasi sesi awal
-                    const response = await this.callApi({ action: 'verifySession' });
-                    if (response.status === 'success') {
-                        this.adminData = response.adminData;
-                        this.isLoading = false;
-                    } else {
-                        throw new Error(response.message);
-                    }
-                } catch (error) {
-                    alert('Sesi admin gagal diverifikasi: ' + error.message);
-                    window.location.href = 'index.html';
-                }
-            },
-
-            // Computed Properties & Fungsi untuk Manajemen Pengguna
-            get filteredUsers() {
-                if (!this.usersSearchQuery) return this.users;
-                this.usersCurrentPage = 1;
-                const search = this.usersSearchQuery.toLowerCase();
-                return this.users.filter(user => 
-                    user.Nama.toLowerCase().includes(search) || 
-                    user.Email.toLowerCase().includes(search) ||
-                    user.Username.toLowerCase().includes(search)
-                );
-            },
-            get paginatedUsers() {
-                const start = (this.usersCurrentPage - 1) * this.usersItemsPerPage;
-                return this.filteredUsers.slice(start, start + this.usersItemsPerPage);
-            },
-            get totalUsersPages() {
-                return Math.ceil(this.filteredUsers.length / this.usersItemsPerPage);
-            },
-            nextUsersPage() { if (this.usersCurrentPage < this.totalUsersPages) this.usersCurrentPage++; },
-            prevUsersPage() { if (this.usersCurrentPage > 1) this.usersCurrentPage--; },
-
-            async loadUsers() {
-                if (this.users.length > 0) return;
-                this.isUsersLoading = true;
-                const response = await this.callApi({ action: 'adminGetAllUsers' });
-                this.isUsersLoading = false;
-                if (response.status === 'success') {
-                    this.users = response.data || [];
-                }
-            },
-
-            openUserModal(user) {
-                this.userToEdit = {
-                    ID: user.ID,
-                    Status: user.Status,
-                    Username: user.Username,
-                    NotifReferensi: user.NotifReferensi
-                };
-                this.isUserModalOpen = true;
-            },
-            closeUserModal() {
-                this.isUserModalOpen = false;
-            },
-            async saveUserUpdate() {
-                const response = await this.callApi({ 
-                    action: 'adminUpdateUser', 
-                    payload: this.userToEdit 
-                });
-
-                if (response.status === 'success') {
-                    alert('Data berhasil diperbarui!');
-                    this.closeUserModal();
-                    this.users = []; 
-                    await this.loadUsers();
-                } else {
-                    alert('Gagal memperbarui: ' + response.message);
-                }
-            }, // <-- INI KOMA YANG HILANG
-
-            // Fungsi helper untuk API
-            async callApi(payload) {
-                const headers = { 'Content-Type': 'application/json' };
-                // Body dikirim dalam format yang bisa dibaca oleh e.postData.contents
-                const body = JSON.stringify({
-                    kontrol: 'admin',
-                    token: this.adminSessionToken, // Kirim token di dalam body
-                    action: payload.action,
-                    payload: payload.payload || {}
-                });
-                const response = await fetch(API_ENDPOINT, { method: 'POST', headers, body });
-                return await response.json();
-            },
-
-            // Fungsi logout
-            logout() {
-                console.log('Logout admin...');
-                window.location.href = 'index.html';
-            }
-        };
-    }
-</script>
+    <script src="js/admin.js"></script>
 </body>
-
 </html>
-
-
-
-
