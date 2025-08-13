@@ -109,6 +109,7 @@ function adminDashboardApp() {
                 if (response.status === 'success') {
                     this.adminData = response.adminData;
                     this.isLoading = false;
+                    this.loadTemplates();
                 } else {
                     throw new Error(response.message || 'Sesi admin tidak valid.');
                 }
@@ -227,7 +228,7 @@ function adminDashboardApp() {
             });
             alert(response.message);
             if (response.status === 'success') {
-                this.broadcast.channel = { subjek: '', pesanTeks: '' }; // Reset form
+                this.broadcast.channel = { subjek: '', pesanTeks: '', pesanHtml: '' };
             }
         },
 
@@ -263,6 +264,7 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
 
