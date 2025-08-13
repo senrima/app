@@ -89,6 +89,9 @@ function adminDashboardApp() {
             channel: { subjek: '', pesanTeks: '' }
         },
 
+        templates: { dashboard: [], channel: [] }, // Ubah menjadi objek
+        selectedTemplate: '',
+
         // Fungsi inisialisasi
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -228,6 +231,31 @@ function adminDashboardApp() {
             }
         },
 
+        async loadTemplates() {
+            const response = await this.callApi({ action: 'getTemplates' });
+            if (response.status === 'success') {
+                this.templates = response.data; // Langsung simpan objeknya
+            }
+        },
+
+        applyTemplate() {
+            const [type, name] = this.selectedTemplate.split('|');
+            if (!type || !name) return;
+    
+            const template = this.templates[type].find(t => t.NamaTemplate === name);
+            if (!template) return;
+    
+            if (type === 'dashboard') {
+                this.broadcast.dashboard.judul = template.Judul;
+                this.broadcast.dashboard.pesan = template.Pesan;
+                this.broadcast.dashboard.link = template.Link;
+            } else if (type === 'channel') {
+                this.broadcast.channel.subjek = template['Judul/Subjek'];
+                this.broadcast.channel.pesanHtml = template.PesanHTML;
+                this.broadcast.channel.pesanTeks = template.PesanTeks;
+            }
+        },
+
         // Fungsi logout
         logout() {
             console.log('Logout admin...');
@@ -235,5 +263,6 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
