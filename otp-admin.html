@@ -27,7 +27,7 @@
             
             <button type="submit" :disabled="isLoading" class="w-full bg-yellow-500 text-gray-900 py-3 px-4 rounded-lg hover:bg-yellow-600 font-semibold transition flex justify-center items-center">
                 <span x-show="!isLoading">Verifikasi & Masuk</span>
-                <svg x-show="isLoading" class="animate-spin h-5 w-5" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <svg x-show="isLoading" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0_0_24_24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </button>
         </form>
         
@@ -36,68 +36,6 @@
         </div>
     </div>
 
-    <script>
-        // Definisikan URL API Anda di sini
-        const API_ENDPOINT = "https://api.senrima.web.id";
-
-        function adminOtpApp() {
-            return {
-                isLoading: false,
-                otp: '',
-                status: { message: '', success: false },
-                
-                async submit() {
-                    this.isLoading = true;
-                    this.status = { message: '', success: false };
-                    
-                    const email = sessionStorage.getItem('adminEmailForOTP');
-                    
-                    if (!email) {
-                        this.status.message = 'Sesi admin tidak ditemukan. Silakan minta akses ulang dari dasbor.';
-                        this.status.success = false;
-                        this.isLoading = false;
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(API_ENDPOINT, {
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                kontrol: 'proteksi', 
-                                action: 'verifyAdminOtp', // <-- Aksi baru untuk verifikasi admin
-                                payload: { 
-                                    email: email, 
-                                    otp: this.otp 
-                                }
-                            })
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.status === 'success' && result.token) {
-                            this.status.message = 'Verifikasi berhasil! Mengarahkan ke dasbor admin...';
-                            this.status.success = true;
-                            
-                            // Hapus email dari session storage setelah berhasil
-                            sessionStorage.removeItem('adminEmailForOTP');
-                            
-                            // Arahkan ke dasbor admin dengan token sesi yang baru
-                            window.location.href = `Dashboard-admin.html?token=${result.token}`;
-                        } else {
-                           this.status.message = result.message || 'Terjadi kesalahan.';
-                           this.status.success = false;
-                        }
-
-                    } catch (e) {
-                        this.status.message = 'Gagal terhubung ke server.';
-                        this.status.success = false;
-                    } finally {
-                        this.isLoading = false;
-                    }
-                }
-            };
-        }
-    </script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
