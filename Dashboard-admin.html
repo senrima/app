@@ -122,29 +122,19 @@
 
 
                 <div x-show="activeView === 'notifikasi'">
-                    <h3 class="text-gray-800 text-3xl font-medium">Kirim Notifikasi Massal</h3>
-                
-                    <div class="my-8 max-w-sm"> <label for="template-select" class="block text-sm font-medium text-gray-700">Gunakan Template</label>
-                        <select id="template-select" x-model="selectedTemplate" @change="applyTemplate()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option value="">Pilih Template Pesan...</option>
-                            
-                            <optgroup label="Template Dasbor">
-                                <template x-for="template in templates.dashboard" :key="'dash-' + template.NamaTemplate">
-                                    <option :value="'dashboard|' + template.NamaTemplate" x-text="template.NamaTemplate"></option>
-                                </template>
-                            </optgroup>
-                            
-                            <optgroup label="Template Email / Telegram">
-                                <template x-for="template in templates.channel" :key="'chan-' + template.NamaTemplate">
-                                    <option :value="'channel|' + template.NamaTemplate" x-text="template.NamaTemplate"></option>
-                                </template>
-                            </optgroup>
-                        </select>
-                    </div>
 
                     <div x-show="notifSubView === 'dashboard'">
                         <h3 class="text-gray-800 text-3xl font-medium">Kirim Notifikasi ke Dasbor Pengguna</h3>
                         <div class="mt-8 bg-white p-6 rounded-xl shadow-lg max-w-2xl">
+                            <div class="mb-6">
+                                <label for="template-dashboard" class="block text-sm font-medium text-gray-700">Gunakan Template</label>
+                                <select id="template-dashboard" @change="selectedTemplate = `dashboard|${$event.target.value}`; applyTemplate()" class="mt-1 block w-full ... rounded-md">
+                                    <option value="">Pilih Template Dasbor...</option>
+                                    <template x-for="template in templates.dashboard" :key="template.NamaTemplate">
+                                        <option :value="template.NamaTemplate" x-text="template.NamaTemplate"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium">Judul Notifikasi</label>
@@ -165,25 +155,42 @@
                         </div>
                     </div>
                 
+
                     <div x-show="notifSubView === 'channel'">
                         <h3 class="text-gray-800 text-3xl font-medium">Broadcast via Email / Telegram</h3>
                         <div class="mt-8 bg-white p-6 rounded-xl shadow-lg max-w-2xl">
+                            <div class="mb-6">
+                                <label for="template-channel" class="block text-sm font-medium text-gray-700">Gunakan Template</label>
+                                <select id="template-channel" @change="selectedTemplate = `channel|${$event.target.value}`; applyTemplate()" class="mt-1 block w-full ... rounded-md">
+                                    <option value="">Pilih Template Email/Telegram...</option>
+                                    <template x-for="template in templates.channel" :key="template.NamaTemplate">
+                                        <option :value="template.NamaTemplate" x-text="template.NamaTemplate"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium">Subjek / Judul Pesan</label>
-                                    <input type="text" x-model="broadcast.channel.subjek" class="mt-1 w-full p-2 border rounded-md" placeholder="Contoh: Update Penting dari S-Tools ID">
+                                    <label for="channel-subjek" class="block text-sm font-medium text-gray-700">Subjek / Judul Pesan</label>
+                                    <input id="channel-subjek" type="text" x-model="broadcast.channel.subjek" class="mt-1 w-full p-2 border border-gray-300 rounded-md" placeholder="Contoh: Update Penting dari S-Tools ID">
                                 </div>
+                    
                                 <div>
-                                    <label class="block text-sm font-medium">Isi Pesan</label>
-                                    <textarea x-model="broadcast.channel.pesanTeks" rows="6" class="mt-1 w-full p-2 border rounded-md" placeholder="Halo {nama},\nKami ingin memberitahukan bahwa..."></textarea>
-                                    <p class="text-xs text-gray-500 mt-1">Pesan ini akan dikirim ke channel pilihan pengguna (Email atau Telegram).</p>
+                                    <label for="channel-pesan-html" class="block text-sm font-medium text-gray-700">Isi Pesan (HTML untuk Email)</label>
+                                    <textarea id="channel-pesan-html" x-model="broadcast.channel.pesanHtml" rows="6" class="mt-1 w-full p-2 border border-gray-300 rounded-md font-mono text-sm" placeholder="Gunakan tag HTML di sini. Contoh: <b>teks tebal</b>"></textarea>
                                 </div>
+                                
+                                <div>
+                                    <label for="channel-pesan-teks" class="block text-sm font-medium text-gray-700">Isi Pesan (Teks untuk Telegram)</label>
+                                    <textarea id="channel-pesan-teks" x-model="broadcast.channel.pesanTeks" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded-md" placeholder="Gunakan format teks biasa atau Markdown. Contoh: *teks tebal*"></textarea>
+                                </div>
+                    
                                 <div class="text-right">
                                     <button @click="sendChannelBroadcast()" class="px-6 py-2 bg-yellow-500 text-gray-900 font-semibold rounded-lg hover:bg-yellow-600">Kirim Broadcast</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
 
                 
@@ -212,6 +219,7 @@
     <script src="js/admin.js"></script>
 </body>
 </html>
+
 
 
 
