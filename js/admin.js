@@ -157,12 +157,14 @@ function adminDashboardApp() {
         openUserModal(user) {
             this.userToEdit = {
                 ID: user.ID,
+                Nama: user.Nama, // <-- TAMBAHKAN BARIS INI
                 Status: user.Status,
                 Username: user.Username,
                 NotifReferensi: user.NotifReferensi
             };
             this.isUserModalOpen = true;
         },
+        
         closeUserModal() {
             this.isUserModalOpen = false;
         },
@@ -189,3 +191,4 @@ function adminDashboardApp() {
         }
     };
 }
+
