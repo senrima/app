@@ -1,6 +1,70 @@
-// Definisikan URL API Anda di sini
+// ===============================================================
+// == JAVASCRIPT UNTUK SEMUA HALAMAN ADMIN ==
+// ===============================================================
+
 const API_ENDPOINT = "https://api.senrima.web.id";
 
+// ---------------------------------------------------------------
+// -- Otak untuk halaman otp-admin.html
+// ---------------------------------------------------------------
+function adminOtpApp() {
+    return {
+        isLoading: false,
+        otp: '',
+        status: { message: '', success: false },
+        
+        async submit() {
+            this.isLoading = true;
+            this.status = { message: '', success: false };
+            
+            const email = sessionStorage.getItem('adminEmailForOTP');
+            
+            if (!email) {
+                this.status.message = 'Sesi admin tidak ditemukan. Silakan minta akses ulang dari dasbor.';
+                this.status.success = false;
+                this.isLoading = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        kontrol: 'proteksi', 
+                        action: 'verifyAdminOtp',
+                        payload: { email: email, otp: this.otp }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.token) {
+                    this.status.message = 'Verifikasi berhasil! Mengarahkan ke dasbor admin...';
+                    this.status.success = true;
+                    
+                    sessionStorage.removeItem('adminEmailForOTP');
+                    
+                    window.location.href = `Dashboard-admin.html?token=${result.token}`;
+                } else {
+                   this.status.message = result.message || 'Terjadi kesalahan.';
+                   this.status.success = false;
+                }
+
+            } catch (e) {
+                this.status.message = 'Gagal terhubung ke server.';
+                this.status.success = false;
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    };
+}
+
+
+// ---------------------------------------------------------------
+// -- Otak untuk halaman Dashboard-admin.html
+// ---------------------------------------------------------------
 function adminDashboardApp() {
     return {
         // State Utama
@@ -81,7 +145,7 @@ function adminDashboardApp() {
         prevUsersPage() { if (this.usersCurrentPage > 1) this.usersCurrentPage--; },
 
         async loadUsers() {
-            if (this.users.length > 0) return; // Cache sederhana, gunakan tombol refresh untuk muat ulang
+            if (this.users.length > 0) return;
             this.isUsersLoading = true;
             const response = await this.callApi({ action: 'adminGetAllUsers' });
             this.isUsersLoading = false;
@@ -95,7 +159,7 @@ function adminDashboardApp() {
                 ID: user.ID,
                 Status: user.Status,
                 Username: user.Username,
-                NotifReferensi: user.NotifReferensi // Pastikan nama kolom ini benar di GAS Anda
+                NotifReferensi: user.NotifReferensi
             };
             this.isUserModalOpen = true;
         },
@@ -111,7 +175,6 @@ function adminDashboardApp() {
             if (response.status === 'success') {
                 alert('Data berhasil diperbarui!');
                 this.closeUserModal();
-                // Kosongkan array users dan panggil loadUsers() untuk refresh data
                 this.users = []; 
                 await this.loadUsers();
             } else {
