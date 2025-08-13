@@ -86,7 +86,7 @@ function adminDashboardApp() {
         notifSubView: 'dashboard', // Submenu default
         broadcast: {
             dashboard: { judul: '', pesan: '', link: '' },
-            channel: { subjek: '', pesanTeks: '' }
+            channel: { subjek: '', pesanTeks: '', pesanHtml: '' }
         },
 
         templates: { dashboard: [], channel: [] }, // Ubah menjadi objek
@@ -264,6 +264,7 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
 
