@@ -20,21 +20,29 @@ function dashboardApp() {
         activeSubView: 'profile',
         isAssetMenuOpen: false,
         assetSubView: 'produk',
-
         riwayatPembelian: [],
         isPembelianLoading: false,
         pembelianSearchQuery: '',
         pembelianCurrentPage: 1,
-        pembelianItemsPerPage: 5, // Tampilkan 5 item per halaman
+        pembelianItemsPerPage: 5,
         dashboardSummary: {},
-
-        // --- STATE BARU UNTUK RIWAYAT KOIN ---
         historyKoin: [],
         isKoinLoading: false,
         koinSearchQuery: '',
         koinCurrentPage: 1,
-        koinItemsPerPage: 10, // Tampilkan 10 item per halaman
-        // --- AKHIR STATE BARU ---
+        koinItemsPerPage: 10,
+        
+        aksesProduk: [],
+        isAksesProdukLoading: false,
+        aksesProdukSearchQuery: '',
+        aksesProdukCurrentPage: 1,
+        aksesProdukItemsPerPage: 10,
+    
+        bonusPengguna: [],
+        isBonusPenggunaLoading: false,
+        bonusPenggunaSearchQuery: '',
+        bonusPenggunaCurrentPage: 1,
+        bonusPenggunaItemsPerPage: 10,
         
         modal: {
             isOpen: false,
@@ -45,6 +53,73 @@ function dashboardApp() {
             confirmText: 'Ya, Lanjutkan',
             cancelText: 'Batal',
             onConfirm: () => {}
+        },
+
+        get filteredAksesProduk() {
+            if (!this.aksesProdukSearchQuery.trim()) {
+                return this.aksesProduk;
+            }
+            this.aksesProdukCurrentPage = 1;
+            const searchLower = this.aksesProdukSearchQuery.toLowerCase();
+            return this.aksesProduk.filter(item => 
+                item.IDProduk.toLowerCase().includes(searchLower) ||
+                item.Status.toLowerCase().includes(searchLower)
+            );
+        },
+        
+        get paginatedAksesProduk() {
+            const start = (this.aksesProdukCurrentPage - 1) * this.aksesProdukItemsPerPage;
+            const end = start + this.aksesProdukItemsPerPage;
+            return this.filteredAksesProduk.slice(start, end);
+        },
+        
+        get totalAksesProdukPages() {
+            return Math.ceil(this.filteredAksesProduk.length / this.aksesProdukItemsPerPage);
+        },
+        
+        nextAksesProdukPage() {
+            if (this.aksesProdukCurrentPage < this.totalAksesProdukPages) {
+                this.aksesProdukCurrentPage++;
+            }
+        },
+        
+        prevAksesProdukPage() {
+            if (this.aksesProdukCurrentPage > 1) {
+                this.aksesProdukCurrentPage--;
+            }
+        },
+        
+        get filteredBonusPengguna() {
+            if (!this.bonusPenggunaSearchQuery.trim()) {
+                return this.bonusPengguna;
+            }
+            this.bonusPenggunaCurrentPage = 1;
+            const searchLower = this.bonusPenggunaSearchQuery.toLowerCase();
+            return this.bonusPengguna.filter(item => 
+                item.IDBonus.toLowerCase().includes(searchLower)
+            );
+        },
+        
+        get paginatedBonusPengguna() {
+            const start = (this.bonusPenggunaCurrentPage - 1) * this.bonusPenggunaItemsPerPage;
+            const end = start + this.bonusPenggunaItemsPerPage;
+            return this.filteredBonusPengguna.slice(start, end);
+        },
+        
+        get totalBonusPenggunaPages() {
+            return Math.ceil(this.filteredBonusPengguna.length / this.bonusPenggunaItemsPerPage);
+        },
+        
+        nextBonusPenggunaPage() {
+            if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) {
+                this.bonusPenggunaCurrentPage++;
+            }
+        },
+        
+        prevBonusPenggunaPage() {
+            if (this.bonusPenggunaCurrentPage > 1) {
+                this.bonusPenggunaCurrentPage--;
+            }
         },
 
         get filteredPembelian() {
@@ -189,6 +264,30 @@ function dashboardApp() {
 
         // --- FUNGSI NOTIFIKASI BARU ---
 
+        async loadBonusPengguna() {
+            // Selalu muat data baru setiap kali dipanggil
+            this.isBonusPenggunaLoading = true;
+            const response = await this.callApi({ action: 'getBonusPengguna' });
+            if (response.status === 'success') {
+                this.bonusPengguna = response.data || [];
+            } else {
+                this.bonusPengguna = []; // Kosongkan jika gagal
+            }
+            this.isBonusPenggunaLoading = false;
+        },
+
+        async loadAksesProduk() {
+            // Selalu muat data baru setiap kali dipanggil
+            this.isAksesProdukLoading = true;
+            const response = await this.callApi({ action: 'getAksesProduk' });
+            if (response.status === 'success') {
+                this.aksesProduk = response.data || [];
+            } else {
+                this.aksesProduk = []; // Kosongkan jika gagal
+            }
+            this.isAksesProdukLoading = false;
+        },
+        
         async loadNotifications() {
           const response = await this.callApi({ action: 'getnotifikasi' });
         
@@ -399,6 +498,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
