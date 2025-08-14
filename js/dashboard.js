@@ -243,12 +243,10 @@ function dashboardApp() {
         // --- FUNGSI PEMUATAN DATA (ASET & BONUS) ---
 
         async loadDigitalAssets() {
-            // Selalu segarkan data, tidak menggunakan cache
+            if (this.digitalAssets.length > 0) return;
             this.isAssetsLoading = true;
             const response = await this.callApi({ action: 'getAsetDigital' });
-            if (response.status === 'success') {
-                this.digitalAssets = response.data || [];
-            }
+            if (response.status === 'success') {this.digitalAssets = response.data || [];}
             this.isAssetsLoading = false;
         },
 
@@ -256,8 +254,7 @@ function dashboardApp() {
             if (this.bonuses.length > 0) return;
             this.isBonusesLoading = true;
             const response = await this.callApi({ action: 'getBonus' });
-            if (response.status === 'success') { this.bonuses = response.data; } 
-            else { this.showNotification('Gagal memuat Bonus.', true); }
+            if (response.status === 'success') { this.bonuses = response.data|| []; } 
             this.isBonusesLoading = false;
         },
 
@@ -402,6 +399,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
