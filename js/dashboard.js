@@ -243,11 +243,12 @@ function dashboardApp() {
         // --- FUNGSI PEMUATAN DATA (ASET & BONUS) ---
 
         async loadDigitalAssets() {
-            if (this.digitalAssets.length > 0) return;
+            // Selalu segarkan data, tidak menggunakan cache
             this.isAssetsLoading = true;
             const response = await this.callApi({ action: 'getAsetDigital' });
-            if (response.status === 'success') { this.digitalAssets = response.data; } 
-            else { this.showNotification('Gagal memuat Aset Digital.', true); }
+            if (response.status === 'success') {
+                this.digitalAssets = response.data || [];
+            }
             this.isAssetsLoading = false;
         },
 
@@ -401,6 +402,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
