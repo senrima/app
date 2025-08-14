@@ -554,6 +554,7 @@
                     </div>
                 </div>
                 
+
                 <div x-show="activeView === 'aksesProduk'">
                     <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Akses Produk Anda</h3>
                 
@@ -579,11 +580,9 @@
                                     <template x-if="isAksesProdukLoading">
                                         <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="3"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
-                                    
                                     <template x-if="!isAksesProdukLoading && paginatedAksesProduk.length === 0">
                                         <tr><td colspan="3" class="text-center p-6 text-gray-500" x-text="aksesProduk.length === 0 ? 'Anda belum memiliki akses produk.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
-                                    
                                     <template x-if="!isAksesProdukLoading">
                                         <template x-for="item in paginatedAksesProduk" :key="item.IDProduk">
                                             <tr class="hover:bg-gray-50">
@@ -598,7 +597,6 @@
                                 </tbody>
                             </table>
                         </div>
-                
                         <div x-show="!isAksesProdukLoading && totalAksesProdukPages > 1" class="mt-4 flex justify-between items-center">
                             <button @click="prevAksesProdukPage()" :disabled="aksesProdukCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
                             <span class="text-sm">Halaman <span x-text="aksesProdukCurrentPage"></span> dari <span x-text="totalAksesProdukPages"></span></span>
@@ -606,6 +604,7 @@
                         </div>
                     </div>
                 </div>
+                
                 
                 <div x-show="activeView === 'bonusPengguna'">
                     <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Bonus Anda</h3>
@@ -631,11 +630,9 @@
                                     <template x-if="isBonusPenggunaLoading">
                                         <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="2"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
-                                    
                                     <template x-if="!isBonusPenggunaLoading && paginatedBonusPengguna.length === 0">
                                         <tr><td colspan="2" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
-                                    
                                     <template x-if="!isBonusPenggunaLoading">
                                         <template x-for="item in paginatedBonusPengguna" :key="item.IDBonus">
                                             <tr class="hover:bg-gray-50">
@@ -647,7 +644,6 @@
                                 </tbody>
                             </table>
                         </div>
-                
                         <div x-show="!isBonusPenggunaLoading && totalBonusPenggunaPages > 1" class="mt-4 flex justify-between items-center">
                             <button @click="prevBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
                             <span class="text-sm">Halaman <span x-text="bonusPenggunaCurrentPage"></span> dari <span x-text="totalBonusPenggunaPages"></span></span>
@@ -655,6 +651,10 @@
                         </div>
                     </div>
                 </div>
+                
+
+
+                
             </main>
         </div>
     </div>
@@ -685,4 +685,5 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
