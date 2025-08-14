@@ -223,7 +223,7 @@ function adminDashboardApp() {
                 payload: {
                     subjek: this.broadcast.channel.subjek,
                     pesanTeks: this.broadcast.channel.pesanTeks,
-                    pesanHtml: this.this.broadcast.channel.pesanHtml || this.broadcast.channel.pesanTeks
+                    pesanHtml: this.broadcast.channel.pesanHtml || this.broadcast.channel.pesanTeks
                 }
             });
             alert(response.message);
@@ -264,6 +264,7 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
 
