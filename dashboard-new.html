@@ -644,9 +644,11 @@
                                     <template x-if="isBonusPenggunaLoading">
                                         <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="2"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
+                                    
                                     <template x-if="!isBonusPenggunaLoading && paginatedBonusPengguna.length === 0">
                                         <tr><td colspan="2" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
+                                    
                                     <template x-if="!isBonusPenggunaLoading">
                                         <template x-for="item in paginatedBonusPengguna" :key="item.IDBonus">
                                             <tr class="hover:bg-gray-50">
@@ -658,6 +660,7 @@
                                 </tbody>
                             </table>
                         </div>
+                
                         <div x-show="!isBonusPenggunaLoading && totalBonusPenggunaPages > 1" class="mt-4 flex justify-between items-center">
                             <button @click="prevBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
                             <span class="text-sm">Halaman <span x-text="bonusPenggunaCurrentPage"></span> dari <span x-text="totalBonusPenggunaPages"></span></span>
@@ -699,6 +702,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
