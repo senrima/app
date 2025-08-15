@@ -321,11 +321,18 @@ function dashboardApp() {
         },
         nextAksesProdukPage() { if (this.aksesProdukCurrentPage < this.totalAksesProdukPages) this.aksesProdukCurrentPage++; },
         prevAksesProdukPage() { if (this.aksesProdukCurrentPage > 1) this.aksesProdukCurrentPage--; },
+        
         async loadAksesProduk() {
             this.isAksesProdukLoading = true;
             const response = await this.callApi({ action: 'getAksesProduk' });
-            if (response.status === 'success') this.aksesProduk = response.data || [];
-            else this.aksesProduk = [];
+            
+            // ▼▼▼ PERBAIKAN DI SINI ▼▼▼
+            // Cek untuk 'success' DAN 'sukses' agar lebih aman
+            if (response && (response.status === 'success' || response.status === 'sukses')) {
+                this.aksesProduk = response.data || [];
+            } else {
+                this.aksesProduk = []; // Kosongkan jika gagal
+            }
             this.isAksesProdukLoading = false;
         },
 
@@ -366,10 +373,12 @@ function dashboardApp() {
         },
         
         async loadBonusPengguna() {
-            // Selalu muat data baru setiap kali dipanggil
             this.isBonusPenggunaLoading = true;
             const response = await this.callApi({ action: 'getBonusPengguna' });
-            if (response.status === 'success') {
+        
+            // ▼▼▼ PERBAIKAN DI SINI ▼▼▼
+            // Cek untuk 'success' DAN 'sukses' agar lebih aman
+            if (response && (response.status === 'success' || response.status === 'sukses')) {
                 this.bonusPengguna = response.data || [];
             } else {
                 this.bonusPengguna = []; // Kosongkan jika gagal
@@ -469,5 +478,6 @@ function dashboardApp() {
         }
     };
 }
+
 
 
