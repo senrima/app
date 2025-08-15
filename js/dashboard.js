@@ -333,27 +333,47 @@ function dashboardApp() {
         // == LOGIKA TABEL DETAIL BONUS PENGGUNA
         // ===============================================================
         get filteredBonusPengguna() {
-            if (!this.bonusPenggunaSearchQuery.trim()) return this.bonusPengguna;
+            if (!this.bonusPenggunaSearchQuery.trim()) {
+                return this.bonusPengguna;
+            }
             this.bonusPenggunaCurrentPage = 1;
             const searchLower = this.bonusPenggunaSearchQuery.toLowerCase();
             return this.bonusPengguna.filter(item => 
                 item.IDBonus.toLowerCase().includes(searchLower)
             );
         },
+        
         get paginatedBonusPengguna() {
             const start = (this.bonusPenggunaCurrentPage - 1) * this.bonusPenggunaItemsPerPage;
-            return this.filteredBonusPengguna.slice(start, start + this.bonusPenggunaItemsPerPage);
+            const end = start + this.bonusPenggunaItemsPerPage;
+            return this.filteredBonusPengguna.slice(start, end);
         },
+        
         get totalBonusPenggunaPages() {
             return Math.ceil(this.filteredBonusPengguna.length / this.bonusPenggunaItemsPerPage);
         },
-        nextBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) this.bonusPenggunaCurrentPage++; },
-        prevBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage > 1) this.bonusPenggunaCurrentPage--; },
+        
+        nextBonusPenggunaPage() {
+            if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) {
+                this.bonusPenggunaCurrentPage++;
+            }
+        },
+        
+        prevBonusPenggunaPage() {
+            if (this.bonusPenggunaCurrentPage > 1) {
+                this.bonusPenggunaCurrentPage--;
+            }
+        },
+        
         async loadBonusPengguna() {
+            // Selalu muat data baru setiap kali dipanggil
             this.isBonusPenggunaLoading = true;
             const response = await this.callApi({ action: 'getBonusPengguna' });
-            if (response.status === 'success') this.bonusPengguna = response.data || [];
-            else this.bonusPengguna = [];
+            if (response.status === 'success') {
+                this.bonusPengguna = response.data || [];
+            } else {
+                this.bonusPengguna = []; // Kosongkan jika gagal
+            }
             this.isBonusPenggunaLoading = false;
         },
 
@@ -449,4 +469,5 @@ function dashboardApp() {
         }
     };
 }
+
 
