@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - S-Tools ID</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F9FAFB; color: #1F2937; }
+        fieldset:disabled { opacity: 0.5; pointer-events: none; }
+        button:disabled { cursor: not-allowed; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <header class="bg-white/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
+        </header>
+
+    <main>
+        <section class="py-12 md:py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900">Checkout</h1>
+                    <p id="page-subtitle" class="text-lg text-gray-600 mt-2">Selesaikan pesanan Anda dalam beberapa langkah mudah.</p>
+                </div>
+                <div id="checkout-content" class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Ringkasan Pesanan</h2>
+                        <div id="cart-items-summary" class="space-y-4 mb-6">
+                            </div>
+                        <div class="mb-6">
+                            </div>
+                        <div class="border-t border-gray-200 pt-6 space-y-4">
+                            </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Detail Pembayaran</h2>
+                        <form id="payment-form">
+                            <div class="space-y-6">
+                                <fieldset id="user-details-step">
+                                    </fieldset>
+                                <fieldset id="token-verification-step" class="hidden">
+                                    </fieldset>
+                                <div id="verification-success-message" class="hidden">
+                                    <p class="text-center text-green-600 bg-green-100 p-4 rounded-lg font-semibold">Akun ini sudah terverifikasi.</p>
+                                </div>
+                                <fieldset id="payment-method-step" disabled>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Metode Pembayaran</label>
+                                        <div id="payment-options-container" class="space-y-3">
+                                            </div>
+                                    </div>
+                                    <button type="submit" id="pay-now-btn" class="w-full ..." disabled>Bayar Sekarang</button>
+                                </fieldset>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-900 ...">
+        </footer>
+
+    <script src="keranjang.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>
