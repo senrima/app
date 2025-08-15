@@ -38,8 +38,10 @@ function dashboardApp() {
         // State Produk & Bonus Utama
         digitalAssets: [],
         isAssetsLoading: false,
+        digitalAssetsSearchQuery: '',
         bonuses: [],
         isBonusesLoading: false,
+        bonusesSearchQuery: '',
 
         // State Halaman Akun
         passwordFields: { old: '', new: '' },
@@ -209,6 +211,22 @@ function dashboardApp() {
                 this.bonuses = response.data || [];
             }
             this.isBonusesLoading = false;
+        },
+
+        get filteredDigitalAssets() {
+            if (!this.digitalAssetsSearchQuery.trim()) return this.digitalAssets;
+            const search = this.digitalAssetsSearchQuery.toLowerCase();
+            return this.digitalAssets.filter(asset => 
+                asset.NamaAset.toLowerCase().includes(search)
+            );
+        },
+        
+        get filteredBonuses() {
+            if (!this.bonusesSearchQuery.trim()) return this.bonuses;
+            const search = this.bonusesSearchQuery.toLowerCase();
+            return this.bonuses.filter(bonus => 
+                bonus.Judul.toLowerCase().includes(search)
+            );
         },
 
         // ===============================================================
@@ -431,3 +449,4 @@ function dashboardApp() {
         }
     };
 }
+
