@@ -321,69 +321,46 @@ function dashboardApp() {
         },
         nextAksesProdukPage() { if (this.aksesProdukCurrentPage < this.totalAksesProdukPages) this.aksesProdukCurrentPage++; },
         prevAksesProdukPage() { if (this.aksesProdukCurrentPage > 1) this.aksesProdukCurrentPage--; },
-        
         async loadAksesProduk() {
             this.isAksesProdukLoading = true;
             const response = await this.callApi({ action: 'getAksesProduk' });
-            
-            // ▼▼▼ PERBAIKAN DI SINI ▼▼▼
-            // Cek untuk 'success' DAN 'sukses' agar lebih aman
+            this.isAksesProdukLoading = false;
             if (response && (response.status === 'success' || response.status === 'sukses')) {
                 this.aksesProduk = response.data || [];
             } else {
-                this.aksesProduk = []; // Kosongkan jika gagal
+                this.aksesProduk = [];
             }
-            this.isAksesProdukLoading = false;
         },
-
+        
         // ===============================================================
         // == LOGIKA TABEL DETAIL BONUS PENGGUNA
         // ===============================================================
         get filteredBonusPengguna() {
-            if (!this.bonusPenggunaSearchQuery.trim()) {
-                return this.bonusPengguna;
-            }
+            if (!this.bonusPenggunaSearchQuery.trim()) return this.bonusPengguna;
             this.bonusPenggunaCurrentPage = 1;
             const searchLower = this.bonusPenggunaSearchQuery.toLowerCase();
             return this.bonusPengguna.filter(item => 
                 item.IDBonus.toLowerCase().includes(searchLower)
             );
         },
-        
         get paginatedBonusPengguna() {
             const start = (this.bonusPenggunaCurrentPage - 1) * this.bonusPenggunaItemsPerPage;
-            const end = start + this.bonusPenggunaItemsPerPage;
-            return this.filteredBonusPengguna.slice(start, end);
+            return this.filteredBonusPengguna.slice(start, start + this.bonusPenggunaItemsPerPage);
         },
-        
         get totalBonusPenggunaPages() {
             return Math.ceil(this.filteredBonusPengguna.length / this.bonusPenggunaItemsPerPage);
         },
-        
-        nextBonusPenggunaPage() {
-            if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) {
-                this.bonusPenggunaCurrentPage++;
-            }
-        },
-        
-        prevBonusPenggunaPage() {
-            if (this.bonusPenggunaCurrentPage > 1) {
-                this.bonusPenggunaCurrentPage--;
-            }
-        },
-        
+        nextBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) this.bonusPenggunaCurrentPage++; },
+        prevBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage > 1) this.bonusPenggunaCurrentPage--; },
         async loadBonusPengguna() {
             this.isBonusPenggunaLoading = true;
             const response = await this.callApi({ action: 'getBonusPengguna' });
-        
-            // ▼▼▼ PERBAIKAN DI SINI ▼▼▼
-            // Cek untuk 'success' DAN 'sukses' agar lebih aman
+            this.isBonusPenggunaLoading = false;
             if (response && (response.status === 'success' || response.status === 'sukses')) {
                 this.bonusPengguna = response.data || [];
             } else {
-                this.bonusPengguna = []; // Kosongkan jika gagal
+                this.bonusPengguna = [];
             }
-            this.isBonusPenggunaLoading = false;
         },
 
         // ===============================================================
@@ -478,6 +455,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
