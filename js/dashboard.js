@@ -331,8 +331,7 @@ function dashboardApp() {
                 } else {
                     this.showNotification(response.message || 'Gagal melakukan klaim.', true);
                 }
-            }
-        },
+            },
 
         // ===============================================================
         // == LOGIKA TABEL DETAIL AKSES PRODUK
@@ -491,6 +490,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
