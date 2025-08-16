@@ -74,6 +74,22 @@ function dashboardApp() {
         bonusPenggunaCurrentPage: 1,
         bonusPenggunaItemsPerPage: 10,
 
+        // Tampilan Pesan
+        showToast(message, isError = false) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+                background: isError ? "linear-gradient(to right, #ef4444, #b91c1c)" : "linear-gradient(to right, #2563eb, #1d4ed8)",
+            },
+        }).showToast();
+        },
+        
+
         // ===============================================================
         // == FUNGSI INTI & PEMBANTU
         // ===============================================================
@@ -457,6 +473,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
