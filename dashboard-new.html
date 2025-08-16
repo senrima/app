@@ -330,13 +330,6 @@
                             </div>
                             <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
                         </div>
-                
-                    <div x-show="assetSubView === 'klaim'">
-                        <h3 class="text-gray-800 text-3xl font-medium">Klaim Produk atau Bonus</h3>
-                        <div class="mt-8 bg-white p-8 rounded-lg shadow text-center">
-                            <p class="text-gray-500">Fitur untuk klaim produk dengan kode unik akan segera hadir!</p>
-                            </div>
-                    </div>
                 </div>
                 
 
@@ -674,6 +667,21 @@
                     </div>
                 </div>
                 
+                <div x-show="assetSubView === 'klaim'">
+                    <h3 class="text-gray-800 text-3xl font-medium">Klaim Produk atau Bonus</h3>
+                    <div class="mt-8 bg-white p-8 rounded-lg shadow max-w-lg mx-auto">
+                        <p class="text-gray-600 mb-4">Jika Anda memiliki kode klaim untuk produk atau bonus, masukkan di bawah ini untuk menebusnya.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="kode-klaim" class="block text-sm font-medium text-gray-700">Kode Klaim</label>
+                                <input type="text" id="kode-klaim" x-model="klaimKode" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Contoh: HADIAH-SPESIAL-01">
+                            </div>
+                            <button @click="klaimProduk()" class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition">
+                                Tebus Sekarang
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
 
                 
@@ -707,6 +715,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
