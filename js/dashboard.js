@@ -192,6 +192,38 @@ function dashboardApp() {
         },
 
         // ===============================================================
+        // == KLAIM
+        // ===============================================================
+
+        async klaimProduk() {
+            if (!this.klaimKode.trim()) {
+                this.showNotification('Kode Klaim tidak boleh kosong.', true);
+                return;
+            }
+            this.showNotification('Memproses kode klaim...');
+            
+            const response = await this.callApi({
+                action: 'klaimProduk',
+                payload: { kodeKlaim: this.klaimKode }
+            });
+    
+            if (response.status === 'sukses' || response.status === 'success') {
+                this.showNotification('Klaim berhasil! Produk sedang ditambahkan ke akun Anda.');
+                this.klaimKode = ''; // Kosongkan input
+                // Refresh daftar produk setelah beberapa saat
+                setTimeout(() => {
+                    this.digitalAssets = [];
+                    this.loadDigitalAssets();
+                    this.activeView = 'aset';
+                    this.assetSubView = 'produk';
+                }, 2000);
+            } else {
+                this.showNotification(response.message || 'Gagal melakukan klaim.', true);
+            }
+        },
+
+        
+        // ===============================================================
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
         // ===============================================================
         async loadDigitalAssets() {
@@ -463,6 +495,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
