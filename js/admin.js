@@ -12,6 +12,7 @@ function adminOtpApp() {
         isLoading: false,
         otp: '',
         status: { message: '', success: false },
+
         
         async submit() {
             this.isLoading = true;
@@ -92,13 +93,29 @@ function adminDashboardApp() {
         templates: { dashboard: [], channel: [] }, // Ubah menjadi objek
         selectedTemplate: '',
 
+        //Notifikasi
+        showToast(message, isError = false) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+                background: isError ? "linear-gradient(to right, #ef4444, #b91c1c)" : "linear-gradient(to right, #2563eb, #1d4ed8)",
+            },
+        }).showToast();
+
+        
+
         // Fungsi inisialisasi
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
 
             if (!token) {
-                alert('Akses tidak sah. Token admin tidak ditemukan.');
+                this.showToast('Akses tidak sah. Token admin tidak ditemukan.');
                 window.location.href = 'index.html';
                 return;
             }
@@ -114,7 +131,7 @@ function adminDashboardApp() {
                     throw new Error(response.message || 'Sesi admin tidak valid.');
                 }
             } catch (error) {
-                alert('Sesi admin gagal diverifikasi: ' + error.message);
+                this.showToast('Sesi admin gagal diverifikasi: ' + error.message);
                 window.location.href = 'index.html';
             }
         },
@@ -185,18 +202,18 @@ function adminDashboardApp() {
             });
 
             if (response.status === 'success') {
-                alert('Data berhasil diperbarui!');
+                this.showToast('Data berhasil diperbarui!');
                 this.closeUserModal();
                 this.users = []; 
                 await this.loadUsers();
             } else {
-                alert('Gagal memperbarui: ' + response.message);
+                this.showToast('Gagal memperbarui: ' + response.message);
             }
         },
 
         async sendDashboardBroadcast() {
             if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
-                alert('Judul dan Pesan harus diisi.');
+                this.showToast('Judul dan Pesan harus diisi.');
                 return;
             }
             if (!confirm('Anda yakin ingin mengirim notifikasi ini ke SEMUA pengguna?')) return;
@@ -205,7 +222,7 @@ function adminDashboardApp() {
                 action: 'broadcastDashboard',
                 payload: this.broadcast.dashboard
             });
-            alert(response.message);
+            this.showToast(response.message);
             if (response.status === 'success') {
                 this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; // Reset form
             }
@@ -213,7 +230,7 @@ function adminDashboardApp() {
         
         async sendChannelBroadcast() {
             if (!this.broadcast.channel.subjek || !this.broadcast.channel.pesanTeks) {
-                alert('Subjek dan Pesan harus diisi.');
+                this.showToast('Subjek dan Pesan harus diisi.');
                 return;
             }
             if (!confirm('Anda yakin ingin mengirim broadcast Email/Telegram ini ke SEMUA pengguna?')) return;
@@ -226,7 +243,7 @@ function adminDashboardApp() {
                     pesanHtml: this.broadcast.channel.pesanHtml || this.broadcast.channel.pesanTeks
                 }
             });
-            alert(response.message);
+            this.showToast(response.message);
             if (response.status === 'success') {
                 this.broadcast.channel = { subjek: '', pesanTeks: '', pesanHtml: '' };
             }
@@ -264,6 +281,7 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
 
