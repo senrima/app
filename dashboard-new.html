@@ -574,34 +574,36 @@
                     <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Akses Produk Anda</h3>
                 
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <input x-model.debounce.300ms="aksesProdukSearchQuery" type="text" placeholder="Cari ID Produk atau Status..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <input x-model.debounce.300ms="aksesProdukSearchQuery" type="text" placeholder="Cari nama atau ID produk..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <button @click="aksesProduk = []; loadAksesProduk()" :disabled="isAksesProdukLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isAksesProdukLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
                             <span>Segarkan</span>
                         </button>
                     </div>
-                
+                    
                     <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">ID Produk</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-1/5">ID Produk</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-2/5">Nama Produk</th>
                                         <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Kedaluwarsa</th>
                                         <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     <template x-if="isAksesProdukLoading">
-                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="3"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
+                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
                                     <template x-if="!isAksesProdukLoading && paginatedAksesProduk.length === 0">
-                                        <tr><td colspan="3" class="text-center p-6 text-gray-500" x-text="aksesProduk.length === 0 ? 'Anda belum memiliki akses produk.' : 'Data tidak ditemukan.'"></td></tr>
+                                         <tr><td colspan="4" class="text-center p-6 text-gray-500" x-text="aksesProduk.length === 0 ? 'Anda belum memiliki akses produk.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
                                     <template x-if="!isAksesProdukLoading">
                                         <template x-for="item in paginatedAksesProduk" :key="item.IDProduk">
                                             <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.IDProduk"></td>
+                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDProduk"></td>
+                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.NamaProduk"></td>
                                                 <td class="py-4 px-6 text-sm text-gray-500" x-text="item.TanggalExpayer === 'Permanen' ? 'Permanen' : new Date(item.TanggalExpayer).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
                                                 <td class="py-4 px-6 text-sm">
                                                     <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full" :class="item.Status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="item.Status"></span>
@@ -625,35 +627,37 @@
                     <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Bonus Anda</h3>
                 
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <input x-model.debounce.300ms="bonusPenggunaSearchQuery" type="text" placeholder="Cari ID Bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <input x-model.debounce.300ms="bonusPenggunaSearchQuery" type="text" placeholder="Cari judul atau ID bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <button @click="bonusPengguna = []; loadBonusPengguna()" :disabled="isBonusPenggunaLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isBonusPenggunaLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
                             <span>Segarkan</span>
                         </button>
                     </div>
-                
+                    
                     <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">ID Bonus</th>
+                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Judul Bonus</th>
                                         <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Klaim</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     <template x-if="isBonusPenggunaLoading">
-                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="2"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
+                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="3"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
                                     </template>
                                     
                                     <template x-if="!isBonusPenggunaLoading && paginatedBonusPengguna.length === 0">
-                                        <tr><td colspan="2" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
+                                        <tr><td colspan="3" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
                                     </template>
                                     
                                     <template x-if="!isBonusPenggunaLoading">
                                         <template x-for="item in paginatedBonusPengguna" :key="item.IDBonus">
                                             <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.IDBonus"></td>
+                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDBonus"></td>
+                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.Judul"></td>
                                                 <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.TanggalKlaim).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
                                             </tr>
                                         </template>
@@ -661,7 +665,7 @@
                                 </tbody>
                             </table>
                         </div>
-                
+                        
                         <div x-show="!isBonusPenggunaLoading && totalBonusPenggunaPages > 1" class="mt-4 flex justify-between items-center">
                             <button @click="prevBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
                             <span class="text-sm">Halaman <span x-text="bonusPenggunaCurrentPage"></span> dari <span x-text="totalBonusPenggunaPages"></span></span>
@@ -703,6 +707,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
