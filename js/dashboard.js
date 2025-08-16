@@ -33,7 +33,7 @@ function dashboardApp() {
         // State Notifikasi
         notifications: [],
         unreadCount: 0,
-        notificationIntervalId: null,
+   //     notificationIntervalId: null,
 
         // State Produk & Bonus Utama
         digitalAssets: [],
@@ -92,9 +92,9 @@ function dashboardApp() {
                 await this.loadNotifications();
                 this.isLoading = false;
 
-                this.notificationIntervalId = setInterval(() => {
-                    this.refreshNotifications();
-                }, 60000);
+ //               this.notificationIntervalId = setInterval(() => {
+ //                   this.refreshNotifications();
+ //               }, 60000);
                 
             } catch (e) {
                 this.showNotification('Gagal verifikasi sesi.', true);
@@ -443,9 +443,9 @@ function dashboardApp() {
         },
 
         async logout(callServer = true) {
-            if (this.notificationIntervalId) {
-                clearInterval(this.notificationIntervalId);
-            }
+  //          if (this.notificationIntervalId) {
+  //              clearInterval(this.notificationIntervalId);
+  //          }
             if (callServer) {
                 await this.callApi({ action: 'logout' });
             }
@@ -455,6 +455,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
