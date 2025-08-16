@@ -190,15 +190,17 @@
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 
                 <div x-show="activeView === 'beranda'">
+                    
                     <template x-if="!userData.isTelegramConnected">
-                        <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                        <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
                             <p class="font-bold">Aktifkan Notifikasi Telegram!</p>
-                            <p class="text-sm">Untuk keamanan dan kemudahan menerima notifikasi penting seperti OTP, hubungkan akun Anda ke Telegram sekarang.</p>
-                            <button @click.prevent="activeView = 'akun'; activeSubView = 'notifikasi'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
-                                Pergi ke Halaman Akun →
+                            <p class="text-sm">Untuk keamanan dan kemudahan menerima notifikasi penting, hubungkan akun Anda ke Telegram sekarang.</p>
+                            <button @click="activeView = 'akun'; activeSubView = 'notifikasi'" class="mt-2 text-sm font-semibold text-yellow-800 hover:underline">
+                                Pergi ke Halaman Pengaturan Notifikasi &rarr;
                             </button>
                         </div>
                     </template>
+                    
                     <div class="mb-8">
                         <h1 class="text-3xl font-bold text-gray-800" x-text="'Selamat Datang, ' + (userData.nama || 'Pengguna') + '!'"></h1>
                         <p class="text-gray-500 mt-1">Berikut adalah ringkasan aktivitas akun Anda.</p>
@@ -209,28 +211,27 @@
                         <button @click="activeView = 'aksesProduk'; loadAksesProduk()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-blue-500 transition-all">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Produk Digital</p>
-                                <p class="text-3xl font-bold text-gray-800" x-text="dashboardSummary.jumlahAset || '0'"></p>
+                                <p class="text-3xl font-bold text-gray-800" x-text="dashboardSummary.jumlahAset !== undefined ? dashboardSummary.jumlahAset : '0'"></p>
                             </div>
                             <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                             </div>
                         </button>
                 
-                        <button @click="activeView = 'bonusPengguna'; loadBonusPengguna()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-blue-500 transition-all">
+                        <button @click="activeView = 'bonusPengguna'; loadBonusPengguna()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-green-500 transition-all">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Bonus Tersedia</p>
-                                <p class="text-3xl font-bold text-gray-800" x-text="dashboardSummary.jumlahBonus || '0'"></p>
+                                <p class="text-3xl font-bold text-gray-800" x-text="dashboardSummary.jumlahBonus !== undefined ? dashboardSummary.jumlahBonus : '0'"></p>
                             </div>
                             <div class="bg-green-100 text-green-600 p-3 rounded-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
                             </div>
                         </button>
                 
-                        <button @click="activeView = 'koin'; loadHistoryKoin()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-blue-500 transition-all">
-                            
+                        <button @click="activeView = 'koin'; loadHistoryKoin()" class="w-full text-left bg-white p-6 rounded-xl shadow-lg flex items-center justify-between hover:ring-2 hover:ring-yellow-500 transition-all">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Jumlah Koin</p>
-                                <p class="text-3xl font-bold text-gray-800" x-text="userData.koin || '0'"></p>
+                                <p class="text-3xl font-bold text-gray-800" x-text="userData.koin !== undefined ? userData.koin : '0'"></p>
                             </div>
                             <div class="bg-yellow-100 text-yellow-600 p-3 rounded-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2v1m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 12V7m0 1v.01M12 10v-1m0-1V8m0 2v1m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>
@@ -240,12 +241,12 @@
                         <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                             <h4 class="font-semibold text-gray-800 mb-4">Akses Cepat</h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <button @click="activeView = 'aset'; assetSubView = 'produk'" class="text-left p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition">
+                                <button @click="activeView = 'aset'; assetSubView = 'produk'; loadDigitalAssets()" class="text-left p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition">
                                     <p class="font-semibold text-blue-600">Lihat Produk Saya</p>
                                     <p class="text-xs text-gray-500">Akses semua aset digital yang Anda miliki.</p>
                                 </button>
-                                 <button @click="activeView = 'aset'; assetSubView = 'klaim'" class="text-left p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition">
-                                    <p class="font-semibold text-blue-600">Klaim Produk</p>
+                                 <button @click="activeView = 'aset'; assetSubView = 'klaim'" class="text-left p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition">
+                                    <p class="font-semibold text-green-600">Klaim Produk</p>
                                     <p class="text-xs text-gray-500">Punya kode unik? Klaim produk Anda di sini.</p>
                                 </button>
                             </div>
@@ -702,6 +703,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
