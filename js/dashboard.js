@@ -322,6 +322,7 @@ function dashboardApp() {
         nextAksesProdukPage() { if (this.aksesProdukCurrentPage < this.totalAksesProdukPages) this.aksesProdukCurrentPage++; },
         prevAksesProdukPage() { if (this.aksesProdukCurrentPage > 1) this.aksesProdukCurrentPage--; },
         async loadAksesProduk() {
+            if (this.isAksesProdukLoading.length > 0) return; 
             this.isAksesProdukLoading = true;
             const response = await this.callApi({ action: 'getAksesProduk' });
             this.isAksesProdukLoading = false;
@@ -353,6 +354,7 @@ function dashboardApp() {
         nextBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) this.bonusPenggunaCurrentPage++; },
         prevBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage > 1) this.bonusPenggunaCurrentPage--; },
         async loadBonusPengguna() {
+            if (this.isBonusPenggunaLoading.length > 0) return; 
             this.isBonusPenggunaLoading = true;
             const response = await this.callApi({ action: 'getBonusPengguna' });
             this.isBonusPenggunaLoading = false;
@@ -455,6 +457,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
