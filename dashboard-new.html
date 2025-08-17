@@ -318,389 +318,388 @@
                             <div x-show="!isAssetsLoading && digitalAssets.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Anda belum memiliki aset digital.</p></div>                        
                         </div>
                 
-                    <div x-show="assetSubView === 'bonus'">
-                        <h3 class="text-gray-800 text-3xl font-medium">Bonus Untuk Anda</h3>
-                        <div class="flex flex-col sm:flex-row justify-between items-center my-4 gap-4">
-                            <input x-model.debounce.300ms="bonusesSearchQuery" type="text" placeholder="Cari nama bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            <button @click="bonuses = []; loadBonuses(true)" :disabled="isBonusesLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isBonusesLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
-                                <span>Segarkan</span>
-                            </button>
-                        </div>
-                        <div x-show="isBonusesLoading" class="mt-8 text-center"><p>Memuat bonus...</p></div>
-                            <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <template x-for="bonus in filteredBonuses" :key="bonus.IDbonus">
-                                    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
-                                        <h4 class="text-xl font-semibold text-gray-800 line-clamp-2 mb-2" x-text="bonus.Judul"></h4>
-                                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="bonus.Deskripsi"></p>
-                                        <a :href="`${bonus.UrlBonus}?tokenbonus=${bonus.TokenBonus}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Akses Bonus</a>
-                                    </div>
-                                </template>
+                        <div x-show="assetSubView === 'bonus'">
+                            <h3 class="text-gray-800 text-3xl font-medium">Bonus Untuk Anda</h3>
+                            <div class="flex flex-col sm:flex-row justify-between items-center my-4 gap-4">
+                                <input x-model.debounce.300ms="bonusesSearchQuery" type="text" placeholder="Cari nama bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <button @click="bonuses = []; loadBonuses(true)" :disabled="isBonusesLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isBonusesLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                    <span>Segarkan</span>
+                                </button>
                             </div>
-                            <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
-                        </div>
-                </div>
-                
-
-                <div x-show="activeView === 'akun'">
-                    <div x-show="activeSubView === 'profile'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Profile Akun</h3>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div class="lg:col-span-2 space-y-8">
-                                
-                                <div class="bg-white p-6 rounded-lg shadow-md">
-                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Informasi Profil</h4>
+                            <div x-show="isBonusesLoading" class="mt-8 text-center"><p>Memuat bonus...</p></div>
+                                <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <template x-for="bonus in filteredBonuses" :key="bonus.IDbonus">
+                                        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
+                                            <h4 class="text-xl font-semibold text-gray-800 line-clamp-2 mb-2" x-text="bonus.Judul"></h4>
+                                            <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="bonus.Deskripsi"></p>
+                                            <a :href="`${bonus.UrlBonus}?tokenbonus=${bonus.TokenBonus}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Akses Bonus</a>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div x-show="!isBonusesLoading && bonuses.length === 0" class="mt-8 text-center bg-white p-8 rounded-lg shadow"><p class="text-gray-500">Saat ini tidak ada bonus yang tersedia.</p></div>
+                            </div>
+                            <div x-show="assetSubView === 'klaim'">
+                                <h3 class="text-gray-800 text-3xl font-medium">Klaim Produk atau Bonus</h3>
+                                <div class="mt-8 bg-white p-8 rounded-lg shadow max-w-lg mx-auto">
+                                    <p class="text-gray-600 mb-4">Jika Anda memiliki kode klaim untuk produk atau bonus, masukkan di bawah ini untuk menebusnya.</p>
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="nama" class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                            <input type="text" id="nama" x-model="userData.nama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                            <label for="kode-klaim" class="block text-sm font-medium text-gray-700">Kode Klaim</label>
+                                            <input type="text" id="kode-klaim" x-model="klaimKode" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Contoh: HADIAH-SPESIAL-01">
                                         </div>
-                                        <div>
-                                            <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
-                                            <input type="email" id="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                                        </div>
-                                        <div class="text-right pt-2">
-                                            <button @click="updateProfile()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Simpan Perubahan</button>
-                                        </div>
-                                    </div>        
-                                </div>
-                                
-                                <div class="bg-white p-6 rounded-lg shadow-md">
-                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Ganti Password</h4>
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label for="pass-lama" class="block text-sm font-medium text-gray-600">Password Lama</label>
-                                            <input type="password" id="pass-lama" x-model="passwordFields.old" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                        <div>
-                                            <label for="pass-baru" class="block text-sm font-medium text-gray-600">Password Baru</label>
-                                            <input type="password" id="pass-baru" x-model="passwordFields.new" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                        <div class="text-right pt-2">
-                                            <button @click="changePassword()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Ubah Password</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                            <div class="lg:col-span-1">
-                                </div>
-                        </div>
-                    </div>
-                
-                    <div x-show="activeSubView === 'notifikasi'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Pengaturan Notifikasi</h3>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div class="lg:col-span-2">
-                                <div class="bg-white p-6 rounded-lg shadow-md">
-                                    <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Preferensi Notifikasi</h4>
-                                    
-                                    <div class="space-y-3">
-                                        <h5 class="font-semibold text-gray-700">Telegram</h5>
-                                        <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan info penting lainnya melalui Telegram.</p>
-        
-                                        <div x-show="!userData.isTelegramConnected" class="space-y-2">
-                                            <p class="text-xs ...">Status: Belum Terhubung</p>
-                                            <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600">
-                                                Hubungkan ke Telegram
-                                            </button>
-                                        </div>
-                                        
-                                        <div x-show="userData.isTelegramConnected">
-                                             <p class="text-xs text-green-600 bg-green-100 p-2 rounded-md">Status: Terhubung</p>
-                                             <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
-                                                Putuskan Hubungan
-                                             </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <hr class="my-6">
-                        
-                                    <div class="space-y-3">
-                                        <h5 class="font-semibold text-gray-700">WhatsApp</h5>
-                                        <p class="text-sm text-gray-500">Fitur notifikasi via WhatsApp akan segera hadir. Tunggu update dari kami ya, Bro!</p>
-                                        <button disabled class="mt-2 w-full text-center bg-gray-300 text-gray-500 py-2 px-4 rounded-md cursor-not-allowed">
-                                            Segera Hadir
+                                        <button @click="klaimProduk()" class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition">
+                                            Tebus Sekarang
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </div>     
                         </div>
-                    </div>
                 
-                    <div x-show="activeSubView === 'pembelian'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Pembelian</h3>
-                    
-                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                            <input x-model.debounce.300ms="pembelianSearchQuery" type="text" placeholder="Cari No. Invoice atau Status..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            <button @click="riwayatPembelian = []; loadRiwayatPembelian()" :disabled="isPembelianLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75 disabled:cursor-wait">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isPembelianLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
-                                <span>Segarkan</span>
-                            </button>
-                        </div>
-                    
-                        <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full bg-white">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200">
-                                        <template x-if="isPembelianLoading">
-                                            <template x-for="i in 5">
+
+                        <div x-show="activeView === 'akun'">
+                            <div x-show="activeSubView === 'profile'">
+                                <h3 class="text-gray-800 text-3xl font-medium mb-8">Profile Akun</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <div class="lg:col-span-2 space-y-8">
+                                        
+                                        <div class="bg-white p-6 rounded-lg shadow-md">
+                                            <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Informasi Profil</h4>
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label for="nama" class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                                    <input type="text" id="nama" x-model="userData.nama" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                </div>
+                                                <div>
+                                                    <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
+                                                    <input type="email" id="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                                                </div>
+                                                <div class="text-right pt-2">
+                                                    <button @click="updateProfile()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Simpan Perubahan</button>
+                                                </div>
+                                            </div>        
+                                        </div>
+                                        
+                                        <div class="bg-white p-6 rounded-lg shadow-md">
+                                            <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Ganti Password</h4>
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label for="pass-lama" class="block text-sm font-medium text-gray-600">Password Lama</label>
+                                                    <input type="password" id="pass-lama" x-model="passwordFields.old" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                </div>
+                                                <div>
+                                                    <label for="pass-baru" class="block text-sm font-medium text-gray-600">Password Baru</label>
+                                                    <input type="password" id="pass-baru" x-model="passwordFields.new" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                </div>
+                                                <div class="text-right pt-2">
+                                                    <button @click="changePassword()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold transition">Ubah Password</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="lg:col-span-1">
+                                        </div>
+                                </div>
+                            </div>
+                        
+                            <div x-show="activeSubView === 'notifikasi'">
+                                <h3 class="text-gray-800 text-3xl font-medium mb-8">Pengaturan Notifikasi</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <div class="lg:col-span-2">
+                                        <div class="bg-white p-6 rounded-lg shadow-md">
+                                            <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Preferensi Notifikasi</h4>
+                                            
+                                            <div class="space-y-3">
+                                                <h5 class="font-semibold text-gray-700">Telegram</h5>
+                                                <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan info penting lainnya melalui Telegram.</p>
+                
+                                                <div x-show="!userData.isTelegramConnected" class="space-y-2">
+                                                    <p class="text-xs ...">Status: Belum Terhubung</p>
+                                                    <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600">
+                                                        Hubungkan ke Telegram
+                                                    </button>
+                                                </div>
+                                                
+                                                <div x-show="userData.isTelegramConnected">
+                                                     <p class="text-xs text-green-600 bg-green-100 p-2 rounded-md">Status: Terhubung</p>
+                                                     <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
+                                                        Putuskan Hubungan
+                                                     </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr class="my-6">
+                                
+                                            <div class="space-y-3">
+                                                <h5 class="font-semibold text-gray-700">WhatsApp</h5>
+                                                <p class="text-sm text-gray-500">Fitur notifikasi via WhatsApp akan segera hadir. Tunggu update dari kami ya, Bro!</p>
+                                                <button disabled class="mt-2 w-full text-center bg-gray-300 text-gray-500 py-2 px-4 rounded-md cursor-not-allowed">
+                                                    Segera Hadir
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <div x-show="activeSubView === 'pembelian'">
+                                <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Pembelian</h3>
+                            
+                                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                                    <input x-model.debounce.300ms="pembelianSearchQuery" type="text" placeholder="Cari No. Invoice atau Status..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                    <button @click="riwayatPembelian = []; loadRiwayatPembelian()" :disabled="isPembelianLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75 disabled:cursor-wait">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isPembelianLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                        <span>Segarkan</span>
+                                    </button>
+                                </div>
+                            
+                                <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-white">
+                                            <thead class="bg-gray-50">
                                                 <tr>
-                                                    <td class="py-4 px-6" colspan="6"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                                 </tr>
-                                            </template>
-                                        </template>
-                                        
-                                        <template x-if="!isPembelianLoading && paginatedPembelian.length === 0">
-                                            <tr><td colspan="6" class="text-center p-6 text-gray-500" x-text="riwayatPembelian.length === 0 ? 'Anda belum memiliki riwayat pembelian.' : 'Data tidak ditemukan.'"></td></tr>
-                                        </template>
-                                        
-                                        <template x-if="!isPembelianLoading">
-                                            <template x-for="item in paginatedPembelian" :key="item.NomorInvoice">
-                                                <tr class="hover:bg-gray-50 transition">
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900" x-text="item.NomorInvoice"></td>
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="new Date(item.TanggalTerbit).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })"></td>
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm">
-                                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                              :class="{
-                                                                  'bg-green-100 text-green-800': ['SUCCESS', 'BERHASIL'].includes(item.Status.toUpperCase()),
-                                                                  'bg-yellow-100 text-yellow-800': item.Status.toUpperCase() === 'PENDING',
-                                                                  'bg-red-100 text-red-800': ['FAILED', 'EXPIRED', 'GAGAL'].includes(item.Status.toUpperCase())
-                                                              }"
-                                                              x-text="item.Status">
-                                                        </span>
-                                                    </td>
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 font-medium" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.TotalPembayaran)"></td>
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="item.MetodePembayaran"></td>
-                                                    <td class="py-4 px-6 whitespace-nowrap text-sm font-medium space-x-4">
-                                                        <a :href="item.UrlBayar" target="_blank" class="text-indigo-600 hover:text-indigo-900" x-show="item.Status.toUpperCase() === 'PENDING'">Bayar</a>
-                                                        <a :href="item.UrlInvoice" target="_blank" class="text-gray-600 hover:text-gray-900">Invoice</a>
-                                                    </td>
-                                                </tr>
-                                            </template>
-                                        </template>
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200">
+                                                <template x-if="isPembelianLoading">
+                                                    <template x-for="i in 5">
+                                                        <tr>
+                                                            <td class="py-4 px-6" colspan="6"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                                
+                                                <template x-if="!isPembelianLoading && paginatedPembelian.length === 0">
+                                                    <tr><td colspan="6" class="text-center p-6 text-gray-500" x-text="riwayatPembelian.length === 0 ? 'Anda belum memiliki riwayat pembelian.' : 'Data tidak ditemukan.'"></td></tr>
+                                                </template>
+                                                
+                                                <template x-if="!isPembelianLoading">
+                                                    <template x-for="item in paginatedPembelian" :key="item.NomorInvoice">
+                                                        <tr class="hover:bg-gray-50 transition">
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900" x-text="item.NomorInvoice"></td>
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="new Date(item.TanggalTerbit).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })"></td>
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm">
+                                                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                                      :class="{
+                                                                          'bg-green-100 text-green-800': ['SUCCESS', 'BERHASIL'].includes(item.Status.toUpperCase()),
+                                                                          'bg-yellow-100 text-yellow-800': item.Status.toUpperCase() === 'PENDING',
+                                                                          'bg-red-100 text-red-800': ['FAILED', 'EXPIRED', 'GAGAL'].includes(item.Status.toUpperCase())
+                                                                      }"
+                                                                      x-text="item.Status">
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 font-medium" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.TotalPembayaran)"></td>
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-500" x-text="item.MetodePembayaran"></td>
+                                                            <td class="py-4 px-6 whitespace-nowrap text-sm font-medium space-x-4">
+                                                                <a :href="item.UrlBayar" target="_blank" class="text-indigo-600 hover:text-indigo-900" x-show="item.Status.toUpperCase() === 'PENDING'">Bayar</a>
+                                                                <a :href="item.UrlInvoice" target="_blank" class="text-gray-600 hover:text-gray-900">Invoice</a>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                            
+                                    <div x-show="!isPembelianLoading && totalPembelianPages > 1" class="mt-4 flex justify-between items-center">
+                                        <button @click="prevPembelianPage()" :disabled="pembelianCurrentPage === 1" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Sebelumnya</button>
+                                        <span class="text-sm text-gray-700">Halaman <span x-text="pembelianCurrentPage" class="font-medium"></span> dari <span x-text="totalPembelianPages" class="font-medium"></span></span>
+                                        <button @click="nextPembelianPage()" :disabled="pembelianCurrentPage >= totalPembelianPages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Berikutnya</button>
+                                    </div>
+                                </div>
                             </div>
-                    
-                            <div x-show="!isPembelianLoading && totalPembelianPages > 1" class="mt-4 flex justify-between items-center">
-                                <button @click="prevPembelianPage()" :disabled="pembelianCurrentPage === 1" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Sebelumnya</button>
-                                <span class="text-sm text-gray-700">Halaman <span x-text="pembelianCurrentPage" class="font-medium"></span> dari <span x-text="totalPembelianPages" class="font-medium"></span></span>
-                                <button @click="nextPembelianPage()" :disabled="pembelianCurrentPage >= totalPembelianPages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">Berikutnya</button>
+                        </div>
+        
+                        <div x-show="activeView === 'affiliet'">
+                            <h3 class="text-gray-800 text-3xl font-medium">Program Afiliasi</h3>
+                            <div class="mt-8 bg-white p-12 rounded-lg shadow-xl text-center">
+                                <h4 class="text-2xl font-semibold text-blue-600 mb-4">🚀 Segera Hadir!</h4>
+                                <p class="text-gray-600 max-w-2xl mx-auto">
+                                    Kami sedang mempersiapkan program afiliasi yang luar biasa untuk Anda. Dapatkan komisi menarik dengan mempromosikan produk kami. Pantau terus untuk update selanjutnya!
+                                </p>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div x-show="activeView === 'affiliet'">
-                    <h3 class="text-gray-800 text-3xl font-medium">Program Afiliasi</h3>
-                    <div class="mt-8 bg-white p-12 rounded-lg shadow-xl text-center">
-                        <h4 class="text-2xl font-semibold text-blue-600 mb-4">🚀 Segera Hadir!</h4>
-                        <p class="text-gray-600 max-w-2xl mx-auto">
-                            Kami sedang mempersiapkan program afiliasi yang luar biasa untuk Anda. Dapatkan komisi menarik dengan mempromosikan produk kami. Pantau terus untuk update selanjutnya!
-                        </p>
-                    </div>
-                </div>
-
-                <div x-show="activeView === 'koin'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Koin</h3>
-                
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <input x-model.debounce.300ms="koinSearchQuery" type="text" placeholder="Cari deskripsi..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <button @click="historyKoin = []; loadHistoryKoin()" :disabled="isKoinLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isKoinLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
-                            <span>Segarkan</span>
-                        </button>
-                    </div>
-                
-                    <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Saldo Akhir</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    <template x-if="isKoinLoading">
-                                        <template x-for="i in 5">
-                                            <tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr>
-                                        </template>
-                                    </template>
-                                    
-                                    <template x-if="!isKoinLoading && paginatedKoin.length === 0">
-                                        <tr><td colspan="4" class="text-center p-6 text-gray-500">Belum ada riwayat transaksi koin.</td></tr>
-                                    </template>
-                                    
-                                    <template x-if="!isKoinLoading">
-                                        <template x-for="item in paginatedKoin" :key="item.IDTransaksi">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.Tanggal).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })"></td>
-                                                <td class="py-4 px-6 text-sm text-gray-800" x-text="item.Deskripsi"></td>
-                                                <td class="py-4 px-6 text-sm font-semibold">
-                                                    <span :class="item.JenisTransaksi === 'KREDIT' ? 'text-green-600' : 'text-red-600'" 
-                                                          x-text="(item.JenisTransaksi === 'KREDIT' ? '+' : '-') + item.Jumlah">
-                                                    </span>
-                                                </td>
-                                                <td class="py-4 px-6 text-sm font-bold text-gray-600" x-text="item.SaldoSetelah"></td>
+        
+                        <div x-show="activeView === 'koin'">
+                            <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Koin</h3>
+                        
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                                <input x-model.debounce.300ms="koinSearchQuery" type="text" placeholder="Cari deskripsi..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <button @click="historyKoin = []; loadHistoryKoin()" :disabled="isKoinLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isKoinLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                    <span>Segarkan</span>
+                                </button>
+                            </div>
+                        
+                            <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Saldo Akhir</th>
                                             </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                
-                        <div x-show="!isKoinLoading && totalKoinPages > 1" class="mt-4 flex justify-between items-center">
-                            <button @click="prevKoinPage()" :disabled="koinCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
-                            <span class="text-sm">Halaman <span x-text="koinCurrentPage"></span> dari <span x-text="totalKoinPages"></span></span>
-                            <button @click="nextKoinPage()" :disabled="koinCurrentPage >= totalKoinPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
-                        </div>
-                    </div>
-                </div>
-                
-
-                <div x-show="activeView === 'aksesProduk'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Akses Produk Anda</h3>
-                
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <input x-model.debounce.300ms="aksesProdukSearchQuery" type="text" placeholder="Cari nama atau ID produk..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <button @click="aksesProduk = []; loadAksesProduk()" :disabled="isAksesProdukLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isAksesProdukLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
-                            <span>Segarkan</span>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-1/5">ID Produk</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-2/5">Nama Produk</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Kedaluwarsa</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    <template x-if="isAksesProdukLoading">
-                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
-                                    </template>
-                                    <template x-if="!isAksesProdukLoading && paginatedAksesProduk.length === 0">
-                                         <tr><td colspan="4" class="text-center p-6 text-gray-500" x-text="aksesProduk.length === 0 ? 'Anda belum memiliki akses produk.' : 'Data tidak ditemukan.'"></td></tr>
-                                    </template>
-                                    <template x-if="!isAksesProdukLoading">
-                                        <template x-for="item in paginatedAksesProduk" :key="item.IDProduk">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDProduk"></td>
-                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.NamaProduk"></td>
-                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="item.TanggalExpayer === 'Permanen' ? 'Permanen' : new Date(item.TanggalExpayer).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
-                                                <td class="py-4 px-6 text-sm">
-                                                    <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full" :class="item.Status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="item.Status"></span>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div x-show="!isAksesProdukLoading && totalAksesProdukPages > 1" class="mt-4 flex justify-between items-center">
-                            <button @click="prevAksesProdukPage()" :disabled="aksesProdukCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
-                            <span class="text-sm">Halaman <span x-text="aksesProdukCurrentPage"></span> dari <span x-text="totalAksesProdukPages"></span></span>
-                            <button @click="nextAksesProdukPage()" :disabled="aksesProdukCurrentPage >= totalAksesProdukPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
-                        </div>
-                    </div>
-                </div>
-                
-                
-                <div x-show="activeView === 'bonusPengguna'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Bonus Anda</h3>
-                
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <input x-model.debounce.300ms="bonusPenggunaSearchQuery" type="text" placeholder="Cari judul atau ID bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <button @click="bonusPengguna = []; loadBonusPengguna()" :disabled="isBonusPenggunaLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isBonusPenggunaLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
-                            <span>Segarkan</span>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">ID Bonus</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Judul Bonus</th>
-                                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Klaim</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    <template x-if="isBonusPenggunaLoading">
-                                        <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="3"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
-                                    </template>
-                                    
-                                    <template x-if="!isBonusPenggunaLoading && paginatedBonusPengguna.length === 0">
-                                        <tr><td colspan="3" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
-                                    </template>
-                                    
-                                    <template x-if="!isBonusPenggunaLoading">
-                                        <template x-for="item in paginatedBonusPengguna" :key="item.IDBonus">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDBonus"></td>
-                                                <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.Judul"></td>
-                                                <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.TanggalKlaim).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <template x-if="isKoinLoading">
+                                                <template x-for="i in 5">
+                                                    <tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr>
+                                                </template>
+                                            </template>
+                                            
+                                            <template x-if="!isKoinLoading && paginatedKoin.length === 0">
+                                                <tr><td colspan="4" class="text-center p-6 text-gray-500">Belum ada riwayat transaksi koin.</td></tr>
+                                            </template>
+                                            
+                                            <template x-if="!isKoinLoading">
+                                                <template x-for="item in paginatedKoin" :key="item.IDTransaksi">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.Tanggal).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })"></td>
+                                                        <td class="py-4 px-6 text-sm text-gray-800" x-text="item.Deskripsi"></td>
+                                                        <td class="py-4 px-6 text-sm font-semibold">
+                                                            <span :class="item.JenisTransaksi === 'KREDIT' ? 'text-green-600' : 'text-red-600'" 
+                                                                  x-text="(item.JenisTransaksi === 'KREDIT' ? '+' : '-') + item.Jumlah">
+                                                            </span>
+                                                        </td>
+                                                        <td class="py-4 px-6 text-sm font-bold text-gray-600" x-text="item.SaldoSetelah"></td>
+                                                    </tr>
+                                                </template>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        
+                                <div x-show="!isKoinLoading && totalKoinPages > 1" class="mt-4 flex justify-between items-center">
+                                    <button @click="prevKoinPage()" :disabled="koinCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
+                                    <span class="text-sm">Halaman <span x-text="koinCurrentPage"></span> dari <span x-text="totalKoinPages"></span></span>
+                                    <button @click="nextKoinPage()" :disabled="koinCurrentPage >= totalKoinPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div x-show="!isBonusPenggunaLoading && totalBonusPenggunaPages > 1" class="mt-4 flex justify-between items-center">
-                            <button @click="prevBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
-                            <span class="text-sm">Halaman <span x-text="bonusPenggunaCurrentPage"></span> dari <span x-text="totalBonusPenggunaPages"></span></span>
-                            <button @click="nextBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage >= totalBonusPenggunaPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div x-show="assetSubView === 'klaim'">
-                    <h3 class="text-gray-800 text-3xl font-medium">Klaim Produk atau Bonus</h3>
-                    <div class="mt-8 bg-white p-8 rounded-lg shadow max-w-lg mx-auto">
-                        <p class="text-gray-600 mb-4">Jika Anda memiliki kode klaim untuk produk atau bonus, masukkan di bawah ini untuk menebusnya.</p>
-                        <div class="space-y-4">
-                            <div>
-                                <label for="kode-klaim" class="block text-sm font-medium text-gray-700">Kode Klaim</label>
-                                <input type="text" id="kode-klaim" x-model="klaimKode" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Contoh: HADIAH-SPESIAL-01">
+        
+                        <div x-show="activeView === 'aksesProduk'">
+                            <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Akses Produk Anda</h3>
+                        
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                                <input x-model.debounce.300ms="aksesProdukSearchQuery" type="text" placeholder="Cari nama atau ID produk..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <button @click="aksesProduk = []; loadAksesProduk()" :disabled="isAksesProdukLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isAksesProdukLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                    <span>Segarkan</span>
+                                </button>
                             </div>
-                            <button @click="klaimProduk()" class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition">
-                                Tebus Sekarang
-                            </button>
+                            
+                            <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-1/5">ID Produk</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase w-2/5">Nama Produk</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Kedaluwarsa</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <template x-if="isAksesProdukLoading">
+                                                <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="4"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
+                                            </template>
+                                            <template x-if="!isAksesProdukLoading && paginatedAksesProduk.length === 0">
+                                                 <tr><td colspan="4" class="text-center p-6 text-gray-500" x-text="aksesProduk.length === 0 ? 'Anda belum memiliki akses produk.' : 'Data tidak ditemukan.'"></td></tr>
+                                            </template>
+                                            <template x-if="!isAksesProdukLoading">
+                                                <template x-for="item in paginatedAksesProduk" :key="item.IDProduk">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDProduk"></td>
+                                                        <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.NamaProduk"></td>
+                                                        <td class="py-4 px-6 text-sm text-gray-500" x-text="item.TanggalExpayer === 'Permanen' ? 'Permanen' : new Date(item.TanggalExpayer).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
+                                                        <td class="py-4 px-6 text-sm">
+                                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full" :class="item.Status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="item.Status"></span>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div x-show="!isAksesProdukLoading && totalAksesProdukPages > 1" class="mt-4 flex justify-between items-center">
+                                    <button @click="prevAksesProdukPage()" :disabled="aksesProdukCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
+                                    <span class="text-sm">Halaman <span x-text="aksesProdukCurrentPage"></span> dari <span x-text="totalAksesProdukPages"></span></span>
+                                    <button @click="nextAksesProdukPage()" :disabled="aksesProdukCurrentPage >= totalAksesProdukPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div x-show="activeView === 'kontributor'">
-                    <h3 class="text-3xl font-medium text-gray-800">Menjadi Kontributor</h3>
-                    <div class="mt-8 bg-white p-8 rounded-lg shadow">
-                        <h4 class="text-xl font-semibold mb-4">Syarat & Ketentuan Kontributor</h4>
-                        <p class="text-gray-600">
-                            Terima kasih atas minat Anda untuk menjadi kontributor. Halaman ini berisi informasi lengkap mengenai syarat, ketentuan, dan keuntungan yang akan Anda dapatkan. (Fitur ini sedang dalam pengembangan).
-                        </p>
-                    </div>
-                </div>
+                        
+                        
+                        <div x-show="activeView === 'bonusPengguna'">
+                            <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Bonus Anda</h3>
+                        
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                                <input x-model.debounce.300ms="bonusPenggunaSearchQuery" type="text" placeholder="Cari judul atau ID bonus..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <button @click="bonusPengguna = []; loadBonusPengguna()" :disabled="isBonusPenggunaLoading" class="flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm w-full sm:w-auto disabled:opacity-75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isBonusPenggunaLoading}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0120.5 16l-1.5-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-1.5-1.5A9 9 0 003.5 8l1.5 1.5" /></svg>
+                                    <span>Segarkan</span>
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-2xl shadow-xl w-full">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">ID Bonus</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Judul Bonus</th>
+                                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Klaim</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <template x-if="isBonusPenggunaLoading">
+                                                <template x-for="i in 5"><tr><td class="py-4 px-6" colspan="3"><div class="h-4 rounded bg-gray-200 animate-shimmer"></div></td></tr></template>
+                                            </template>
+                                            
+                                            <template x-if="!isBonusPenggunaLoading && paginatedBonusPengguna.length === 0">
+                                                <tr><td colspan="3" class="text-center p-6 text-gray-500" x-text="bonusPengguna.length === 0 ? 'Anda belum memiliki bonus.' : 'Data tidak ditemukan.'"></td></tr>
+                                            </template>
+                                            
+                                            <template x-if="!isBonusPenggunaLoading">
+                                                <template x-for="item in paginatedBonusPengguna" :key="item.IDBonus">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="py-4 px-6 text-sm text-gray-500" x-text="item.IDBonus"></td>
+                                                        <td class="py-4 px-6 text-sm font-semibold text-gray-800" x-text="item.Judul"></td>
+                                                        <td class="py-4 px-6 text-sm text-gray-500" x-text="new Date(item.TanggalKlaim).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })"></td>
+                                                    </tr>
+                                                </template>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div x-show="!isBonusPenggunaLoading && totalBonusPenggunaPages > 1" class="mt-4 flex justify-between items-center">
+                                    <button @click="prevBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage === 1" class="px-4 py-2 text-sm disabled:opacity-50">Sebelumnya</button>
+                                    <span class="text-sm">Halaman <span x-text="bonusPenggunaCurrentPage"></span> dari <span x-text="totalBonusPenggunaPages"></span></span>
+                                    <button @click="nextBonusPenggunaPage()" :disabled="bonusPenggunaCurrentPage >= totalBonusPenggunaPages" class="px-4 py-2 text-sm disabled:opacity-50">Berikutnya</button>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div x-show="activeView === 'kontributor'">
+                            <h3 class="text-3xl font-medium text-gray-800">Menjadi Kontributor</h3>
+                            <div class="mt-8 bg-white p-8 rounded-lg shadow">
+                                <h4 class="text-xl font-semibold mb-4">Syarat & Ketentuan Kontributor</h4>
+                                <p class="text-gray-600">
+                                    Terima kasih atas minat Anda untuk menjadi kontributor. Halaman ini berisi informasi lengkap mengenai syarat, ketentuan, dan keuntungan yang akan Anda dapatkan. (Fitur ini sedang dalam pengembangan).
+                                </p>
+                            </div>
+                        </div>
 
                 
             </main>
@@ -733,6 +732,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
