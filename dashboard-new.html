@@ -525,7 +525,8 @@
                             <div x-show="userData.statusAfiliasi !== 'Aktif'" class="bg-white p-8 rounded-lg shadow-md text-center max-w-2xl mx-auto">
                                 <h4 class="text-2xl font-bold text-gray-900">Gabung Program Afiliasi S-Tools ID</h4>
                                 <p class="text-gray-600 mt-2 mb-6">Dapatkan komisi hingga 30% untuk setiap penjualan yang berasal dari link unik Anda. Bantu kami bertumbuh dan dapatkan penghasilan pasif.</p>
-                                <button @click="daftarAfiliasi()" class="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
+                            <!    button @click="daftarAfiliasi()" class="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors"  >
+                                <button disabled class="bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg cursor-not-allowed">
                                     Daftar Sekarang & Dapatkan Link
                                 </button>
                             </div>
@@ -761,6 +762,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
