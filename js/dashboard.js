@@ -11,7 +11,9 @@ function dashboardApp() {
         isSidebarOpen: false,
         activeView: 'beranda',
         sessionToken: null,
-        userData: {},
+        userData: {
+        statusAfiliasi: 'Tidak Aktif'
+        },
         dashboardSummary: {},
         modal: {
             isOpen: false,
@@ -192,7 +194,7 @@ function dashboardApp() {
         },
 
         // ===============================================================
-        // == KLAIM
+        // == KLAIM, AFILIET
         // ===============================================================
 
         async klaimProduk() {
@@ -220,6 +222,23 @@ function dashboardApp() {
             } else {
                 this.showNotification(response.message || 'Gagal melakukan klaim.', true);
             }
+        },
+
+        async daftarAfiliasi() {
+            this.showConfirm(
+                'Anda akan mendaftar ke Program Afiliasi. Lanjutkan?',
+                async () => {
+                    this.showNotification('Memproses pendaftaran...');
+                    const response = await this.callApi({ action: 'daftarAfiliasi' });
+                    if (response.status === 'sukses') {
+                        this.modal.isOpen = false;
+                        await this.getDashboardData(); // Muat ulang data untuk update status
+                        this.showNotification(response.message);
+                    } else {
+                        this.showNotification(response.message || 'Gagal mendaftar.', true);
+                    }
+                }
+            );
         },
 
         
@@ -495,6 +514,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
