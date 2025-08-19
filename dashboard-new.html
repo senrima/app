@@ -91,10 +91,11 @@
                     </div>
                 </div>
 
-                <div class="px-4 mt-4">
-                    <a href="#" @click.prevent="activeView = 'affiliet'; isSidebarOpen = false"
+                <a href="#" x-show="userData.statusAfiliasi === 'Aktif'" x-cloak @click.prevent="activeView = 'afiliasi'; isSidebarOpen = false" :class="{'menu-active': activeView === 'afiliasi'}" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Panel Afiliasi</a>
+                <div x-show="userData.statusAfiliasi !== 'Aktif'" x-cloak class="p-4 border-t">
+                    <a href="#" @click.prevent="activeView = 'afiliasi'; isSidebarOpen = false"
                        class="flex items-center justify-center w-full px-4 py-2.5 text-white bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg">
-                       <span>✨ Program Afiliasi</span>
+                        <span>✨ Program Afiliasi</span>
                     </a>
                 </div>
 
@@ -760,6 +761,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
