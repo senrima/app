@@ -519,11 +519,19 @@
         
                         <div x-show="activeView === 'affiliet'">
                             <h3 class="text-gray-800 text-3xl font-medium">Program Afiliasi</h3>
-                            <div class="mt-8 bg-white p-12 rounded-lg shadow-xl text-center">
-                                <h4 class="text-2xl font-semibold text-blue-600 mb-4">🚀 Segera Hadir!</h4>
-                                <p class="text-gray-600 max-w-2xl mx-auto">
-                                    Kami sedang mempersiapkan program afiliasi yang luar biasa untuk Anda. Dapatkan komisi menarik dengan mempromosikan produk kami. Pantau terus untuk update selanjutnya!
-                                </p>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Program Afiliasi</h4>
+                                <div x-show="userData.statusAfiliasi !== 'Aktif'" class="space-y-3">
+                                    <p class="text-sm text-gray-500">Dapatkan komisi dengan mempromosikan produk S-Tools ID.</p>
+                                    <button class="w-full text-center bg-green-600 text-white py-2.5 px-4 rounded-md hover:bg-green-700 font-semibold">
+                                        Daftar Afiliasi
+                                    </button>
+                                </div>
+
+                                <!-- Tampilkan jika status afiliasi SUDAH 'Aktif' -->
+                                <div x-show="userData.statusAfiliasi === 'Aktif'" x-cloak>
+                                    <p class="text-sm text-green-700 bg-green-100 p-3 rounded-md font-medium">Anda sudah terdaftar sebagai partner afiliasi. Terima kasih!</p>
+                                </div>
                             </div>
                         </div>
         
@@ -732,6 +740,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
