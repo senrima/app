@@ -556,7 +556,29 @@
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full">
-                                            <!-- ... (Tabel untuk menampilkan kupon) ... -->
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase">Kode Kupon</th>
+                                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
+                                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase">Diskon</th>
+                                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase">Digunakan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200">
+                                                <template x-for="coupon in affiliateData.coupons" :key="coupon.KodeKupon">
+                                                    <tr>
+                                                        <td class="py-3 px-4 font-semibold text-gray-800" x-text="coupon.KodeKupon"></td>
+                                                        <td class="py-3 px-4 text-sm text-gray-600" x-text="getProductNameById(coupon.IDProduk)"></td>
+                                                        <td class="py-3 px-4 text-sm text-gray-600" x-text="formatDiscount(coupon.TipeDiskon, coupon.NilaiDiskon)"></td>
+                                                        <td class="py-3 px-4 text-sm font-bold text-gray-800" x-text="coupon.JumlahPengguna || 0"></td>
+                                                    </tr>
+                                                </template>
+                                                <template x-if="affiliateData.coupons.length === 0">
+                                                    <tr>
+                                                        <td colspan="4" class="text-center py-6 text-gray-500">Anda belum membuat kupon.</td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -769,6 +791,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
