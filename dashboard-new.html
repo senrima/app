@@ -534,18 +534,18 @@
                             <!-- Tampilan jika afiliasi SUDAH AKTIF -->
                             <div x-show="userData.statusAfiliasi === 'Aktif'" x-cloak class="space-y-8">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <a href="#" class="bg-white p-6 rounded-lg shadow-md text-center block hover:ring-2 hover:ring-indigo-500 transition">
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
                                         <h5 class="text-sm font-semibold text-gray-500">Total Komisi</h5>
                                         <p class="text-3xl font-bold text-gray-900 mt-1" x-text="formatCurrency(affiliateData.summary.komisi || 0)"></p>
-                                    </a>
-                                    <a href="#" class="bg-white p-6 rounded-lg shadow-md text-center block hover:ring-2 hover:ring-indigo-500 transition">
+                                    </div>
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
                                         <h5 class="text-sm font-semibold text-gray-500">Penjualan</h5>
                                         <p class="text-3xl font-bold text-gray-900 mt-1" x-text="affiliateData.summary.penjualan || 0"></p>
-                                    </a>
-                                    <a href="#" class="bg-white p-6 rounded-lg shadow-md text-center block hover:ring-2 hover:ring-indigo-500 transition">
+                                    </div>
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
                                         <h5 class="text-sm font-semibold text-gray-500">Produk Afiliasi</h5>
                                         <p class="text-3xl font-bold text-gray-900 mt-1" x-text="affiliateData.summary.produk || 0"></p>
-                                    </a>
+                                    </div>
                                 </div>
                                 <div class="bg-white p-6 rounded-lg shadow-md">
                                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
@@ -791,6 +791,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
