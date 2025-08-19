@@ -276,6 +276,7 @@ function dashboardApp() {
             if (response.status === 'sukses') {
                 this.isCouponModalOpen = false;
                 this.newCoupon = { productId: '', couponCode: '', discountType: 'percentage', discountValue: '' };
+                this.affiliateData.coupons = []; // Kosongkan data lama agar dimuat ulang
                 await this.loadAffiliateData(); // Muat ulang data untuk menampilkan kupon baru
                 this.showNotification(response.message);
             } else {
@@ -394,10 +395,6 @@ function dashboardApp() {
                 }
             );
         },
-
-        // ===============================================================
-        // == KLAIM
-        // ===============================================================
 
         // ===============================================================
         // == LOGIKA TABEL DETAIL AKSES PRODUK
@@ -556,6 +553,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
