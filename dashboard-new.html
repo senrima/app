@@ -517,19 +517,40 @@
                             </div>
                         </div>
         
-                        <div x-show="activeView === 'affiliet'">
-                            <div class="bg-white p-6 rounded-lg shadow-md">
-                                <h4 class="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Program Afiliasi</h4>
-                                <div x-show="userData.statusAfiliasi !== 'Aktif'" class="space-y-3">
-                                    <p class="text-sm text-gray-500">Dapatkan komisi dengan mempromosikan produk S-Tools ID.</p>
-                                    <button class="w-full text-center bg-green-600 text-white py-2.5 px-4 rounded-md hover:bg-green-700 font-semibold">
-                                        Daftar Afiliasi
-                                    </button>
+                        <div x-show="activeView === 'afiliasi'">
+                            <h3 class="text-gray-800 text-3xl font-medium mb-8">Program Afiliasi</h3>
+                            
+                            <!-- Tampilan jika afiliasi BELUM AKTIF -->
+                            <div x-show="userData.statusAfiliasi !== 'Aktif'" class="bg-white p-8 rounded-lg shadow-md text-center max-w-2xl mx-auto">
+                                <h4 class="text-2xl font-bold text-gray-900">Gabung Program Afiliasi S-Tools ID</h4>
+                                <p class="text-gray-600 mt-2 mb-6">Dapatkan komisi hingga 30% untuk setiap penjualan yang berasal dari link unik Anda. Bantu kami bertumbuh dan dapatkan penghasilan pasif.</p>
+                                <button @click="daftarAfiliasi()" class="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
+                                    Daftar Sekarang & Dapatkan Link
+                                </button>
+                            </div>
+        
+                            <!-- Tampilan jika afiliasi SUDAH AKTIF -->
+                            <div x-show="userData.statusAfiliasi === 'Aktif'" x-cloak class="space-y-8">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                        <h5 class="text-sm font-semibold text-gray-500">Total Komisi</h5>
+                                        <p class="text-3xl font-bold text-gray-900 mt-1">Rp 1.250.000</p>
+                                    </div>
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                        <h5 class="text-sm font-semibold text-gray-500">Jumlah Klik</h5>
+                                        <p class="text-3xl font-bold text-gray-900 mt-1">342</p>
+                                    </div>
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                        <h5 class="text-sm font-semibold text-gray-500">Konversi</h5>
+                                        <p class="text-3xl font-bold text-gray-900 mt-1">12</p>
+                                    </div>
                                 </div>
-
-                                <!-- Tampilkan jika status afiliasi SUDAH 'Aktif' -->
-                                <div x-show="userData.statusAfiliasi === 'Aktif'" x-cloak>
-                                    <p class="text-sm text-green-700 bg-green-100 p-3 rounded-md font-medium">Anda sudah terdaftar sebagai partner afiliasi. Terima kasih!</p>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Link Afiliasi Unik Anda</h4>
+                                    <div class="flex items-center bg-gray-100 p-3 rounded-lg">
+                                        <input type="text" readonly :value="`https://s-tools.id/produk/?ref=${userData.username}`" class="w-full bg-transparent outline-none text-gray-700">
+                                        <button class="ml-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">Salin</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -739,6 +760,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
