@@ -77,6 +77,19 @@ function dashboardApp() {
         bonusPenggunaItemsPerPage: 10,
         
         klaimKode: '',
+
+        affiliateData: {
+            products: [],
+            coupons: [],
+            summary: {}
+        },
+        isCouponModalOpen: false,
+        newCoupon: {
+            productId: '',
+            couponCode: '',
+            discountType: 'percentage',
+            discountValue: ''
+        },
         
         // ===============================================================
         // == FUNGSI INTI & PEMBANTU
@@ -224,6 +237,18 @@ function dashboardApp() {
             }
         },
 
+        async loadAffiliateData() {
+            if (this.affiliateData.products.length > 0) return; // Hanya muat sekali
+            this.showNotification('Memuat data afiliasi...');
+            const response = await this.callApi({ action: 'getAffiliateData' });
+            if (response.status === 'sukses') {
+                this.affiliateData = response.data;
+                this.modal.isOpen = false;
+            } else {
+                this.showNotification(response.message || 'Gagal memuat data afiliasi.', true);
+            }
+        },
+
         async daftarAfiliasi() {
             this.showConfirm(
                 'Anda akan mendaftar ke Program Afiliasi. Lanjutkan?',
@@ -239,6 +264,23 @@ function dashboardApp() {
                     }
                 }
             );
+        },
+
+        async createAffiliateCoupon() {
+            this.showNotification('Membuat kupon...');
+            const response = await this.callApi({ 
+                action: 'createAffiliateCoupon', 
+                payload: this.newCoupon 
+            });
+
+            if (response.status === 'sukses') {
+                this.isCouponModalOpen = false;
+                this.newCoupon = { productId: '', couponCode: '', discountType: 'percentage', discountValue: '' };
+                await this.loadAffiliateData(); // Muat ulang data untuk menampilkan kupon baru
+                this.showNotification(response.message);
+            } else {
+                this.showNotification(response.message || 'Gagal membuat kupon.', true);
+            }
         },
 
         
@@ -514,6 +556,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
