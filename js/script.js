@@ -1,6 +1,6 @@
 // Ganti dengan kredensial Anda!
-const GOOGLE_CLIENT_ID = 'GANTI_DENGAN_CLIENT_ID_ANDA';
-const GOOGLE_SHEET_API_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT_ANDA';
+const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
+const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxxThd7kcVwnebStiKVtzslM2bSe5uKpjQM9XrDFbQClROW3QgAwBWoOTFYAimkJLU8/exec';
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -91,4 +91,5 @@ function jwt_decode(token) {
     }).join(''));
 
     return JSON.parse(jsonPayload);
+
 }
