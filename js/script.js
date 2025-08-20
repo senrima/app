@@ -74,12 +74,17 @@ window.onload = function () {
         callback: handleCredentialResponse
     });
     
-    // Menampilkan tombol login
-    google.accounts.id.renderButton(
-        document.getElementById("loginBtn"),
-        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular" }
-    );
-    google.accounts.id.prompt(); // Menampilkan popup one-tap login
+    // Alih-alih merender tombol, kita tambahkan event listener
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.addEventListener('click', () => {
+        // Tampilkan popup "one-tap" ketika tombol kustom kita diklik
+        google.accounts.id.prompt();
+    });
+
+    // Anda tetap bisa memanggil prompt() di awal untuk login otomatis
+    // jika pengguna sudah pernah login sebelumnya.
+    // Jika tidak ingin ada popup otomatis, hapus baris di bawah ini.
+    google.accounts.id.prompt(); 
 };
 
 // Fungsi untuk mendekode JWT (diperlukan karena Google mengembalikan token JWT)
@@ -93,4 +98,5 @@ function jwt_decode(token) {
     return JSON.parse(jsonPayload);
 
 }
+
 
