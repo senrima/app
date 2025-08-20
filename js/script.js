@@ -23,12 +23,12 @@ function handleCredentialResponse(response) {
     updateUI(responsePayload.name, responsePayload.email, responsePayload.picture);
 
     // Mengirim data ke Google Sheets
-    sendDataToSheet(responsePayload.name, responsePayload.email, responsePayload.picture);
+    sendDataToSheet(responsePayload.sub, responsePayload.name, responsePayload.email, responsePayload.picture);
 }
 
 // Fungsi untuk mengirim data ke Google Sheet melalui Apps Script
-function sendDataToSheet(nama, email, gambar) {
-    const data = { nama, email, gambar };
+function sendDataToSheet(sub, nama, email, gambar) {
+    const data = { sub, nama, email, gambar };
 
     fetch(GOOGLE_SHEET_API_URL, {
         method: 'POST',
@@ -93,3 +93,4 @@ function jwt_decode(token) {
     return JSON.parse(jsonPayload);
 
 }
+
