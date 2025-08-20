@@ -1,0 +1,94 @@
+// Ganti dengan kredensial Anda!
+const GOOGLE_CLIENT_ID = 'GANTI_DENGAN_CLIENT_ID_ANDA';
+const GOOGLE_SHEET_API_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT_ANDA';
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userInfoDiv = document.getElementById('userInfo');
+const userNameEl = document.getElementById('userName');
+const userEmailEl = document.getElementById('userEmail');
+const userImgEl = document.getElementById('userImg');
+
+// Fungsi untuk menangani respons dari Google
+function handleCredentialResponse(response) {
+    // Mendekode JWT untuk mendapatkan profil pengguna
+    const responsePayload = jwt_decode(response.credential);
+
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log('Email: ' + responsePayload.email);
+    console.log('Image URL: ' + responsePayload.picture);
+
+    // Menampilkan informasi pengguna
+    updateUI(responsePayload.name, responsePayload.email, responsePayload.picture);
+
+    // Mengirim data ke Google Sheets
+    sendDataToSheet(responsePayload.name, responsePayload.email, responsePayload.picture);
+}
+
+// Fungsi untuk mengirim data ke Google Sheet melalui Apps Script
+function sendDataToSheet(nama, email, gambar) {
+    const data = { nama, email, gambar };
+
+    fetch(GOOGLE_SHEET_API_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Penting untuk menghindari error CORS saat deploy
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        // Karena mode 'no-cors', kita tidak bisa membaca responsnya
+        console.log("Permintaan terkirim ke Google Sheet.");
+        alert("Login berhasil! Data Anda telah direkam.");
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Gagal mengirim data ke server.");
+    });
+}
+
+// Fungsi untuk memperbarui tampilan halaman
+function updateUI(name, email, picture) {
+    loginBtn.classList.add('hidden');
+    userInfoDiv.classList.remove('hidden');
+    userNameEl.textContent = name;
+    userEmailEl.textContent = email;
+    userImgEl.src = picture;
+}
+
+// Fungsi untuk logout
+logoutBtn.addEventListener('click', () => {
+    google.accounts.id.disableAutoSelect();
+    userInfoDiv.classList.add('hidden');
+    loginBtn.classList.remove('hidden');
+    console.log("Pengguna telah logout.");
+});
+
+// Inisialisasi saat halaman dimuat
+window.onload = function () {
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse
+    });
+    
+    // Menampilkan tombol login
+    google.accounts.id.renderButton(
+        document.getElementById("loginBtn"),
+        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular" }
+    );
+    google.accounts.id.prompt(); // Menampilkan popup one-tap login
+};
+
+// Fungsi untuk mendekode JWT (diperlukan karena Google mengembalikan token JWT)
+function jwt_decode(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
