@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Cerdas dengan Google</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+        .container { text-align: center; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #userInfo { margin-top: 20px; }
+        #userImg { border-radius: 50%; width: 80px; height: 80px; }
+        #loginBtn, #logoutBtn { padding: 10px 20px; border: none; background-color: #4285F4; color: white; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        #logoutBtn { background-color: #db4437; }
+        .hidden { display: none; }
+    </style>
+</head><body>
+
+<div class="container">
+    <h2>Selamat Datang!</h2>
+    <p>Silakan login menggunakan akun Google Anda.</p>
+    
+    <div id="loginBtn">Login dengan Google</div>
+
+    <div id="userInfo" class="hidden">
+        <img id="userImg" src="" alt="Foto Profil">
+        <h3 id="userName"></h3>
+        <p id="userEmail"></p>
+        <button id="logoutBtn">Logout</button>
+    </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="script.js"></script>
+
+</body>
+</html>
