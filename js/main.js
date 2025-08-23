@@ -95,12 +95,12 @@ function registrationApp() {
 /**
  * Callback yang dipanggil oleh skrip Google setelah siap.
  */
-function onGoogleScriptLoad() {
+function initializeGoogleSignIn() {
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCallback 
     });
-
+    
     const googleBtn = document.getElementById('googleSignInBtn');
     if (googleBtn) {
         googleBtn.addEventListener('click', () => {
@@ -220,5 +220,6 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
