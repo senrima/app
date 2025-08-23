@@ -1,74 +1,100 @@
 const API_ENDPOINT = "https://api.senrima.web.id";
 
-// Otak untuk halaman index.html (Login & Profil)
-function app() {
-    return {
-        view: 'login', isLoading: false, profileData: {},
-        loginData: { email: '', password: '' },
-        status: { message: '', success: false },
-        init() {
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('/')) {
-                const username = hash.substring(1);
-                if (username) { this.view = 'profile'; this.loadPublicProfile(username); }
-            }
-        },
-        async loadPublicProfile(username) { /* ... (kode tidak berubah) ... */ },
-        async login() {
-            this.isLoading = true;
-            this.status = { message: '', success: false };
-            try {
-                sessionStorage.setItem('userEmailForOTP', this.loginData.email);
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kontrol: 'proteksi', action: 'requestOTP', email: this.loginData.email, password: this.loginData.password })
-                });
-                const result = await response.json();
-                this.status.message = result.message;
-                this.status.success = result.status === 'success';
-                if (result.status === 'success') { window.location.href = 'otp.html'; }
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
-            } finally { this.isLoading = false; }
-        }
-    };
-}
+const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com'; // ❗ Ganti dengan Client ID Anda
 
-// Otak untuk halaman daftar.html
-function registrationApp() {
+function googleAuthApp() {
     return {
+        // State
         isLoading: false,
-        formData: { nama: '', email: '', jawaban: '' },
-        captcha: { angka1: 0, angka2: 0, question: '' },
-        status: { message: '', success: false },
-        init() { this.generateCaptcha(); },
-        generateCaptcha() {
-            this.captcha.angka1 = Math.floor(Math.random() * 10) + 1;
-            this.captcha.angka2 = Math.floor(Math.random() * 10) + 1;
-            this.captcha.question = `${this.captcha.angka1} + ${this.captcha.angka2}`;
+        page: '', // 'login' atau 'register'
+        googleUserData: null,
+        isPasswordModalOpen: false,
+        passwordForGoogle: '',
+
+        // Inisialisasi Google Sign-In
+        initGoogle() {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: this.handleGoogleCallback.bind(this)
+            });
         },
-        async submit() {
+
+        // Memulai alur login Google
+        signInWithGoogle() {
+            google.accounts.id.prompt();
+        },
+
+        // Callback setelah login Google berhasil
+        async handleGoogleCallback(response) {
             this.isLoading = true;
-            this.status = { message: '', success: false };
-            try {
-                const payload = { ...this.formData, ...this.captcha, kontrol: 'proteksi', action: 'register' };
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                this.status.message = result.message;
-                this.status.success = result.status === 'success';
-                if (!result.status.includes('success')) { this.generateCaptcha(); }
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
-            } finally { this.isLoading = false; }
+            const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
+            this.googleUserData = {
+                id: googleUser.sub,
+                email: googleUser.email,
+                nama: googleUser.name
+            };
+
+            // Langsung kirim ke GAS
+            const result = await this.callGoogleAuthApi();
+            this.handleApiResponse(result);
+        },
+        
+        // Memanggil API GAS
+        async callGoogleAuthApi(password = null) {
+            const payload = { 
+                ...this.googleUserData, 
+                password: password 
+            };
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
+            });
+            return await response.json();
+        },
+
+        // Menangani respons dari API
+        handleApiResponse(result) {
+            if (result.status === 'login_success') {
+                window.location.href = `dashboard-new.html?token=${result.token}`;
+            } else if (result.status === 'registration_required') {
+                if (this.page === 'register') {
+                    // Jika di halaman daftar, tampilkan modal password
+                    this.isPasswordModalOpen = true;
+                } else {
+                    // Jika di halaman login, arahkan ke daftar
+                    alert('Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
+                    window.location.href = 'daftar.html';
+                }
+            } else {
+                alert(result.message || 'Terjadi kesalahan.');
+            }
+            this.isLoading = false;
+        },
+
+        // Menyelesaikan registrasi setelah input password
+        async completeGoogleRegistration() {
+            if (this.passwordForGoogle.length < 6) {
+                alert('Password minimal harus 6 karakter.');
+                return;
+            }
+            this.isLoading = true;
+            this.isPasswordModalOpen = false;
+            const result = await this.callGoogleAuthApi(this.passwordForGoogle);
+            this.handleApiResponse(result);
+        },
+
+        // Inisialisasi utama saat halaman dimuat
+        init() {
+            // Tunggu skrip google siap
+            const checkGoogle = setInterval(() => {
+                if (typeof google !== 'undefined') {
+                    clearInterval(checkGoogle);
+                    this.initGoogle();
+                }
+            }, 100);
         }
     };
 }
-
 // Otak untuk halaman otp.html
 function otpApp() {
     return {
@@ -134,3 +160,4 @@ function forgotPasswordApp() {
         }
     };
 }
+
