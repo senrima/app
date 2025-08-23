@@ -31,7 +31,15 @@ function app() {
                 const result = await response.json();
                 this.status.message = result.message;
                 this.status.success = result.status === 'success';
-                if (result.status === 'success') { window.location.href = 'otp.html'; }
+                
+                if (result.status === 'success') {
+                    window.location.href = 'otp.html';
+                } else if (result.status === 'google_login_required') {
+                    // Tampilkan pesan error khusus dari server
+                    this.status.message = result.message;
+                    this.status.success = false;
+                }
+                
             } catch (e) {
                 this.status.message = 'Gagal terhubung ke server.';
                 this.status.success = false;
@@ -210,6 +218,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
