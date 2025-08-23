@@ -7,6 +7,24 @@
     <title>Login - S Tools</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+        <script>
+        // Fungsi ini akan dipanggil oleh Google Sign-In setelah skripnya siap
+        function onGoogleLibraryLoad() {
+            // Cek apakah fungsi initializeGoogleSignIn sudah ada di window
+            // Ini untuk memastikan checkout.js sudah dimuat
+            if (window.initializeGoogleSignIn) {
+                window.initializeGoogleSignIn();
+            } else {
+                // Jika checkout.js belum dimuat, tunggu event DOMContentLoaded
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (window.initializeGoogleSignIn) {
+                        window.initializeGoogleSignIn();
+                    }
+                });
+            }
+        }
+    </script>
     
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,4 +90,5 @@
     <script src="js/main.js"></script>
 </body>
 </html>
+
 
