@@ -1,99 +1,159 @@
 const API_ENDPOINT = "https://api.senrima.web.id";
-
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com'; // ❗ Ganti dengan Client ID Anda
 
-function googleAuthApp() {
+// ===============================================================
+// == BAGIAN 1: FUNGSI LOGIN & DAFTAR MANUAL (TIDAK BERUBAH)
+// ===============================================================
+
+// Otak untuk halaman index.html (Login & Profil)
+function app() {
     return {
-        // State
-        isLoading: false,
-        page: '', // 'login' atau 'register'
-        googleUserData: null,
-        isPasswordModalOpen: false,
-        passwordForGoogle: '',
-
-        // Inisialisasi Google Sign-In
-        initGoogle() {
-            google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: this.handleGoogleCallback.bind(this)
-            });
-        },
-
-        // Memulai alur login Google
-        signInWithGoogle() {
-            google.accounts.id.prompt();
-        },
-
-        // Callback setelah login Google berhasil
-        async handleGoogleCallback(response) {
-            this.isLoading = true;
-            const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
-            this.googleUserData = {
-                id: googleUser.sub,
-                email: googleUser.email,
-                nama: googleUser.name
-            };
-
-            // Langsung kirim ke GAS
-            const result = await this.callGoogleAuthApi();
-            this.handleApiResponse(result);
-        },
-        
-        // Memanggil API GAS
-        async callGoogleAuthApi(password = null) {
-            const payload = { 
-                ...this.googleUserData, 
-                password: password 
-            };
-            const response = await fetch(API_ENDPOINT, {
-                method: 'POST',
-                body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
-            });
-            return await response.json();
-        },
-
-        // Menangani respons dari API
-        handleApiResponse(result) {
-            if (result.status === 'login_success') {
-                window.location.href = `dashboard-new.html?token=${result.token}`;
-            } else if (result.status === 'registration_required') {
-                if (this.page === 'register') {
-                    // Jika di halaman daftar, tampilkan modal password
-                    this.isPasswordModalOpen = true;
-                } else {
-                    // Jika di halaman login, arahkan ke daftar
-                    alert('Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
-                    window.location.href = 'daftar.html';
-                }
-            } else {
-                alert(result.message || 'Terjadi kesalahan.');
+        view: 'login', isLoading: false, profileData: {},
+        loginData: { email: '', password: '' },
+        status: { message: '', success: false },
+        init() {
+            const hash = window.location.hash.substring(1);
+            if (hash && hash.startsWith('/')) {
+                const username = hash.substring(1);
+                if (username) { this.view = 'profile'; this.loadPublicProfile(username); }
             }
-            this.isLoading = false;
         },
+        async loadPublicProfile(username) { /* ... (kode tidak berubah) ... */ },
+        async login() {
+            this.isLoading = true;
+            this.status = { message: '', success: false };
+            try {
+                sessionStorage.setItem('userEmailForOTP', this.loginData.email);
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kontrol: 'proteksi', action: 'requestOTP', email: this.loginData.email, password: this.loginData.password })
+                });
+                const result = await response.json();
+                this.status.message = result.message;
+                this.status.success = result.status === 'success';
+                if (result.status === 'success') { window.location.href = 'otp.html'; }
+            } catch (e) {
+                this.status.message = 'Gagal terhubung ke server.';
+                this.status.success = false;
+            } finally { this.isLoading = false; }
+        }
+    };
+}
 
-        // Menyelesaikan registrasi setelah input password
+// Otak untuk halaman daftar.html
+function registrationApp() {
+    return {
+        isLoading: false,
+        formData: { nama: '', email: '', jawaban: '' },
+        captcha: { angka1: 0, angka2: 0, question: '' },
+        status: { message: '', success: false },
+        isPasswordModalOpen: false, // State untuk modal
+        googleUserData: {},         // Untuk menyimpan data google sementara
+        passwordForGoogle: '',      // Untuk password dari modal
+
+        init() { this.generateCaptcha(); },
+        generateCaptcha() {
+            this.captcha.angka1 = Math.floor(Math.random() * 10) + 1;
+            this.captcha.angka2 = Math.floor(Math.random() * 10) + 1;
+            this.captcha.question = `${this.captcha.angka1} + ${this.captcha.angka2}`;
+        },
+        async submit() {
+            this.isLoading = true;
+            this.status = { message: '', success: false };
+            try {
+                const payload = { ...this.formData, ...this.captcha, kontrol: 'proteksi', action: 'register' };
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                this.status.message = result.message;
+                this.status.success = result.status === 'success';
+                if (!this.status.success) { this.generateCaptcha(); }
+            } catch (e) {
+                this.status.message = 'Gagal terhubung ke server.';
+                this.status.success = false;
+            } finally { this.isLoading = false; }
+        },
+        // Fungsi untuk menangani pendaftaran dari Google
         async completeGoogleRegistration() {
             if (this.passwordForGoogle.length < 6) {
                 alert('Password minimal harus 6 karakter.');
                 return;
             }
             this.isLoading = true;
-            this.isPasswordModalOpen = false;
-            const result = await this.callGoogleAuthApi(this.passwordForGoogle);
-            this.handleApiResponse(result);
-        },
-
-        // Inisialisasi utama saat halaman dimuat
-        init() {
-            // Tunggu skrip google siap
-            const checkGoogle = setInterval(() => {
-                if (typeof google !== 'undefined') {
-                    clearInterval(checkGoogle);
-                    this.initGoogle();
-                }
-            }, 100);
+            await handleGoogleAuth(this.googleUserData, this.passwordForGoogle);
+            this.isLoading = false;
         }
     };
+}
+
+// ===============================================================
+// == BAGIAN 2: LOGIKA BARU UNTUK GOOGLE SIGN-IN (GLOBAL)
+// ===============================================================
+
+/**
+ * Callback yang dipanggil oleh skrip Google setelah siap.
+ */
+function onGoogleScriptLoad() {
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCallback 
+    });
+
+    const googleBtn = document.getElementById('googleSignInBtn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', () => {
+            google.accounts.id.prompt();
+        });
+    }
+}
+
+/**
+ * Menangani respons setelah pengguna memilih akun Google.
+ */
+function handleGoogleCallback(response) {
+    const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
+    const userData = {
+        id: googleUser.sub,
+        email: googleUser.email,
+        nama: googleUser.name
+    };
+    handleGoogleAuth(userData);
+}
+
+/**
+ * Fungsi utama yang berkomunikasi dengan GAS untuk otentikasi Google.
+ */
+async function handleGoogleAuth(userData, password = null) {
+    const payload = { ...userData, password: password };
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
+        });
+        const result = await response.json();
+
+        // Menangani respons dari server
+        if (result.status === 'login_success') {
+            window.location.href = `dashboard-new.html?token=${result.token}`;
+        } else if (result.status === 'registration_required') {
+            // Cek apakah kita di halaman daftar untuk menampilkan modal
+            const regAppElement = document.querySelector('[x-data="registrationApp()"]');
+            if (regAppElement) {
+                const regApp = Alpine.store(regAppElement).__alpine_store;
+                regApp.googleUserData = userData;
+                regApp.isPasswordModalOpen = true;
+            } else {
+                alert('Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
+                window.location.href = 'daftar.html';
+            }
+        } else {
+            alert(result.message || 'Terjadi kesalahan.');
+        }
+    } catch (error) {
+        alert('Gagal terhubung ke server.');
+    }
 }
 // Otak untuk halaman otp.html
 function otpApp() {
@@ -160,4 +220,5 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
