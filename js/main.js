@@ -125,8 +125,9 @@ function handleGoogleCallback(response) {
 /**
  * Fungsi utama yang berkomunikasi dengan GAS untuk otentikasi Google.
  */
-async function handleGoogleAuth(userData, password = null) {
-    const payload = { ...userData, password: password };
+async function handleGoogleAuth(userData) {
+    // Fungsi ini tidak lagi memerlukan parameter password
+    const payload = { ...userData };
     try {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
@@ -134,22 +135,11 @@ async function handleGoogleAuth(userData, password = null) {
         });
         const result = await response.json();
 
-        // Menangani respons dari server
+        // Hanya menangani 2 kasus: sukses atau gagal
         if (result.status === 'login_success') {
             window.location.href = `dashboard-new.html?token=${result.token}`;
-        } else if (result.status === 'registration_required') {
-            // Cek apakah kita di halaman daftar untuk menampilkan modal
-            const regAppElement = document.querySelector('[x-data="registrationApp()"]');
-            if (regAppElement) {
-                const regApp = Alpine.store(regAppElement).__alpine_store;
-                regApp.googleUserData = userData;
-                regApp.isPasswordModalOpen = true;
-            } else {
-                alert('Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
-                window.location.href = 'daftar.html';
-            }
         } else {
-            alert(result.message || 'Terjadi kesalahan.');
+            alert(result.message || 'Terjadi kesalahan saat otentikasi Google.');
         }
     } catch (error) {
         alert('Gagal terhubung ke server.');
@@ -220,6 +210,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
