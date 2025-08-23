@@ -66,19 +66,10 @@
             </div>
         </div>
 
-        <div x-show="view === 'profile'" x-cloak class="bg-white p-10 rounded-2xl shadow-xl text-center max-w-md w-full">
-            <div x-show="isLoading" class="text-center"><p>Memuat profil...</p></div>
-            <div x-show="!isLoading">
-                <div class="mx-auto w-32 h-32 rounded-full bg-gray-200 mb-6 flex items-center justify-center">?</div>
-                <h1 class="text-4xl font-bold text-gray-800" x-text="profileData.nama"></h1>
-                <p class="text-lg text-gray-500 mt-2" x-text="'@' + profileData.username"></p>
-                <div class="mt-8 border-t pt-6">
-                    <a href="/apps/" class="font-medium text-blue-600 hover:underline">Kembali ke Halaman Utama</a>
-                </div>
-            </div>
         </div>
     </div>
     <script src="js/main.js"></script>
 </body>
 </html>
+
 
