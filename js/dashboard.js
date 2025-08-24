@@ -91,7 +91,19 @@ function dashboardApp() {
         // ===============================================================
         // == FUNGSI INTI & PEMBANTU
         // ===============================================================
-
+        
+        formatCurrency(value) {
+            if (typeof value !== 'number') {
+                value = Number(value) || 0;
+            }
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        },
+        
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
             const initialToken = urlParams.get('token');
@@ -517,6 +529,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
