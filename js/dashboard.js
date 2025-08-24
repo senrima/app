@@ -78,17 +78,14 @@ function dashboardApp() {
         
         klaimKode: '',
 
-        affiliateData: {
-            products: [],
-            coupons: [],
-            summary: {}
-        },
-        isCouponModalOpen: false,
-        newCoupon: {
-            productId: '',
-            couponCode: '',
-            discountType: 'percentage',
-            discountValue: ''
+        affiliateData: { // Ubah atau ganti state yang lama
+            summary: {
+                komisi: 0,
+                penjualan: 0,
+                produk: 0
+            },
+            coupons: [], // Tetap bisa digunakan untuk menampilkan list kupon
+            products: [] // Untuk dropdown form buat kupon
         },
         
         // ===============================================================
@@ -237,50 +234,17 @@ function dashboardApp() {
             }
         },
 
-        async loadAffiliateData() {
-            if (this.affiliateData.products.length > 0) return; // Hanya muat sekali
-            this.showNotification('Memuat data afiliasi...');
-            const response = await this.callApi({ action: 'getAffiliateData' });
+        // Di dalam dashboard.js, tambahkan method baru
+        async loadAffiliatePanel() {
+            this.showNotification('Memuat data panel afiliasi...'); // Tampilkan loading
+            const response = await this.callApi({ action: 'getAffiliatePanelData' });
+        
             if (response.status === 'sukses') {
-                this.affiliateData = response.data;
-                this.modal.isOpen = false;
+                this.affiliateData.summary = response.data.summary;
+                // Anda juga bisa memuat data kupon dan produk di sini jika diperlukan
+                this.modal.isOpen = false; // Sembunyikan notifikasi loading
             } else {
-                this.showNotification(response.message || 'Gagal memuat data afiliasi.', true);
-            }
-        },
-
-        async daftarAfiliasi() {
-            this.showConfirm(
-                'Anda akan mendaftar ke Program Afiliasi. Lanjutkan?',
-                async () => {
-                    this.showNotification('Memproses pendaftaran...');
-                    const response = await this.callApi({ action: 'daftarAfiliasi' });
-                    if (response.status === 'sukses') {
-                        this.modal.isOpen = false;
-                        await this.getDashboardData(); // Muat ulang data untuk update status
-                        this.showNotification(response.message);
-                    } else {
-                        this.showNotification(response.message || 'Gagal mendaftar.', true);
-                    }
-                }
-            );
-        },
-
-        async createAffiliateCoupon() {
-            this.showNotification('Membuat kupon...');
-            const response = await this.callApi({ 
-                action: 'createAffiliateCoupon', 
-                payload: this.newCoupon 
-            });
-
-            if (response.status === 'sukses') {
-                this.isCouponModalOpen = false;
-                this.newCoupon = { productId: '', couponCode: '', discountType: 'percentage', discountValue: '' };
-                this.affiliateData.coupons = []; // Kosongkan data lama agar dimuat ulang
-                await this.loadAffiliateData(); // Muat ulang data untuk menampilkan kupon baru
-                this.showNotification(response.message);
-            } else {
-                this.showNotification(response.message || 'Gagal membuat kupon.', true);
+                this.showNotification(response.message || 'Gagal memuat data.', true);
             }
         },
 
@@ -553,6 +517,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
