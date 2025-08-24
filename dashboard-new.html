@@ -561,6 +561,88 @@
                                            x-text="affiliateData.summary.produk || 0"></p>
                                     </div>
                                 </div>
+
+                                <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Kupon Anda per Produk</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-white">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Produk</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diskon</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kupon</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Digunakan</th>
+                                                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200">
+                                                <template x-for="product in affiliateProductList" :key="product.IDProduk">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="py-4 px-6 font-medium" x-text="product.NamaProduk"></td>
+                                                        <td class="py-4 px-6 font-bold text-blue-600" x-text="product.DiskonAfiliasi + '%'"></td>
+                                                        <td class="py-4 px-6" x-text="product.KodeKupon || '-'"></td>
+                                                        <td class="py-4 px-6">
+                                                            <span x-show="product.Status" :class="product.Status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-1 text-xs font-semibold rounded-full" x-text="product.Status"></span>
+                                                            <span x-show="!product.Status">-</span>
+                                                        </td>
+                                                        <td class="py-4 px-6" x-text="product.JumlahPengguna"></td>
+                                                        <td class="py-4 px-6">
+                                                            <template x-if="product.KodeKupon">
+                                                                <button @click="openEditCouponModal(product)" class="text-indigo-600 hover:text-indigo-900 font-semibold">Ubah</button>
+                                                            </template>
+                                                            <template x-if="!product.KodeKupon">
+                                                                <button @click="openAddCouponModal(product)" class="text-green-600 hover:text-green-900 font-semibold">Buat Kupon</button>
+                                                            </template>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template x-if="affiliateProductList.length === 0">
+                                                    <tr><td colspan="6" class="text-center p-6 text-gray-500">Tidak ada produk yang bisa diafiliasikan.</td></tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div x-show="isAddCouponModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" x-cloak>
+                                    <div @click.outside="isAddCouponModalOpen = false" class="w-full max-w-lg bg-white rounded-lg shadow-xl p-6">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-4" x-text="'Buat Kupon untuk ' + newCoupon.NamaProduk"></h3>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Diskon Otomatis</label>
+                                                <p class="mt-1 text-2xl font-bold text-blue-600" x-text="newCoupon.DiskonAfiliasi + '%'"></p>
+                                                <p class="text-xs text-gray-500">Diskon sudah ditentukan oleh pemilik produk.</p>
+                                            </div>
+                                            <div>
+                                                <label for="coupon-code-add" class="block text-sm font-medium text-gray-700">Kode Kupon Anda</label>
+                                                <input type="text" id="coupon-code-add" x-model="newCoupon.KodeKupon" placeholder="Masukkan kode unik yang Anda inginkan" class="mt-1 w-full p-2 border border-gray-300 rounded-md">
+                                            </div>
+                                        </div>
+                                        <div class="mt-6 flex justify-end gap-3">
+                                            <button @click="isAddCouponModalOpen = false" type="button" class="px-4 py-2 bg-white border rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                                            <button @click="createAffiliateCoupon()" type="button" class="px-4 py-2 bg-blue-600 border rounded-md text-sm font-semibold text-white hover:bg-blue-700">Simpan Kupon</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div x-show="isEditCouponModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" x-cloak>
+                                    <div @click.outside="isEditCouponModalOpen = false" class="w-full max-w-md bg-white rounded-lg shadow-xl p-6">
+                                        <h3 class="text-lg font-medium text-gray-900" x-text="'Ubah Kupon untuk ' + editingCoupon.NamaProduk"></h3>
+                                        <p class="text-sm text-gray-600 mt-1">Kode Kupon: <b x-text="editingCoupon.KodeKupon"></b></p>
+                                        <div class="mt-4">
+                                            <label for="coupon-status" class="block text-sm font-medium text-gray-700">Status Kupon</label>
+                                            <select id="coupon-status" x-model="editingCoupon.Status" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                                <option value="Aktif">Aktif</option>
+                                                <option value="Tidak Aktif">Tidak Aktif</option>
+                                            </select>
+                                        </div>
+                                        <div class="mt-6 flex justify-end gap-3">
+                                            <button @click="isEditCouponModalOpen = false" type="button" class="px-4 py-2 bg-white border rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                                            <button @click="saveCouponStatus()" type="button" class="px-4 py-2 bg-blue-600 border rounded-md text-sm font-semibold text-white hover:bg-blue-700">Simpan Perubahan</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
         
@@ -769,6 +851,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
