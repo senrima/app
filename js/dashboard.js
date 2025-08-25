@@ -388,8 +388,8 @@ function dashboardApp() {
         get totalAffiliateProductPages() {
             return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage);
         },
-
-                // ▼▼▼ TAMBAHKAN DUA FUNGSI INI ▼▼▼
+    
+        // ▼▼▼ PINDAHKAN KEDUA FUNGSI INI KE SINI ▼▼▼
         nextAffiliateProductPage() {
             if (this.affiliateProductCurrentPage < this.totalAffiliateProductPages) {
                 this.affiliateProductCurrentPage++;
@@ -669,6 +669,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
