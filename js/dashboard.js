@@ -79,7 +79,10 @@ function dashboardApp() {
         // State Klaimkode
         klaimKode: '',
 
-        affiliateData: { // Ubah atau ganti state yang lama
+
+        
+        // State untuk data summary panel afiliasi
+        affiliateData: {
             summary: {
                 komisi: 0,
                 penjualan: 0,
@@ -89,24 +92,28 @@ function dashboardApp() {
             products: [] // Untuk dropdown form buat kupon
         },
 
-        // State yang dibutuhkan untuk fitur ini
+        // State untuk data, loading, dan pencarian tabel kupon
         affiliateProductList: [],
-        isAffiliateProductListLoading: false, 
-        affiliateProductSearchQuery: '',   
-        affiliateProductCurrentPage: 1,    
-        affiliateProductItemsPerPage: 10, 
+        isAffiliateProductListLoading: false,
+        affiliateProductSearchQuery: '',
+
+        // State untuk paginasi tabel kupon
+        affiliateProductCurrentPage: 1,
+        affiliateProductItemsPerPage: 15,
+
+        // State untuk mengontrol modal (popup) kupon
         isEditCouponModalOpen: false,
         isAddCouponModalOpen: false,
-        
-        // State untuk modal menjadi lebih sederhana
+
+        // State untuk menampung data di dalam modal "Ubah Kupon"
         editingCoupon: {
             IDProduk: null,
             NamaProduk: '',
             KodeKupon: '',
             Status: ''
         },
-        
-        // Hanya butuh KodeKupon saat membuat baru
+
+        // State untuk menampung data di dalam modal "Buat Kupon Baru"
         newCoupon: {
             IDProduk: '',
             NamaProduk: '',
@@ -241,8 +248,126 @@ function dashboardApp() {
             await this.callApi({ action: 'tandainotifikasidibaca' });
         },
 
+
         // ===============================================================
-        // == KLAIM, AFILIET
+        // == FUNGSI AFILIASI (PANEL & TABEL)
+        // ===============================================================
+        async loadAffiliatePanel() {
+            const response = await this.callApi({ action: 'getAffiliatePanelData' });
+            if (response.status === 'sukses') {
+                this.affiliateData.summary = response.data.summary;
+            } else {
+                this.showNotification(response.message || 'Gagal memuat data panel.', true);
+            }
+        },
+        
+        get filteredAffiliateProductList() {
+            this.affiliateProductCurrentPage = 1;
+            if (!this.affiliateProductSearchQuery.trim()) {
+                return this.affiliateProductList;
+            }
+            const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
+            return this.affiliateProductList.filter(product => {
+                const namaProduk = product.NamaProduk.toLowerCase();
+                const kodeKupon = (product.KodeKupon || '').toLowerCase();
+                return namaProduk.includes(searchQuery) || kodeKupon.includes(searchQuery);
+            });
+        },
+
+        get paginatedAffiliateProductList() {
+            const start = (this.affiliateProductCurrentPage - 1) * this.affiliateProductItemsPerPage;
+            const end = start + this.affiliateProductItemsPerPage;
+            return this.filteredAffiliateProductList.slice(start, end);
+        },
+
+        get totalAffiliateProductPages() {
+            return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage);
+        },
+
+        async loadAffiliateProductList() {
+            this.isAffiliateProductListLoading = true;
+            const response = await this.callApi({ action: 'getAffiliateProductsAndCoupons' });
+            if (response.status === 'sukses') {
+                this.affiliateProductList = response.data;
+            }
+            this.isAffiliateProductListLoading = false;
+        },
+
+        openAddCouponModal(product) {
+            this.newCoupon = {
+                IDProduk: product.IDProduk,
+                NamaProduk: product.NamaProduk,
+                DiskonAfiliasi: product.DiskonAfiliasi,
+                KodeKupon: ''
+            };
+            this.isAddCouponModalOpen = true;
+        },
+
+        async createAffiliateCoupon() {
+            if (!this.newCoupon.KodeKupon.trim()) {
+                this.showNotification('Kode kupon wajib diisi.', true);
+                return;
+            }
+            this.showNotification('Membuat kupon...');
+            const response = await this.callApi({
+                action: 'createAffiliateCoupon',
+                payload: {
+                    IDProduk: this.newCoupon.IDProduk,
+                    KodeKupon: this.newCoupon.KodeKupon
+                }
+            });
+
+            if (response.status === 'sukses') {
+                this.isAddCouponModalOpen = false;
+                this.loadAffiliateProductList();
+                this.showNotification(response.message);
+            } else {
+                this.showNotification(response.message || 'Gagal membuat kupon.', true);
+            }
+        },
+
+        openEditCouponModal(product) {
+            this.editingCoupon = {
+                IDProduk: product.IDProduk,
+                NamaProduk: product.NamaProduk,
+                KodeKupon: product.KodeKupon,
+                Status: product.Status
+            };
+            this.isEditCouponModalOpen = true;
+        },
+
+        async saveCouponStatus() {
+            this.showNotification('Menyimpan perubahan...');
+            const response = await this.callApi({
+                action: 'updateAffiliateCouponStatus',
+                payload: {
+                    IDProduk: this.editingCoupon.IDProduk,
+                    Status: this.editingCoupon.Status
+                }
+            });
+            if (response.status === 'sukses') {
+                this.showNotification('Status berhasil diubah!');
+                this.isEditCouponModalOpen = false;
+                this.loadAffiliateProductList();
+            } else {
+                this.showNotification(response.message || 'Gagal menyimpan.', true);
+            }
+        },
+
+        nextAffiliateProductPage() {
+            if (this.affiliateProductCurrentPage < this.totalAffiliateProductPages) {
+                this.affiliateProductCurrentPage++;
+            }
+        },
+
+        prevAffiliateProductPage() {
+            if (this.affiliateProductCurrentPage > 1) {
+                this.affiliateProductCurrentPage--;
+            }
+        },
+        
+        // ===============================================================
+        // == KLAIM
         // ===============================================================
 
         async klaimProduk() {
@@ -272,134 +397,6 @@ function dashboardApp() {
             }
         },
 
-        // Di dalam dashboard.js, tambahkan method baru
-        async loadAffiliatePanel() {
-            this.showNotification('Memuat data panel afiliasi...'); // Tampilkan loading
-            const response = await this.callApi({ action: 'getAffiliatePanelData' });
-        
-            if (response.status === 'sukses') {
-                this.affiliateData.summary = response.data.summary;
-                // Anda juga bisa memuat data kupon dan produk di sini jika diperlukan
-                this.modal.isOpen = false; // Sembunyikan notifikasi loading
-            } else {
-                this.showNotification(response.message || 'Gagal memuat data.', true);
-            }
-        },
-
-        // Fungsi untuk memuat data tabel utama
-        async loadAffiliateProductList() {
-            this.isAffiliateProductListLoading = true; // <-- TAMBAHKAN INI
-            const response = await this.callApi({ action: 'getAffiliateProductsAndCoupons' });
-            if (response.status === 'sukses') {
-                this.affiliateProductList = response.data;
-            }
-            this.isAffiliateProductListLoading = false; // <-- TAMBAHKAN INI
-        },
-        
-        // Fungsi untuk membuka modal "Buat Kupon" (BARU)
-        openAddCouponModal(product) {
-            this.newCoupon = {
-                IDProduk: product.IDProduk,
-                NamaProduk: product.NamaProduk,
-                DiskonAfiliasi: product.DiskonAfiliasi,
-                KodeKupon: '' // Kosongkan agar bisa diisi
-            };
-            this.isAddCouponModalOpen = true;
-        },
-        
-        // Fungsi untuk membuka modal "Ubah Kupon" (SAMA)
-        openEditCouponModal(product) {
-            this.editingCoupon = { 
-                IDProduk: product.IDProduk,
-                NamaProduk: product.NamaProduk,
-                KodeKupon: product.KodeKupon,
-                Status: product.Status
-            };
-            this.isEditCouponModalOpen = true;
-        },
-        
-        // Fungsi untuk menyimpan kupon BARU (Lebih Sederhana)
-        async createAffiliateCoupon() {
-            if (!this.newCoupon.KodeKupon.trim()) {
-                this.showNotification('Kode kupon wajib diisi.', true);
-                return;
-            }
-            this.showNotification('Membuat kupon...');
-            const response = await this.callApi({ 
-                action: 'createAffiliateCoupon', 
-                payload: {
-                    IDProduk: this.newCoupon.IDProduk,
-                    KodeKupon: this.newCoupon.KodeKupon
-                } 
-            });
-        
-            if (response.status === 'sukses') {
-                this.isAddCouponModalOpen = false;
-                this.loadAffiliateProductList();
-                this.showNotification(response.message);
-            } else {
-                this.showNotification(response.message || 'Gagal membuat kupon.', true);
-            }
-        },
-        
-        // Fungsi untuk menyimpan perubahan status kupon (SAMA)
-        async saveCouponStatus() {
-            this.showNotification('Menyimpan perubahan...');
-            const response = await this.callApi({
-                action: 'updateAffiliateCouponStatus',
-                payload: {
-                    IDProduk: this.editingCoupon.IDProduk,
-                    Status: this.editingCoupon.Status
-                }
-            });
-            if (response.status === 'sukses') {
-                this.showNotification('Status berhasil diubah!');
-                this.isEditCouponModalOpen = false;
-                this.loadAffiliateProductList();
-            } else {
-                this.showNotification(response.message || 'Gagal menyimpan.', true);
-            }
-        },
-
-        get filteredAffiliateProductList() {
-            // ▼▼▼ TAMBAHKAN INI ▼▼▼
-            // Reset ke halaman pertama setiap kali pencarian berubah
-            this.affiliateProductCurrentPage = 1; 
-            
-            if (!this.affiliateProductSearchQuery.trim()) {
-                return this.affiliateProductList;
-            }
-            const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
-            return this.affiliateProductList.filter(product => {
-                const namaProduk = product.NamaProduk.toLowerCase();
-                const kodeKupon = (product.KodeKupon || '').toLowerCase();
-                return namaProduk.includes(searchQuery) || kodeKupon.includes(searchQuery);
-            });
-        },
-    
-        // ▼▼▼ TAMBAHKAN COMPUTED PROPERTY BARU INI ▼▼▼
-        get paginatedAffiliateProductList() {
-            const start = (this.affiliateProductCurrentPage - 1) * this.affiliateProductItemsPerPage;
-            const end = start + this.affiliateProductItemsPerPage;
-            return this.filteredAffiliateProductList.slice(start, end);
-        },
-    
-        // ▼▼▼ DAN INI UNTUK MENGHITUNG TOTAL HALAMAN ▼▼▼
-        get totalAffiliateProductPages() {
-            return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage);
-        },
-    
-        // ▼▼▼ PINDAHKAN KEDUA FUNGSI INI KE SINI ▼▼▼
-        nextAffiliateProductPage() {
-            if (this.affiliateProductCurrentPage < this.totalAffiliateProductPages) {
-                this.affiliateProductCurrentPage++;
-            }
-        },
-        prevAffiliateProductPage() {
-            if (this.affiliateProductCurrentPage > 1) {
-                this.affiliateProductCurrentPage--;
-            }
-        },
         
         // ===============================================================
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
@@ -669,6 +666,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
