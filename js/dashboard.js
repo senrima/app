@@ -91,6 +91,8 @@ function dashboardApp() {
 
         // State yang dibutuhkan untuk fitur ini
         affiliateProductList: [],
+        isAffiliateProductListLoading: false, // <-- TAMBAHKAN INI
+        affiliateProductSearchQuery: '',    // <-- TAMBAHKAN INI
         isEditCouponModalOpen: false,
         isAddCouponModalOpen: false,
         
@@ -284,10 +286,12 @@ function dashboardApp() {
 
         // Fungsi untuk memuat data tabel utama
         async loadAffiliateProductList() {
+            this.isAffiliateProductListLoading = true; // <-- TAMBAHKAN INI
             const response = await this.callApi({ action: 'getAffiliateProductsAndCoupons' });
             if (response.status === 'sukses') {
                 this.affiliateProductList = response.data;
             }
+            this.isAffiliateProductListLoading = false; // <-- TAMBAHKAN INI
         },
         
         // Fungsi untuk membuka modal "Buat Kupon" (BARU)
@@ -355,6 +359,23 @@ function dashboardApp() {
             }
         },
 
+        get filteredAffiliateProductList() {
+            // Jika kotak pencarian kosong, tampilkan semua data
+            if (!this.affiliateProductSearchQuery.trim()) {
+                return this.affiliateProductList;
+            }
+    
+            const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
+    
+            // Filter data berdasarkan Nama Produk atau Kode Kupon
+            return this.affiliateProductList.filter(product => {
+                const namaProduk = product.NamaProduk.toLowerCase();
+                const kodeKupon = (product.KodeKupon || '').toLowerCase(); // (|| '') untuk handle jika kupon null
+    
+                return namaProduk.includes(searchQuery) || kodeKupon.includes(searchQuery);
+            });
+        },
+        
         
         // ===============================================================
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
@@ -624,6 +645,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
