@@ -260,12 +260,10 @@ function dashboardApp() {
                 this.showNotification(response.message || 'Gagal memuat data panel.', true);
             }
         },
-        
+
         get filteredAffiliateProductList() {
+            if (!this.affiliateProductSearchQuery) return this.affiliateProductList;
             this.affiliateProductCurrentPage = 1;
-            if (!this.affiliateProductSearchQuery.trim()) {
-                return this.affiliateProductList;
-            }
             const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
             return this.affiliateProductList.filter(product => {
                 const namaProduk = product.NamaProduk.toLowerCase();
@@ -666,6 +664,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
