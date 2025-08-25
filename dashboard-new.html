@@ -95,9 +95,9 @@
 
                 <a href="#" 
                    x-show="userData.statusAfiliasi === 'Aktif'"
-                   @click.prevent="activeView = 'afiliasi'; loadAffiliatePanel(); isSidebarOpen = false" 
+                   @click.prevent="activeView = 'afiliasi'; loadAffiliatePanel(); loadAffiliateProductList(); isSidebarOpen = false" 
                    :class="{'menu-active': activeView === 'afiliasi'}" 
-                   class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                   class="flex items-center ...">
                    Panel Afiliasi
                 </a>
                 
@@ -851,6 +851,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
