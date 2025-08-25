@@ -94,7 +94,7 @@ function dashboardApp() {
         isAffiliateProductListLoading: false, 
         affiliateProductSearchQuery: '',   
         affiliateProductCurrentPage: 1,    
-        affiliateProductItemsPerPage: 15, 
+        affiliateProductItemsPerPage: 10, 
         isEditCouponModalOpen: false,
         isAddCouponModalOpen: false,
         
@@ -669,6 +669,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
