@@ -388,7 +388,18 @@ function dashboardApp() {
         get totalAffiliateProductPages() {
             return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage);
         },
-        
+
+                // ▼▼▼ TAMBAHKAN DUA FUNGSI INI ▼▼▼
+        nextAffiliateProductPage() {
+            if (this.affiliateProductCurrentPage < this.totalAffiliateProductPages) {
+                this.affiliateProductCurrentPage++;
+            }
+        },
+        prevAffiliateProductPage() {
+            if (this.affiliateProductCurrentPage > 1) {
+                this.affiliateProductCurrentPage--;
+            }
+        },
         
         // ===============================================================
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
@@ -658,6 +669,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
