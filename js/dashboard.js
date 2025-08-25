@@ -91,8 +91,10 @@ function dashboardApp() {
 
         // State yang dibutuhkan untuk fitur ini
         affiliateProductList: [],
-        isAffiliateProductListLoading: false, // <-- TAMBAHKAN INI
-        affiliateProductSearchQuery: '',    // <-- TAMBAHKAN INI
+        isAffiliateProductListLoading: false, 
+        affiliateProductSearchQuery: '',   
+        affiliateProductCurrentPage: 1,    
+        affiliateProductItemsPerPage: 15, 
         isEditCouponModalOpen: false,
         isAddCouponModalOpen: false,
         
@@ -360,20 +362,31 @@ function dashboardApp() {
         },
 
         get filteredAffiliateProductList() {
-            // Jika kotak pencarian kosong, tampilkan semua data
+            // ▼▼▼ TAMBAHKAN INI ▼▼▼
+            // Reset ke halaman pertama setiap kali pencarian berubah
+            this.affiliateProductCurrentPage = 1; 
+            
             if (!this.affiliateProductSearchQuery.trim()) {
                 return this.affiliateProductList;
             }
-    
             const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
-    
-            // Filter data berdasarkan Nama Produk atau Kode Kupon
             return this.affiliateProductList.filter(product => {
                 const namaProduk = product.NamaProduk.toLowerCase();
-                const kodeKupon = (product.KodeKupon || '').toLowerCase(); // (|| '') untuk handle jika kupon null
-    
+                const kodeKupon = (product.KodeKupon || '').toLowerCase();
                 return namaProduk.includes(searchQuery) || kodeKupon.includes(searchQuery);
             });
+        },
+    
+        // ▼▼▼ TAMBAHKAN COMPUTED PROPERTY BARU INI ▼▼▼
+        get paginatedAffiliateProductList() {
+            const start = (this.affiliateProductCurrentPage - 1) * this.affiliateProductItemsPerPage;
+            const end = start + this.affiliateProductItemsPerPage;
+            return this.filteredAffiliateProductList.slice(start, end);
+        },
+    
+        // ▼▼▼ DAN INI UNTUK MENGHITUNG TOTAL HALAMAN ▼▼▼
+        get totalAffiliateProductPages() {
+            return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage);
         },
         
         
@@ -645,6 +658,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
