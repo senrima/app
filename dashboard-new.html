@@ -586,12 +586,9 @@
                                                 </tr>
                                             </thead>
                                                <tbody class="divide-y divide-gray-200">
-                                                    <template x-if="isAffiliateProductListLoading">
-                                                        <template x-for="i in 3">
-                                                            <tr>
-                                                                <td class="py-4 px-6" colspan="6"><div class="h-4 rounded bg-gray-200 animate-pulse"></div></td>
-                                                            </tr>
-                                                        </template>
+                                                    <template x-if="!isAffiliateProductListLoading">
+                                                        <template x-for="product in paginatedAffiliateProductList" :key="product.IDProduk">
+                                                            </template>
                                                     </template>
                                     
                                                     <template x-if="!isAffiliateProductListLoading">
@@ -622,6 +619,17 @@
                                                     </template>
                                             </tbody>
                                         </table>
+                                        </div> <div x-show="!isAffiliateProductListLoading && totalAffiliateProductPages > 1" class="mt-4 flex justify-between items-center">
+                                            <button @click="prevAffiliateProductPage()" :disabled="affiliateProductCurrentPage === 1" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+                                                Sebelumnya
+                                            </button>
+                                            <span class="text-sm text-gray-700">
+                                                Halaman <span x-text="affiliateProductCurrentPage" class="font-medium"></span> dari <span x-text="totalAffiliateProductPages" class="font-medium"></span>
+                                            </span>
+                                            <button @click="nextAffiliateProductPage()" :disabled="affiliateProductCurrentPage >= totalAffiliateProductPages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+                                                Berikutnya
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -871,6 +879,7 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
 
