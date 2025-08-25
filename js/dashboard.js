@@ -99,7 +99,7 @@ function dashboardApp() {
 
         // State untuk paginasi tabel kupon
         affiliateProductCurrentPage: 1,
-        affiliateProductItemsPerPage: 15,
+        affiliateProductItemsPerPage: 10,
 
         // State untuk mengontrol modal (popup) kupon
         isEditCouponModalOpen: false,
@@ -666,6 +666,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
