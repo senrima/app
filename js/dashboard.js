@@ -1,4 +1,4 @@
-const API_ENDPOINT = "https://api.senrima.web.id";
+const API_ENDPOINT = "https://api.s-tools.id";
 
 function dashboardApp() {
     return {
@@ -662,6 +662,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
