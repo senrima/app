@@ -158,9 +158,9 @@ async function handleGoogleAuth(userData) {
      //       window.location.href = `dashboard-new.html?token=${result.token}`;
                 // 1. Simpan token ke sessionStorage
             sessionStorage.setItem('sessionToken', result.token);
-            
+            setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
                 // 2. Redirect ke dashboard TANPA token di URL
-            window.location.href = 'dashboard-new.html';
+        //    window.location.href = 'dashboard-new.html';
         } else {
             alert(result.message || 'Terjadi kesalahan saat otentikasi Google.');
         }
@@ -200,8 +200,9 @@ function otpApp() {
                        //     window.location.href = `dashboard-new.html?token=${token}`;
                                 // 1. Simpan token ke sessionStorage
                                 sessionStorage.setItem('sessionToken', result.token);
+                                setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
                                 // 2. Redirect ke dashboard TANPA token di URL
-                                window.location.href = 'dashboard-new.html';
+                           //     window.location.href = 'dashboard-new.html';
                         } else { this.status = { message: 'Gagal mendapatkan token sesi.', success: false }; }
                     }
                 } catch (e) {
@@ -237,6 +238,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
