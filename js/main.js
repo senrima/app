@@ -155,7 +155,12 @@ async function handleGoogleAuth(userData) {
 
         // Hanya menangani 2 kasus: sukses atau gagal
         if (result.status === 'login_success') {
-            window.location.href = `dashboard-new.html?token=${result.token}`;
+     //       window.location.href = `dashboard-new.html?token=${result.token}`;
+                // 1. Simpan token ke sessionStorage
+            sessionStorage.setItem('sessionToken', result.token);
+            
+                // 2. Redirect ke dashboard TANPA token di URL
+            window.location.href = 'dashboard-new.html';
         } else {
             alert(result.message || 'Terjadi kesalahan saat otentikasi Google.');
         }
@@ -192,7 +197,11 @@ function otpApp() {
                         const token = result.token;
                         if (token) {
                             sessionStorage.removeItem('userEmailForOTP');
-                            window.location.href = `dashboard-new.html?token=${token}`;
+                       //     window.location.href = `dashboard-new.html?token=${token}`;
+                                // 1. Simpan token ke sessionStorage
+                                sessionStorage.setItem('sessionToken', result.token);
+                                // 2. Redirect ke dashboard TANPA token di URL
+                                window.location.href = 'dashboard-new.html';
                         } else { this.status = { message: 'Gagal mendapatkan token sesi.', success: false }; }
                     }
                 } catch (e) {
@@ -228,6 +237,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
