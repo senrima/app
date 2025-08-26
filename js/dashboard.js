@@ -141,11 +141,11 @@ function dashboardApp() {
    //         const urlParams = new URLSearchParams(window.location.search);
             const initialToken = sessionStorage.getItem('sessionToken');
             
-            if (!initialToken) {
-                this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
-                setTimeout(() => window.location.href = 'index.html', 3000);
-                return;
-            }
+  //          if (!initialToken) {
+  //              this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
+  //              setTimeout(() => window.location.href = 'index.html', 3000);
+  //              return;
+  //          }
         
             this.sessionToken = initialToken;
             try {
@@ -662,6 +662,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
