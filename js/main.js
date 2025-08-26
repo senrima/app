@@ -71,31 +71,38 @@ function registrationApp() {
             try {
                 const payload = { ...this.formData, ...this.captcha, kontrol: 'proteksi', action: 'register' };
                 const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
+        
                 this.status.message = result.message;
                 this.status.success = result.status === 'success';
-                if (!this.status.success) { 
-                    this.generateCaptcha(); 
-                    window.location.href = 'index.html';
+        
+                // ▼▼▼ PERUBAHAN UTAMA ADA DI BLOK INI ▼▼▼
+        
+                // Jika pendaftaran SUKSES...
+                if (this.status.success) {
+                    // Tampilkan pesan sukses selama 3 detik, lalu redirect.
+                    // Ini memberi waktu bagi pengguna untuk membaca pesan.
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 3000); 
+                } 
+                // Jika pendaftaran GAGAL...
+                else {
+                    // Buat captcha baru dan tetap di halaman ini.
+                    this.generateCaptcha();
                 }
+        
             } catch (e) {
                 this.status.message = 'Gagal terhubung ke server.';
                 this.status.success = false;
-            } finally { this.isLoading = false; }
-        },
-        // Fungsi untuk menangani pendaftaran dari Google
-        async completeGoogleRegistration() {
-            if (this.passwordForGoogle.length < 6) {
-                alert('Password minimal harus 6 karakter.');
-                return;
+            } finally {
+                this.isLoading = false;
             }
-            this.isLoading = true;
-            await handleGoogleAuth(this.googleUserData, this.passwordForGoogle);
-            this.isLoading = false;
-        }
+        },
     };
 }
 
@@ -221,6 +228,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
