@@ -2,7 +2,7 @@
 // == JAVASCRIPT UNTUK SEMUA HALAMAN ADMIN ==
 // ===============================================================
 
-const API_ENDPOINT = "https://api.senrima.web.id";
+const API_ENDPOINT = "https://api.s-tools.id";
 
 // ---------------------------------------------------------------
 // -- Otak untuk halaman otp-admin.html
@@ -264,5 +264,6 @@ function adminDashboardApp() {
         }
     };
 }
+
 
 
