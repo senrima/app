@@ -1,4 +1,4 @@
-const API_ENDPOINT = "https://api.senrima.web.id";
+const API_ENDPOINT = "https://api.s-tools.id";
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com'; // ❗ Ganti dengan Client ID Anda
 
 // ===============================================================
@@ -237,6 +237,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
