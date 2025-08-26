@@ -138,7 +138,7 @@ function dashboardApp() {
         },
         
         async init() {
-            const urlParams = new URLSearchParams(window.location.search);
+   //         const urlParams = new URLSearchParams(window.location.search);
             const initialToken = sessionStorage.getItem('sessionToken');
             
             if (!initialToken) {
@@ -662,6 +662,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
