@@ -139,21 +139,19 @@ function dashboardApp() {
         
         async init() {
             const urlParams = new URLSearchParams(window.location.search);
-            const initialToken = urlParams.get('token');
+            const initialToken = sessionStorage.getItem('sessionToken');
+            
             if (!initialToken) {
-                this.showNotification('Akses tidak sah. Token tidak ditemukan.', true);
-                setTimeout(() => window.location.href = 'index.html', 2000);
+                this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
+                setTimeout(() => window.location.href = 'index.html', 3000);
                 return;
             }
+        
             this.sessionToken = initialToken;
             try {
                 await this.getDashboardData();
                 await this.loadNotifications();
                 this.isLoading = false;
-
- //               this.notificationIntervalId = setInterval(() => {
- //                   this.refreshNotifications();
- //               }, 60000);
                 
             } catch (e) {
                 this.showNotification('Gagal verifikasi sesi.', true);
@@ -664,6 +662,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
