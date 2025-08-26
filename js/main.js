@@ -77,7 +77,10 @@ function registrationApp() {
                 const result = await response.json();
                 this.status.message = result.message;
                 this.status.success = result.status === 'success';
-                if (!this.status.success) { this.generateCaptcha(); }
+                if (!this.status.success) { 
+                    this.generateCaptcha(); 
+                    window.location.href = 'index.html';
+                }
             } catch (e) {
                 this.status.message = 'Gagal terhubung ke server.';
                 this.status.success = false;
@@ -218,6 +221,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
