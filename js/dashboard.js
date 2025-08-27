@@ -389,7 +389,6 @@ function dashboardApp() {
             }
         },
 
-        
         // ===============================================================
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
         // ===============================================================
@@ -645,16 +644,13 @@ function dashboardApp() {
         },
 
         async logout(callServer = true) {
-  //          if (this.notificationIntervalId) {
-  //              clearInterval(this.notificationIntervalId);
-  //          }
             if (callServer) {
                 await this.callApi({ action: 'logout' });
             }
-            this.sessionToken = null; 
-            sessionStorage.clear();
+            this.sessionToken = null;
+            sessionStorage.removeItem('sessionToken');
+            localStorage.removeItem('sessionToken');
             window.location.href = 'index.html';
         }
     };
 }
-
