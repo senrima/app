@@ -443,9 +443,9 @@ function dashboardApp() {
                 return;
             }
             this.showNotification('Menyimpan perubahan...');
-            const response = await this.callApi({ 
-                action: 'updateProfile', 
-                payload: { newName: this.userData.nama } 
+            const response = await this.callApi({
+                action: 'updateProfile',
+                payload: { newName: this.userData.nama }
             });
             if (response.status === 'success') {
                 this.showNotification('Profil berhasil diperbarui.');
@@ -453,6 +453,7 @@ function dashboardApp() {
                 this.showNotification(response.message || 'Gagal memperbarui profil.', true);
             }
         },
+        
         async changePassword() {
             const { old: oldPassword, new: newPassword } = this.passwordFields;
             if (!oldPassword || !newPassword) {
@@ -662,6 +663,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
