@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4F46E5">
+    <title>Akses > S-Tools ID</title>
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style> 
+        body { font-family: 'Poppins', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="h-full bg-gray-50" x-data="app()" x-init="init()">
+    <div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md space-y-8">
+            
+            <div>
+                <img class="mx-auto h-12 w-auto" src="https://s-tools.id/aset/stools_logo.png" alt="S-Tools ID Logo">
+                <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                    Masuk ke Akun Anda
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Atau <a @click.prevent="view = 'register'" href="#" class="font-medium text-indigo-600 hover:text-indigo-500">buat akun baru</a>
+                </p>
+            </div>
+            
+            <form class="mt-8 space-y-6" @submit.prevent="login()">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="login-email" class="sr-only">Email</label>
+                        <input x-model="loginData.email" id="login-email" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Alamat email">
+                    </div>
+                    <div>
+                        <label for="login-password" class="sr-only">Password</label>
+                        <input x-model="loginData.password" id="login-password" name="password" type="password" autocomplete="current-password" required class="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900">Ingat Saya</label>
+                    </div>
+                    <div class="text-sm">
+                        <a href="lupa-password.html" class="font-medium text-indigo-600 hover:text-indigo-500">Lupa password?</a>
+                    </div>
+                </div>
+
+                <div x-show="status.message" x-cloak class="p-4 rounded-md border-l-4" :class="status.success ? 'bg-green-50 border-green-400 text-green-700' : 'bg-red-50 border-red-400 text-red-700'">
+                    <p class="text-sm font-medium" x-text="status.message"></p>
+                </div>
+
+                <div>
+                    <button type="submit" :disabled="isLoading" :class="{'opacity-50 cursor-not-allowed': isLoading}" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <span x-show="isLoading" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V4a10 10 0 00-10 10h2z"></path>
+                            </svg>
+                            Memproses...
+                        </span>
+                        <span x-show="!isLoading">Lanjutkan</span>
+                    </button>
+                </div>
+            </form>
+            
+            <div class="relative mt-6">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-300"></div></div>
+                <div class="relative flex justify-center text-sm"><span class="bg-gray-50 px-2 text-gray-500">Atau lanjutkan dengan</span></div>
+            </div>
+
+            <div class="mt-6">
+                <button id="googleSignInBtn" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <span class="sr-only">Login dengan Google</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
+                        <path d="M17.64,9.2c0-.63-.06-1.25-.16-1.84H9.18v3.48h4.74c-.2,1.13-.83,2.08-1.78,2.72v2.26h2.9c1.7-1.56,2.68-3.87,2.68-6.62Z" fill="#4285F4"></path>
+                        <path d="M9.18,18c2.43,0,4.47-.8,5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35,0-4.35-1.58-5.06-3.71H1.1v2.33C2.54,16.27,5.61,18,9.18,18Z" fill="#34A853"></path>
+                        <path d="M4.12,10.71a5.37,5.37,0,0,1,0-3.42V4.96H1.1A8.99,8.99,0,0,0,0,9a8.99,8.99,0,0,0,1.1,4.04l3.02-2.33Z" fill="#FBBC05"></path>
+                        <path d="M9.18,3.54c1.32,0,2.52.46,3.46,1.36l2.58-2.58C13.65.8,11.61,0,9.18,0,5.61,0,2.54,1.73,1.1,4.96l3.02,2.33C4.83,5.12,6.83,3.54,9.18,3.54Z" fill="#EA4335"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
