@@ -1,6 +1,6 @@
 const API_ENDPOINT = "https://api.s-tools.id";
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
-
+var rememberMe = '';
 // ===============================================================
 // == BAGIAN 1: FUNGSI LOGIN & DAFTAR MANUAL (TIDAK BERUBAH)
 // ===============================================================
@@ -33,6 +33,7 @@ function app() {
                 this.status.success = result.status === 'success';
                 
                 if (result.status === 'success') {
+                    rememberMe = document.getElementById('remember-me').checked;
                     window.location.href = 'otp.html';
                 } else if (result.status === 'google_login_required') {
                     this.status.message = result.message;
@@ -148,7 +149,7 @@ async function handleGoogleAuth(userData) {
         });
         const result = await response.json();
         if (result.status === 'login_success') {
-            const rememberMe = document.getElementById('remember-me').checked;
+
             if (rememberMe) {
                 // Jika "Ingat Saya" dicentang, simpan di localStorage
                 localStorage.setItem('sessionToken', result.token);
@@ -198,7 +199,7 @@ function otpApp() {
                         const token = result.token;
                         if (token) {
                             sessionStorage.removeItem('userEmailForOTP');
-                            const rememberMe = document.getElementById('remember-me').checked;
+                            rememberMe = document.getElementById('remember-me').checked;
                         
                             if (rememberMe) {
                                 localStorage.setItem('sessionToken', result.token);
@@ -243,4 +244,5 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
