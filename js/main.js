@@ -122,7 +122,25 @@ function initializeGoogleSignIn() {
     const googleBtn = document.getElementById('googleSignInBtn');
     if (googleBtn) {
         googleBtn.addEventListener('click', () => {
+            // ▼▼▼ PERUBAHAN UTAMA ADA DI SINI ▼▼▼
+
+            // 1. Langsung non-aktifkan tombol
+            googleBtn.disabled = true;
+
+            // 2. Ubah tampilan tombol untuk menunjukkan proses loading
+            googleBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V4a10 10 0 00-10 10h2z"></path>
+                </svg>
+                Memproses...
+            `;
+            googleBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            // 3. Panggil prompt login Google
             google.accounts.id.prompt();
+
+            // ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲
         });
     }
 }
@@ -238,6 +256,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
