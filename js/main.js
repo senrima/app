@@ -1,6 +1,5 @@
 const API_ENDPOINT = "https://api.s-tools.id";
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
-var rememberMe = '';
 // ===============================================================
 // == BAGIAN 1: FUNGSI LOGIN & DAFTAR MANUAL (TIDAK BERUBAH)
 // ===============================================================
@@ -33,7 +32,8 @@ function app() {
                 this.status.success = result.status === 'success';
                 
                 if (result.status === 'success') {
-                    rememberMe = document.getElementById('remember-me').checked;
+                    const remember = document.getElementById('remember-me').checked;
+                    sessionStorage.setItem('rememberMeStatus', remember);
                     window.location.href = 'otp.html';
                 } else if (result.status === 'google_login_required') {
                     this.status.message = result.message;
@@ -149,12 +149,10 @@ async function handleGoogleAuth(userData) {
         });
         const result = await response.json();
         if (result.status === 'login_success') {
-
-            if (rememberMe) {
-                // Jika "Ingat Saya" dicentang, simpan di localStorage
+            const remember = document.getElementById('remember-me').checked;
+            if (remember) {
                 localStorage.setItem('sessionToken', result.token);
             } else {
-                // Jika tidak, gunakan sessionStorage (hanya untuk sesi ini)
                 sessionStorage.setItem('sessionToken', result.token);
             }
             setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
@@ -199,14 +197,13 @@ function otpApp() {
                         const token = result.token;
                         if (token) {
                             sessionStorage.removeItem('userEmailForOTP');
-                            rememberMe = document.getElementById('remember-me').checked;
-                        
-                            if (rememberMe) {
-                                localStorage.setItem('sessionToken', result.token);
+                            const remember = sessionStorage.getItem('rememberMeStatus') === 'true';
+                            sessionStorage.removeItem('rememberMeStatus');
+                            if (remember) {
+                                localStorage.setItem('sessionToken', token);
                             } else {
-                                sessionStorage.setItem('sessionToken', result.token);
+                                sessionStorage.setItem('sessionToken', token);
                             }
-                            
                             setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
 
                         } else { this.status = { message: 'Gagal mendapatkan token sesi.', success: false }; }
@@ -244,5 +241,6 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
