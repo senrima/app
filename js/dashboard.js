@@ -35,7 +35,6 @@ function dashboardApp() {
         // State Notifikasi
         notifications: [],
         unreadCount: 0,
-   //     notificationIntervalId: null,
 
         // State Produk & Bonus Utama
         digitalAssets: [],
@@ -78,8 +77,6 @@ function dashboardApp() {
 
         // State Klaimkode
         klaimKode: '',
-
-
         
         // State untuk data summary panel afiliasi
         affiliateData: {
@@ -88,8 +85,8 @@ function dashboardApp() {
                 penjualan: 0,
                 produk: 0
             },
-            coupons: [], // Tetap bisa digunakan untuk menampilkan list kupon
-            products: [] // Untuk dropdown form buat kupon
+            coupons: [], 
+            products: [] 
         },
 
         // State untuk data, loading, dan pencarian tabel kupon
@@ -138,8 +135,7 @@ function dashboardApp() {
         },
         
         async init() {
-   //         const urlParams = new URLSearchParams(window.location.search);
-            const initialToken = sessionStorage.getItem('sessionToken');
+            const initialToken = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             
             if (!initialToken) {
                 this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
@@ -398,7 +394,6 @@ function dashboardApp() {
         // == FUNGSI MENU UTAMA (PRODUK & BONUS)
         // ===============================================================
         async loadDigitalAssets() {
-            // Hanya muat ulang jika data kosong ATAU jika dipaksa (dari tombol Segarkan)
             if (this.digitalAssets.length > 0 && !forceRefresh) return;
             this.isAssetsLoading = true;
             const response = await this.callApi({ action: 'getAsetDigital' });
@@ -408,7 +403,6 @@ function dashboardApp() {
             this.isAssetsLoading = false;
         },
         async loadBonuses() {
-            // Hanya muat ulang jika data kosong ATAU jika dipaksa
             if (this.bonuses.length > 0 && !forceRefresh) return;
             this.isBonusesLoading = true;
             const response = await this.callApi({ action: 'getBonus' });
@@ -663,35 +657,3 @@ function dashboardApp() {
         }
     };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
