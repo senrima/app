@@ -1,11 +1,11 @@
 const API_ENDPOINT = "https://api.s-tools.id";
-const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com'; // ❗ Ganti dengan Client ID Anda
+const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
 
 // ===============================================================
 // == BAGIAN 1: FUNGSI LOGIN & DAFTAR MANUAL (TIDAK BERUBAH)
 // ===============================================================
 
-// Otak untuk halaman index.html (Login & Profil)
+// Login
 function app() {
     return {
         view: 'login', isLoading: false, profileData: {},
@@ -35,7 +35,6 @@ function app() {
                 if (result.status === 'success') {
                     window.location.href = 'otp.html';
                 } else if (result.status === 'google_login_required') {
-                    // Tampilkan pesan error khusus dari server
                     this.status.message = result.message;
                     this.status.success = false;
                 }
@@ -48,16 +47,16 @@ function app() {
     };
 }
 
-// Otak untuk halaman daftar.html
+// Daftar
 function registrationApp() {
     return {
         isLoading: false,
         formData: { nama: '', email: '', jawaban: '' },
         captcha: { angka1: 0, angka2: 0, question: '' },
         status: { message: '', success: false },
-        isPasswordModalOpen: false, // State untuk modal
-        googleUserData: {},         // Untuk menyimpan data google sementara
-        passwordForGoogle: '',      // Untuk password dari modal
+        isPasswordModalOpen: false,
+        googleUserData: {},        
+        passwordForGoogle: '',  
 
         init() { this.generateCaptcha(); },
         generateCaptcha() {
@@ -80,19 +79,13 @@ function registrationApp() {
                 this.status.message = result.message;
                 this.status.success = result.status === 'success';
         
-                // ▼▼▼ PERUBAHAN UTAMA ADA DI BLOK INI ▼▼▼
-        
-                // Jika pendaftaran SUKSES...
                 if (this.status.success) {
-                    // Tampilkan pesan sukses selama 3 detik, lalu redirect.
-                    // Ini memberi waktu bagi pengguna untuk membaca pesan.
-                    setTimeout(() => {
+
+                setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 3000); 
                 } 
-                // Jika pendaftaran GAGAL...
                 else {
-                    // Buat captcha baru dan tetap di halaman ini.
                     this.generateCaptcha();
                 }
         
@@ -110,9 +103,7 @@ function registrationApp() {
 // == BAGIAN 2: LOGIKA BARU UNTUK GOOGLE SIGN-IN (GLOBAL)
 // ===============================================================
 
-/**
- * Callback yang dipanggil oleh skrip Google setelah siap.
- */
+
 function initializeGoogleSignIn() {
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
@@ -122,12 +113,8 @@ function initializeGoogleSignIn() {
     const googleBtn = document.getElementById('googleSignInBtn');
     if (googleBtn) {
         googleBtn.addEventListener('click', () => {
-            // ▼▼▼ PERUBAHAN UTAMA ADA DI SINI ▼▼▼
 
-            // 1. Langsung non-aktifkan tombol
             googleBtn.disabled = true;
-
-            // 2. Ubah tampilan tombol untuk menunjukkan proses loading
             googleBtn.innerHTML = `
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -136,18 +123,12 @@ function initializeGoogleSignIn() {
                 Memproses...
             `;
             googleBtn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            // 3. Panggil prompt login Google
             google.accounts.id.prompt();
 
-            // ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲
         });
     }
 }
 
-/**
- * Menangani respons setelah pengguna memilih akun Google.
- */
 function handleGoogleCallback(response) {
     const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
     const userData = {
@@ -158,11 +139,7 @@ function handleGoogleCallback(response) {
     handleGoogleAuth(userData);
 }
 
-/**
- * Fungsi utama yang berkomunikasi dengan GAS untuk otentikasi Google.
- */
 async function handleGoogleAuth(userData) {
-    // Fungsi ini tidak lagi memerlukan parameter password
     const payload = { ...userData };
     try {
         const response = await fetch(API_ENDPOINT, {
@@ -170,15 +147,16 @@ async function handleGoogleAuth(userData) {
             body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
         });
         const result = await response.json();
-
-        // Hanya menangani 2 kasus: sukses atau gagal
         if (result.status === 'login_success') {
-     //       window.location.href = `dashboard-new.html?token=${result.token}`;
-                // 1. Simpan token ke sessionStorage
-            sessionStorage.setItem('sessionToken', result.token);
+            const rememberMe = document.getElementById('remember-me').checked;
+            if (rememberMe) {
+                // Jika "Ingat Saya" dicentang, simpan di localStorage
+                localStorage.setItem('sessionToken', result.token);
+            } else {
+                // Jika tidak, gunakan sessionStorage (hanya untuk sesi ini)
+                sessionStorage.setItem('sessionToken', result.token);
+            }
             setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
-                // 2. Redirect ke dashboard TANPA token di URL
-        //    window.location.href = 'dashboard-new.html';
         } else {
             alert(result.message || 'Terjadi kesalahan saat otentikasi Google.');
         }
@@ -186,7 +164,12 @@ async function handleGoogleAuth(userData) {
         alert('Gagal terhubung ke server.');
     }
 }
-// Otak untuk halaman otp.html
+
+// ===============================================================
+// == BAGIAN 3: LOGIKA LAIN
+// ===============================================================
+
+// OTP
 function otpApp() {
     return {
         isLoading: false,
@@ -215,12 +198,16 @@ function otpApp() {
                         const token = result.token;
                         if (token) {
                             sessionStorage.removeItem('userEmailForOTP');
-                       //     window.location.href = `dashboard-new.html?token=${token}`;
-                                // 1. Simpan token ke sessionStorage
+                            const rememberMe = document.getElementById('remember-me').checked;
+                        
+                            if (rememberMe) {
+                                localStorage.setItem('sessionToken', result.token);
+                            } else {
                                 sessionStorage.setItem('sessionToken', result.token);
-                                setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
-                                // 2. Redirect ke dashboard TANPA token di URL
-                           //     window.location.href = 'dashboard-new.html';
+                            }
+                            
+                            setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
+
                         } else { this.status = { message: 'Gagal mendapatkan token sesi.', success: false }; }
                     }
                 } catch (e) {
@@ -232,7 +219,7 @@ function otpApp() {
     };
 }
 
-// Otak untuk halaman lupa-password.html
+// Lupa Password
 function forgotPasswordApp() {
     return {
         isLoading: false,
@@ -256,15 +243,4 @@ function forgotPasswordApp() {
         }
     };
 }
-
-
-
-
-
-
-
-
-
-
-
 
