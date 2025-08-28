@@ -139,6 +139,8 @@ function dashboardApp() {
             
             if (!initialToken) {
                 this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
+                sessionStorage.removeItem('sessionToken');
+                localStorage.removeItem('sessionToken');
                 setTimeout(() => window.location.href = 'index.html', 3000);
                 return;
             }
@@ -654,3 +656,4 @@ function dashboardApp() {
         }
     };
 }
+
