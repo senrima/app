@@ -645,17 +645,19 @@ function dashboardApp() {
             }
         },
 
-        async logout(callServer = true) {
+        async logout(callServer = true){
+            this.isLoading = false;
             if (callServer) {
                 await this.callApi({ action: 'logout' });
             }
             this.sessionToken = null;
-            this.isLoading = false;
+            
             sessionStorage.removeItem('sessionToken');
             localStorage.removeItem('sessionToken');
             window.location.href = 'index.html';
         }
     };
 }
+
 
 
