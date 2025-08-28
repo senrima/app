@@ -647,7 +647,7 @@ function dashboardApp() {
 
         async logout(callServer = true){
       //      this.isLoading = false;
-            this.showNotification('Sesi berakhir, proses keluar dari dashboard.', true);
+            this.showNotification('Sesi berakhir, proses keluar dari dashboard.');
             if (callServer) {
                 await this.callApi({ action: 'logout' });
             }
@@ -659,6 +659,7 @@ function dashboardApp() {
         }
     };
 }
+
 
 
 
