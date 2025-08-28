@@ -139,8 +139,6 @@ function dashboardApp() {
             
             if (!initialToken) {
                 this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
-                sessionStorage.removeItem('sessionToken');
-                localStorage.removeItem('sessionToken');
                 setTimeout(() => window.location.href = 'index.html', 3000);
                 return;
             }
@@ -154,6 +152,8 @@ function dashboardApp() {
             } catch (e) {
                 this.showNotification('Gagal verifikasi sesi.', true);
                 setTimeout(() => window.location.href = 'index.html', 2000);
+                sessionStorage.removeItem('sessionToken');
+                localStorage.removeItem('sessionToken');
             }
         },
 
@@ -650,10 +650,12 @@ function dashboardApp() {
                 await this.callApi({ action: 'logout' });
             }
             this.sessionToken = null;
+            this.isLoading = false;
             sessionStorage.removeItem('sessionToken');
             localStorage.removeItem('sessionToken');
             window.location.href = 'index.html';
         }
     };
 }
+
 
