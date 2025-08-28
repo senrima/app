@@ -135,7 +135,8 @@ function handleGoogleCallback(response) {
     const userData = {
         id: googleUser.sub,
         email: googleUser.email,
-        nama: googleUser.name
+        nama: googleUser.name,
+        foto: googleUser.picture
     };
     handleGoogleAuth(userData);
 }
@@ -241,6 +242,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
