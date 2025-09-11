@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Pengguna</title>
+    <title>Profil Pengguna - S-Tools ID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,27 +23,32 @@
             <p class="mt-4 text-gray-600">Memuat profil...</p>
         </div>
 
-        <div x-show="status === 'not_found'" x-cloak class="text-center py-20 bg-white rounded-lg shadow">
-            <h2 class="text-2xl font-bold text-gray-800">Pengguna Tidak Ditemukan</h2>
+        <div x-show="status === 'not_found' || status === 'error'" x-cloak class="text-center py-20 bg-white rounded-lg shadow mt-8">
+            <h2 class="text-2xl font-bold text-gray-800" x-text="status === 'not_found' ? 'Pengguna Tidak Ditemukan' : 'Terjadi Kesalahan'"></h2>
             <p class="mt-2 text-gray-500" x-text="message"></p>
         </div>
         
-        <div x-show="status === 'error'" x-cloak class="text-center py-20 bg-white rounded-lg shadow">
-            <h2 class="text-2xl font-bold text-red-600">Terjadi Kesalahan</h2>
-            <p class="mt-2 text-gray-500" x-text="message"></p>
-        </div>
-
         <div x-show="status === 'found'" x-cloak class="space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                <div class="mx-auto w-24 h-24 rounded-full bg-gray-200 mb-4 flex items-center justify-center">
-                    <span class="text-4xl text-gray-400" x-text="profile.nama ? profile.nama.charAt(0).toUpperCase() : '?'"></span>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="h-48 bg-gradient-to-br from-indigo-500 to-blue-600"></div>
+                
+                <div class="p-6 relative">
+                    <div class="absolute -top-16 left-1/2 -translate-x-1/2">
+                        <div class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-md flex items-center justify-center">
+                            <span class="text-6xl font-bold text-gray-500" x-text="profile.nama ? profile.nama.charAt(0).toUpperCase() : '?'"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-16 text-center">
+                        <h1 class="text-4xl font-bold text-gray-900" x-text="profile.nama"></h1>
+                        <p class="text-lg text-gray-500 mt-1" x-text="'@' + profile.username"></p>
+                    </div>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-900" x-text="profile.nama"></h1>
-                <p class="text-md text-gray-500 mt-1" x-text="'@' + profile.username"></p>
             </div>
 
             <div>
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Aset Digital</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 px-4 sm:px-0">Aset Digital</h2>
                 
                 <div x-show="isLoadingAssets" class="text-center py-10"><p>Memuat aset...</p></div>
 
@@ -71,7 +76,7 @@
 
         function profileApp() {
             return {
-                status: 'loading', // loading, found, not_found, error
+                status: 'loading', // State: 'loading', 'found', 'not_found', 'error'
                 message: '',
                 profile: { nama: '', username: '' },
                 assets: [],
@@ -92,15 +97,19 @@
                         const response = await fetch(API_ENDPOINT, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ kontrol: 'proteksi', action: 'getPublicProfile', username: username })
+                            body: JSON.stringify({ 
+                                kontrol: 'proteksi', 
+                                action: 'getPublicProfile', 
+                                payload: { username: username }
+                            })
                         });
                         const result = await response.json();
 
                         if (result.status === 'success') {
                             this.status = 'found';
                             this.profile = result.data;
-                            // Setelah profil ditemukan, baru muat asetnya
-                            this.loadAssets(username);
+                            // Anda bisa mengaktifkan baris di bawah ini jika sudah punya GAS untuk getPublicAssets
+                            // this.loadAssets(username); 
                         } else if (result.status === 'not_found') {
                             this.status = 'not_found';
                             this.message = result.message;
@@ -113,20 +122,23 @@
                     }
                 },
 
+                // Fungsi ini bisa Anda aktifkan jika sudah membuat endpoint 'getPublicAssets' di GAS
                 async loadAssets(username) {
                     this.isLoadingAssets = true;
                     try {
                         const response = await fetch(API_ENDPOINT, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            // PERHATIKAN: 'getPublicAssets' adalah action BARU yang perlu dibuat di server
-                            body: JSON.stringify({ kontrol: 'proteksi', action: 'getPublicAssets', username: username })
+                            body: JSON.stringify({ 
+                                kontrol: 'proteksi', 
+                                action: 'getPublicAssets', // Pastikan action ini ada di GAS
+                                payload: { username: username }
+                            })
                         });
                         const result = await response.json();
                         if (result.status === 'success') {
                             this.assets = result.data;
                         } else {
-                            // Tidak menampilkan error jika aset gagal dimuat, cukup kosongkan
                             this.assets = [];
                             console.error('Gagal memuat aset:', result.message);
                         }
@@ -141,4 +153,3 @@
     </script>
 </body>
 </html>
-
