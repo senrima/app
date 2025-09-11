@@ -40,7 +40,41 @@ function app() {
                 }
             }
         },
-        async loadPublicProfile(username) { /* ... (kode tidak berubah) ... */ },
+        // Ganti fungsi loadProfile() yang lama dengan yang ini
+        async loadPublicProfile(username) {
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        kontrol: 'proteksi', 
+                        action: 'getPublicProfile', 
+                        // ▼▼▼ PERBAIKAN UTAMA ADA DI SINI ▼▼▼
+                        payload: {
+                            username: username 
+                        }
+                    })
+                });
+                // ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲
+                
+                const result = await response.json();
+        
+                if (result.status === 'success') {
+                    this.status = 'found';
+                    this.profile = result.data;
+                    // Fungsi loadAssets(username) Anda sudah benar, tidak perlu diubah
+                    // this.loadAssets(username); 
+                } else if (result.status === 'not_found') {
+                    this.status = 'not_found';
+                    this.message = result.message;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                this.status = 'error';
+                this.message = err.message || 'Gagal memuat profil.';
+            }
+        },
         async login() {
             this.isLoading = true;
             this.status = { message: '', success: false };
@@ -265,6 +299,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
