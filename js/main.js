@@ -11,34 +11,38 @@ function app() {
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
         init() {
-            // 1. Cek apakah token ada di localStorage atau sessionStorage
+            // 1. Cek token untuk auto-login terlebih dahulu
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
-
             if (token) {
-                // 2. Jika token ditemukan, langsung coba arahkan ke dashboard
                 console.log('Token ditemukan, mencoba masuk ke dashboard...');
-                
-                // Tampilkan pesan loading agar pengguna tahu apa yang terjadi
                 this.isLoading = true;
                 this.status.message = 'Sesi aktif ditemukan, mengalihkan ke dashboard...';
                 this.status.success = true;
-
-                // Arahkan ke dashboard. Dashboard akan memvalidasi token ini.
-                // Jika token tidak valid, dashboard akan otomatis mengarahkan kembali ke halaman ini.
                 window.location.href = 'dashboard-new.html';
-
-            } else {
-                // 3. Jika tidak ada token, jalankan logika normal
-                // (misalnya, untuk menampilkan profil publik jika ada di URL)
-                const hash = window.location.hash.substring(1);
-                if (hash && hash.startsWith('/')) {
-                    const username = hash.substring(1);
-                    if (username) { 
-                        this.view = 'profile'; 
-                        this.loadPublicProfile(username); 
-                    }
-                }
+                return; // Hentikan eksekusi lebih lanjut
             }
+            
+            // 2. Coba ambil username dari hash URL (contoh: #/namapengguna)
+            let username = '';
+            const hash = window.location.hash.substring(1);
+            if (hash && hash.startsWith('/')) {
+                username = hash.substring(1);
+            } 
+            // 3. Jika tidak ada di hash, coba ambil dari parameter URL (contoh: ?user=namapengguna)
+            else {
+                username = new URLSearchParams(window.location.search).get('user');
+            }
+        
+            // 4. Jika username ditemukan dari salah satu cara di atas, muat profil
+            if (username) {
+                this.view = 'profile';
+                this.loadPublicProfile(username);
+            } 
+            // 5. Jika tidak ada sama sekali, tampilkan halaman login (default)
+            else {
+                this.view = 'login';
+            }
+
         },
         // Ganti fungsi loadProfile() yang lama dengan yang ini
         async loadPublicProfile(username) {
@@ -299,6 +303,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
