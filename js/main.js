@@ -11,10 +11,33 @@ function app() {
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
         init() {
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('/')) {
-                const username = hash.substring(1);
-                if (username) { this.view = 'profile'; this.loadPublicProfile(username); }
+            // 1. Cek apakah token ada di localStorage atau sessionStorage
+            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
+
+            if (token) {
+                // 2. Jika token ditemukan, langsung coba arahkan ke dashboard
+                console.log('Token ditemukan, mencoba masuk ke dashboard...');
+                
+                // Tampilkan pesan loading agar pengguna tahu apa yang terjadi
+                this.isLoading = true;
+                this.status.message = 'Sesi aktif ditemukan, mengalihkan ke dashboard...';
+                this.status.success = true;
+
+                // Arahkan ke dashboard. Dashboard akan memvalidasi token ini.
+                // Jika token tidak valid, dashboard akan otomatis mengarahkan kembali ke halaman ini.
+                window.location.href = 'dashboard-new.html';
+
+            } else {
+                // 3. Jika tidak ada token, jalankan logika normal
+                // (misalnya, untuk menampilkan profil publik jika ada di URL)
+                const hash = window.location.hash.substring(1);
+                if (hash && hash.startsWith('/')) {
+                    const username = hash.substring(1);
+                    if (username) { 
+                        this.view = 'profile'; 
+                        this.loadPublicProfile(username); 
+                    }
+                }
             }
         },
         async loadPublicProfile(username) { /* ... (kode tidak berubah) ... */ },
@@ -242,6 +265,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
