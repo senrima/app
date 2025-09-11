@@ -53,13 +53,10 @@ function app() {
                     body: JSON.stringify({ 
                         kontrol: 'proteksi', 
                         action: 'getPublicProfile', 
-                        // ▼▼▼ PERBAIKAN UTAMA ADA DI SINI ▼▼▼
-                        payload: {
-                            username: username 
-                        }
+                        username: username 
                     })
                 });
-                // ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲
+
                 
                 const result = await response.json();
         
@@ -303,6 +300,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
