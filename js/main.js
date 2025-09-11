@@ -19,31 +19,27 @@ function app() {
                 this.status.message = 'Sesi aktif ditemukan, mengalihkan ke dashboard...';
                 this.status.success = true;
                 window.location.href = 'dashboard-new.html';
-                return; // Hentikan eksekusi lebih lanjut
-            }
-            
-            // 2. Coba ambil username dari hash URL (contoh: #/namapengguna)
-            let username = '';
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('/')) {
-                username = hash.substring(1);
-            } 
-            // 3. Jika tidak ada di hash, coba ambil dari parameter URL (contoh: ?user=namapengguna)
-            else {
-                username = new URLSearchParams(window.location.search).get('user');
+                return; // Hentikan eksekusi
             }
         
-            // 4. Jika username ditemukan dari salah satu cara di atas, muat profil
-            if (username) {
-                this.view = 'profile';
-                this.loadPublicProfile(username);
-            } 
-            // 5. Jika tidak ada sama sekali, tampilkan halaman login (default)
-            else {
-                this.view = 'login';
+            // 2. Cek apakah ada username di hash URL
+            const hash = window.location.hash.substring(1);
+            if (hash && hash.startsWith('/')) {
+                const username = hash.substring(1);
+                
+                // 3. Jika ada, langsung redirect ke halaman profil dengan parameter yang benar
+                if (username) {
+                    console.log(`Username '${username}' ditemukan, mengarahkan ke halaman profil...`);
+                    window.location.href = `profile.html?user=${username}`;
+                    return; // Hentikan eksekusi
+                }
             }
-
+            
+            // 4. Jika tidak ada token dan tidak ada hash, tampilkan halaman login
+            this.view = 'login';
         },
+
+            
         // Ganti fungsi loadProfile() yang lama dengan yang ini
         async loadPublicProfile(username) {
             try {
@@ -300,6 +296,7 @@ function forgotPasswordApp() {
         }
     };
 }
+
 
 
 
