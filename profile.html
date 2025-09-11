@@ -41,17 +41,17 @@
                     </svg>
                 </div>
                 
-                <div class="p-6 pt-0 relative -mt-16">
-                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div class="w-28 h-28 rounded-full bg-gray-100 border-4 border-white shadow-md flex items-center justify-center">
-                            <span class="text-5xl font-bold text-gray-600" x-text="profile.nama ? profile.nama.charAt(0).toUpperCase() : '?'"></span>
-                        </div>
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+                    
+                    <div class="w-28 h-28 rounded-full bg-gray-100 border-4 border-white shadow-md flex items-center justify-center mx-auto">
+                        <span class="text-5xl font-bold text-gray-600" x-text="profile.nama ? profile.nama.charAt(0).toUpperCase() : '?'"></span>
                     </div>
                     
-                    <div class="pt-16 text-center">
-                        <h1 class="text-4xl font-bold text-gray-900" x-text="profile.nama"></h1>
+                    <div class="mt-4">
+                        <h1 class="text-3xl font-bold text-gray-900" x-text="profile.nama"></h1>
                         <p class="text-md text-gray-500 mt-1" x-text="'@' + profile.username"></p>
                     </div>
+                
                 </div>
             </div>
 
@@ -164,3 +164,4 @@
     </script>
 </body>
 </html>
+
