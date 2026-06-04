@@ -11,47 +11,14 @@ function app() {
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
         init() {
-            // 1. Cek token lokal terlebih dahulu (Untuk dukungan Pendekatan B)
-            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
-            if (token) {
-                console.log('Token ditemukan, mencoba masuk ke dashboard...');
-                this.isLoading = true;
-                this.status.message = 'Sesi aktif ditemukan, mengalihkan ke dashboard...';
-                this.status.success = true;
-                window.location.href = 'dashboard-new.html';
-                return; 
-            }
-        
-            // 2. JALUR SSO A: Cek apakah user sudah punya Cookie Sesi aktif di browser
-            // Kita lakukan fetch ringan ke API untuk memverifikasi cookie secara otomatis
-            try {
-                this.isLoading = true;
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include', // WAJIB: Mengirim cookie sso_session ke Worker
-                    body: JSON.stringify({ kontrol: 'proteksi', action: 'getDashboardData' })
-                });
-                const result = await response.json();
-                
-                // Jika cookie valid, langsung lempar ke dashboard tanpa perlu login lagi
-                if (result.status === 'success') {
-                    console.log('Sesi Cookie SSO terdeteksi aktif. Mengalihkan...');
-                    window.location.href = 'dashboard-new.html';
-                    return;
-                }
-            } catch (e) {
-                console.log('Belum ada sesi cookie aktif atau gagal terhubung ke gateway.');
-            } finally {
-                this.isLoading = false;
-            }
-        
-            // 3. Jalankan logika bawaan Anda untuk mengecek hash URL (Profil Publik) jika tidak ada sesi
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('/')) {
-                const username = hash.substring(1);
-                // ... (Sisa kode pengecekan public profile bawaan Anda tetap dilanjutkan di sini) ...
-            },
+            // Melewati sistem login untuk memberikan akses langsung ke antarmuka dashboard
+            this.isLoading = true;
+            this.status.message = 'Mengalihkan langsung ke dashboard...';
+            this.status.success = true;
+            console.log('Akses langsung diaktifkan. Membuka dashboard-new.html');
+            
+            window.location.href = 'dashboard-new.html';
+        },
 
             
         // Ganti fungsi loadProfile() yang lama dengan yang ini
