@@ -58,9 +58,9 @@ window.onload = function () {
     });
     
     // Hubungkan ke tombol kustom login jika ada di UI
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
+    const googleBtn = document.getElementById('googleSignInBtn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', () => {
             google.accounts.id.prompt();
         });
     }
