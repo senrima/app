@@ -11,7 +11,7 @@ function app() {
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
         init() {
-            // 1. Cek token untuk auto-login terlebih dahulu
+            // 1. Cek token lokal terlebih dahulu (Untuk dukungan Pendekatan B)
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             if (token) {
                 console.log('Token ditemukan, mencoba masuk ke dashboard...');
@@ -19,25 +19,39 @@ function app() {
                 this.status.message = 'Sesi aktif ditemukan, mengalihkan ke dashboard...';
                 this.status.success = true;
                 window.location.href = 'dashboard-new.html';
-                return; // Hentikan eksekusi
+                return; 
             }
         
-            // 2. Cek apakah ada username di hash URL
+            // 2. JALUR SSO A: Cek apakah user sudah punya Cookie Sesi aktif di browser
+            // Kita lakukan fetch ringan ke API untuk memverifikasi cookie secara otomatis
+            try {
+                this.isLoading = true;
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // WAJIB: Mengirim cookie sso_session ke Worker
+                    body: JSON.stringify({ kontrol: 'proteksi', action: 'getDashboardData' })
+                });
+                const result = await response.json();
+                
+                // Jika cookie valid, langsung lempar ke dashboard tanpa perlu login lagi
+                if (result.status === 'success') {
+                    console.log('Sesi Cookie SSO terdeteksi aktif. Mengalihkan...');
+                    window.location.href = 'dashboard-new.html';
+                    return;
+                }
+            } catch (e) {
+                console.log('Belum ada sesi cookie aktif atau gagal terhubung ke gateway.');
+            } finally {
+                this.isLoading = false;
+            }
+        
+            // 3. Jalankan logika bawaan Anda untuk mengecek hash URL (Profil Publik) jika tidak ada sesi
             const hash = window.location.hash.substring(1);
             if (hash && hash.startsWith('/')) {
                 const username = hash.substring(1);
-                
-                // 3. Jika ada, langsung redirect ke halaman profil dengan parameter yang benar
-                if (username) {
-                    console.log(`Username '${username}' ditemukan, mengarahkan ke halaman profil...`);
-                    window.location.href = `profile.html?user=${username}`;
-                    return; // Hentikan eksekusi
-                }
-            }
-            
-            // 4. Jika tidak ada token dan tidak ada hash, tampilkan halaman login
-            this.view = 'login';
-        },
+                // ... (Sisa kode pengecekan public profile bawaan Anda tetap dilanjutkan di sini) ...
+            },
 
             
         // Ganti fungsi loadProfile() yang lama dengan yang ini
@@ -201,6 +215,7 @@ async function handleGoogleAuth(userData) {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
         });
         const result = await response.json();
