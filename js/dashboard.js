@@ -96,26 +96,52 @@ function dashboardApp() {
         async loadData() {
             this.isLoading = true;
             
-            // Panggil data profil pengguna utama
-            const response = await this.callApi({ action: 'getDashboardData' });
-            
-            if (response.status === 'success') {
-                this.userData = response.userData;
-                this.notifPreference = response.userData.notifPreference || 'email';
+            try {
+                // Tetap mencoba mengambil data asli dari API Gateway
+                const response = await this.callApi({ action: 'getDashboardData' });
                 
-                // Ambil data pendukung lainnya secara paralel jika sesi valid
-                await Promise.all([
-                    this.loadAssets(),
-                    this.loadBonuses(),
-                    this.loadTutorials()
-                ]);
-            } else {
-                // Jika token lokal maupun Cookie SSO tidak valid, tendang kembali ke Pintu Akses
-                console.warn("Sesi tidak valid, mengalihkan ke halaman login.");
-                window.location.href = 'login-new.html';
+                if (response.status === 'success') {
+                    // Jika sesi API berhasil, gunakan data dari database
+                    this.userData = response.userData;
+                    this.notifPreference = response.userData.notifPreference || 'email';
+                    
+                    // Muat data pendukung
+                    await Promise.all([
+                        this.loadAssets(),
+                        this.loadBonuses(),
+                        this.loadTutorials()
+                    ]);
+                } else {
+                    // Jika API gagal/sesi kosong, bypass sistem login dan izinkan akses langsung ke antarmuka
+                    console.warn("Akses antarmuka langsung diaktifkan. Mengabaikan validasi API.");
+                    
+                    this.userData = {
+                        nama: "Senrima Margasandy",
+                        email: "senrima.ms@gmail.com",
+                        username: "senrimams",
+                        status: "Aktif",
+                        koin: 0,
+                        statusAfiliasi: "Tidak Aktif",
+                        isTelegramConnected: false
+                    };
+                }
+            } catch (error) {
+                // Menangani kondisi jika server/Worker sedang mati total
+                console.warn("Koneksi ke API terputus. Mengaktifkan mode akses langsung.");
+                
+                this.userData = {
+                    nama: "Senrima Margasandy",
+                    email: "senrima.ms@gmail.com",
+                    username: "senrimams",
+                    status: "Aktif",
+                    koin: 0,
+                    statusAfiliasi: "Tidak Aktif",
+                    isTelegramConnected: false
+                };
+            } finally {
+                // Matikan animasi loading apa pun hasilnya
+                this.isLoading = false;
             }
-            
-            this.isLoading = false;
         },
 
         // ===============================================================
