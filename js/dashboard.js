@@ -177,18 +177,36 @@ function dashboardApp() {
             }
         },
 
-        async getDashboardData() {
-            const response = await this.callApi({ action: 'getDashboardData' });
-            if (response.status === 'success') {
-                this.userData = response.userData || {};
-                this.dashboardSummary = response.dashboardSummary || {}; 
-                if (this.userData.status === 'Wajib Ganti Password' && this.activeView !== 'akun') {
-                    this.activeView = 'akun';
-                    this.activeSubView = 'profile';
-                }
-            } else {
-                this.showNotification(response.message || 'Gagal memuat data utama.', true);
-                setTimeout(() => window.location.href = 'index.html', 2000);
+        async loadData() {
+            try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
+            // BARIS INI WAJIB ADA AGAR COOKIE SSO DIKIRIM KE WORKER
+            credentials: 'include', 
+            
+            body: JSON.stringify({ 
+                kontrol: 'proteksi', 
+                action: 'getDashboardData'
+                // Kamu tidak perlu lagi repot mengirim token lewat payload di sini, 
+                // karena Worker akan mengambilnya dari Cookie secara otomatis!
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            this.userData = result.userData;
+        } else {
+            // Jika token di cookie tidak valid/kedaluwarsa, baru kembalikan ke login
+            window.location.href = 'login-new.html';
+        }
+            } catch (e) {
+                console.error("Gagal memuat data:", e);
+            } finally {
+                this.isLoading = false;
             }
         },
 
