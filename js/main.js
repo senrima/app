@@ -200,6 +200,7 @@ async function handleGoogleAuth(userData) {
     try {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
         });
         const result = await response.json();
