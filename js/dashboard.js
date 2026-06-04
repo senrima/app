@@ -135,13 +135,11 @@ function dashboardApp() {
         },
         
         async init() {
-            const initialToken = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
-            
-            if (!initialToken) {
-                this.showNotification('Sesi tidak ditemukan atau telah berakhir. Anda akan diarahkan ke halaman login.', true);
-                setTimeout(() => window.location.href = 'index.html', 3000);
-                return;
-            }
+                // Hapus syarat autentikasi ketat yang memblokir akses
+                // Langsung muat data secara otomatis, biarkan sistem Cookie yang bekerja di latar belakang
+                this.isLoading = true;
+                this.loadData();
+                }
         
             this.sessionToken = initialToken;
             try {
