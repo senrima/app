@@ -61,23 +61,31 @@ function dashboardApp() {
             const headers = { 'Content-Type': 'application/json' };
             if (localToken) headers['x-auth-token'] = localToken;
 
-            try {
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: headers,
-                    credentials: 'include', // Kunci Utama SSO
-                    body: JSON.stringify({ ...payload, kontrol: 'proteksi' })
-                });
-                const result = await response.json();
+            // PERBAIKAN KRUSIAL: Masukkan token langsung ke dalam jantung data (Payload)
+            // Ini menjamin GAS pasti bisa membacanya meskipun HTTP Header terpotong di jalan
+            const bodyPayload = { ...payload, kontrol: 'proteksi' };
+            if (localToken) bodyPayload.token = localToken;
 
+            try {
+                const response = await fetch(API_ENDPOINT, { 
+                    method: 'POST', 
+                    headers: headers, 
+                    credentials: 'include', 
+                    body: JSON.stringify(bodyPayload) 
+                });
+                
+                const result = await response.json();
+                
+                // Menangkap pesan penolakan dari server dengan aman
                 if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
-                    this.showNotification('Sesi Anda telah berakhir. Mengalihkan ke login...', true);
+                    this.showNotification(result.message || 'Sesi Anda telah berakhir.', true);
                     setTimeout(() => {
                         localStorage.removeItem('sessionToken');
                         sessionStorage.removeItem('sessionToken');
                         window.location.href = 'index.html';
-                    }, 1500);
+                    }, 2000);
                 }
+                
                 return result;
             } catch (e) {
                 return { status: 'error', message: 'Koneksi ke server gagal.' };
