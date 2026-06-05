@@ -3,64 +3,45 @@ const API_ENDPOINT = "https://api.s-tools.id";
 function dashboardApp() {
     return {
         // ===============================================================
-        // == STATE APLIKASI (SEMUA VARIABEL)
+        // == STATE APLIKASI
         // ===============================================================
-
-        // State Utama
         isLoading: true,
         isSidebarOpen: false,
         activeView: 'beranda',
-        userData: {
-            nama: '',
-            email: '',
-            username: '',
-            status: '',
-            koin: 0,
-            statusAfiliasi: 'Tidak Aktif',
-            isTelegramConnected: false
-        },
-        
-        // State Modals & Notifikasi Tampilan
+        userData: { statusAfiliasi: 'Tidak Aktif' },
+        dashboardSummary: {},
         modal: {
-            isOpen: false,
-            title: 'Pemberitahuan',
-            message: '',
-            isConfirmDialog: false,
-            isError: false,
-            confirmText: 'Ya, Lanjutkan',
-            cancelText: 'Batal',
+            isOpen: false, title: 'Pemberitahuan', message: '',
+            isConfirmDialog: false, isError: false,
+            confirmText: 'Ya, Lanjutkan', cancelText: 'Batal',
             onConfirm: () => {}
         },
-
-        // State Menu & Navigasi Submenu
-        isAssetMenuOpen: false,
-        assetSubView: 'produk',
-        isAkunMenuOpen: false,
-        activeSubView: 'profile',
-
-        // Data Konten dari Server
-        digitalAssets: [],
-        isAssetsLoading: false,
-        digitalAssetsSearchQuery: '',
-        
-        bonuses: [],
-        isBonusesLoading: false,
-        bonusesSearchQuery: '',
-
-        tutorials: [],
-        isTutorialsLoading: false,
-
-        // State Pengaturan Akun
+        isAssetMenuOpen: false, assetSubView: 'produk',
+        isAkunMenuOpen: false, activeSubView: 'profile',
+        notifications: [], unreadCount: 0,
+        digitalAssets: [], isAssetsLoading: false, digitalAssetsSearchQuery: '',
+        bonuses: [], isBonusesLoading: false, bonusesSearchQuery: '',
         passwordFields: { old: '', new: '' },
-        notifPreference: 'email',
-
+        riwayatPembelian: [], isPembelianLoading: false, pembelianSearchQuery: '', pembelianCurrentPage: 1, pembelianItemsPerPage: 5,
+        historyKoin: [], isKoinLoading: false, koinSearchQuery: '', koinCurrentPage: 1, koinItemsPerPage: 10,
+        aksesProduk: [], isAksesProdukLoading: false, aksesProdukSearchQuery: '', aksesProdukCurrentPage: 1, aksesProdukItemsPerPage: 10,
+        bonusPengguna: [], isBonusPenggunaLoading: false, bonusPenggunaSearchQuery: '', bonusPenggunaCurrentPage: 1, bonusPenggunaItemsPerPage: 10,
+        klaimKode: '',
+        affiliateData: { summary: { komisi: 0, penjualan: 0, produk: 0 }, coupons: [], products: [] },
+        affiliateProductList: [], isAffiliateProductListLoading: false, affiliateProductSearchQuery: '',
+        affiliateProductCurrentPage: 1, affiliateProductItemsPerPage: 10,
+        isEditCouponModalOpen: false, isAddCouponModalOpen: false,
+        editingCoupon: { IDProduk: null, NamaProduk: '', KodeKupon: '', Status: '' },
+        newCoupon: { IDProduk: '', NamaProduk: '', DiskonAfiliasi: 0, KodeKupon: '' },
+        
+        formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(value) || 0);
+        },
+        
         // ===============================================================
-        // == FUNGSI INISIALISASI & FUNGSI JALUR UTAMA API
+        // == FUNGSI INISIALISASI & API GATEWAY
         // ===============================================================
-
-        init() {
-            // Hapus pengecekan manual localStorage.
-            // Langsung panggil data dan biarkan API Gateway yang memvalidasi Cookie.
+        async init() {
             this.isLoading = true;
             try {
                 await this.getDashboardData();
@@ -70,13 +51,8 @@ function dashboardApp() {
             }
         },
 
-        /**
-         * Fungsi Sentral Komunikasi API Gateway (Cloudflare Worker)
-         */
         async callApi(payload) {
-            // Ambil token lokal sebagai cadangan (jika ada)
             const localToken = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken') || '';
-            
             const headers = { 'Content-Type': 'application/json' };
             if (localToken) headers['x-auth-token'] = localToken;
 
@@ -84,14 +60,11 @@ function dashboardApp() {
                 const response = await fetch(API_ENDPOINT, { 
                     method: 'POST', 
                     headers: headers, 
-                    // SANGAT KRUSIAL: Wajib ada agar Cookie SSO dikirim ke Worker
-                    credentials: 'include', 
+                    credentials: 'include', // Mengirim Cookie SSO ke Worker
                     body: JSON.stringify({ ...payload, kontrol: 'proteksi' }) 
                 });
-                
                 const result = await response.json();
                 
-                // Tangkap respon jika sesi/cookie terbukti mati di server
                 if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
                     this.showNotification('Sesi Anda telah berakhir. Mengalihkan ke login...', true);
                     setTimeout(() => {
@@ -100,10 +73,8 @@ function dashboardApp() {
                         window.location.href = 'index.html';
                     }, 1500);
                 }
-                
                 return result;
             } catch (e) {
-                this.showNotification('Koneksi ke server gagal.', true);
                 return { status: 'error', message: 'Koneksi ke server gagal.' };
             }
         },
@@ -112,7 +83,6 @@ function dashboardApp() {
             const response = await this.callApi({ action: 'getDashboardData' });
             
             if (response.status === 'success' || response.status === 'sukses') {
-                // Sesi sah! Masukkan data ke antarmuka
                 this.userData = response.userData || {};
                 this.dashboardSummary = response.dashboardSummary || {}; 
                 
@@ -122,92 +92,118 @@ function dashboardApp() {
                 }
                 
                 await this.loadNotifications();
+                this.loadDigitalAssets();
+                this.loadBonuses();
                 
-                // SUKSES: Matikan animasi loading agar Dashboard tampil!
-                this.isLoading = false; 
+                this.isLoading = false; // Matikan layar putih!
             } else {
-                // Sesi ditolak
                 this.showNotification(response.message || 'Sesi tidak sah.', true);
                 setTimeout(() => window.location.href = 'index.html', 1500);
             }
         },
 
         // ===============================================================
-        // == MANAJEMEN KONTEN DATA (ASSET, BONUS, TUTORIAL)
+        // == FUNGSI PENDUKUNG (NOTIF, MODAL, DATA)
         // ===============================================================
-
-        async loadAssets() {
-            this.isAssetsLoading = true;
-            const res = await this.callApi({ action: 'getAsetDigital' });
-            if (res.status === 'success') {
-                this.digitalAssets = res.data || [];
-            }
-            this.isAssetsLoading = false;
+        showNotification(message, isError = false) {
+            this.modal.title = isError ? 'Terjadi Kesalahan' : 'Pemberitahuan';
+            this.modal.message = message;
+            this.modal.isConfirmDialog = false;
+            this.modal.isError = isError;
+            this.modal.isOpen = true;
+        },
+        showConfirm(message, onConfirmCallback) {
+            this.modal.title = 'Konfirmasi Tindakan';
+            this.modal.message = message;
+            this.modal.isConfirmDialog = true;
+            this.modal.isError = false;
+            this.modal.onConfirm = () => { this.modal.isOpen = false; onConfirmCallback(); };
+            this.modal.isOpen = true;
         },
 
-        async loadBonuses() {
-            this.isBonusesLoading = true;
-            const res = await this.callApi({ action: 'getBonus' });
-            if (res.status === 'success') {
-                this.bonuses = res.data || [];
+        async loadNotifications() {
+            const response = await this.callApi({ action: 'getnotifikasi' });
+            if (response.status === 'sukses' && response.data) {
+                const data = (typeof response.data === 'string') ? JSON.parse(response.data) : response.data;
+                this.notifications = data || [];
+                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
             }
+        },
+        async markNotificationsAsRead() {
+            if (this.unreadCount === 0) return;
+            this.unreadCount = 0;
+            await this.callApi({ action: 'tandainotifikasidibaca' });
+        },
+
+        async loadDigitalAssets(forceRefresh = false) {
+            if (this.digitalAssets.length > 0 && !forceRefresh) return;
+            this.isAssetsLoading = true;
+            const response = await this.callApi({ action: 'getAsetDigital' });
+            if (response.status === 'success') this.digitalAssets = response.data || [];
+            this.isAssetsLoading = false;
+        },
+        async loadBonuses(forceRefresh = false) {
+            if (this.bonuses.length > 0 && !forceRefresh) return;
+            this.isBonusesLoading = true;
+            const response = await this.callApi({ action: 'getBonus' });
+            if (response.status === 'success') this.bonuses = response.data || [];
             this.isBonusesLoading = false;
         },
 
-        async loadTutorials() {
-            this.isTutorialsLoading = true;
-            const res = await this.callApi({ action: 'getTutorials' });
-            if (res.status === 'success') {
-                this.tutorials = res.data || [];
-            }
-            this.isTutorialsLoading = false;
+        // Fitur Pencarian & Filter
+        get filteredDigitalAssets() { return this.digitalAssetsSearchQuery ? this.digitalAssets.filter(a => a.NamaAset.toLowerCase().includes(this.digitalAssetsSearchQuery.toLowerCase())) : this.digitalAssets; },
+        get filteredBonuses() { return this.bonusesSearchQuery ? this.bonuses.filter(b => b.Judul.toLowerCase().includes(this.bonusesSearchQuery.toLowerCase())) : this.bonuses; },
+
+        // Akun & Keamanan
+        async updateProfile() {
+            if (!this.userData.nama.trim()) return this.showNotification('Nama tidak boleh kosong.', true);
+            this.showNotification('Menyimpan perubahan...');
+            const response = await this.callApi({ action: 'updateProfile', payload: { newName: this.userData.nama } });
+            if (response.status === 'success') this.showNotification('Profil berhasil diperbarui.');
+            else this.showNotification(response.message || 'Gagal memperbarui profil.', true);
+        },
+        
+        async changePassword() {
+            const { old: oldPassword, new: newPassword } = this.passwordFields;
+            if (!oldPassword || !newPassword) return this.showNotification('Password lama dan baru wajib diisi.', true);
+            this.showNotification('Mengubah password...');
+            const response = await this.callApi({ action: 'changePassword', payload: { oldPassword, newPassword } });
+            if (response.status === 'success') {
+                this.showNotification('Password berhasil diubah.');
+                this.passwordFields = { old: '', new: '' };
+            } else this.showNotification(response.message || 'Gagal mengubah password.', true);
         },
 
-        async watchTutorial(judulVideo) {
-            // Kirim update status ke spreadsheet bahwa video sudah ditonton
-            const res = await this.callApi({ 
-                action: 'updateTutorialStatus', 
-                payload: { judul: judulVideo } 
+        async startTelegramVerification() {
+            this.showNotification('Membuat link aman...');
+            const response = await this.callApi({ action: 'generateTelegramToken' });
+            if (response.status === 'success' && response.token) {
+                window.open(`https://t.me/notif_sboots_bot?start=${response.token}`, '_blank');
+                this.showNotification('Silakan lanjutkan verifikasi di Telegram.');
+            } else this.showNotification('Gagal membuat link.', true);
+        },
+        async disconnectTelegram() {
+            this.showConfirm('Yakin putuskan hubungan Telegram?', async () => {
+                const response = await this.callApi({ action: 'disconnectTelegram' });
+                if (response.status === 'success') await this.getDashboardData();
             });
-            if (res.status === 'success') {
-                // Refresh data lokal tutorial agar UI langsung berubah centang/selesai
-                await this.loadTutorials();
-            }
         },
 
-        // ===============================================================
-        // == FITUR UTALITAS UI & NOTIFIKASI MODAL
-        // ===============================================================
-
-        showNotification(message, isError = false, title = 'Pemberitahuan') {
-            this.modal.isOpen = true;
-            this.modal.title = title;
-            this.modal.message = message;
-            this.modal.isError = isError;
-            this.modal.isConfirmDialog = false;
+        // Fitur Admin & Logout
+        async requestAdminAccess() {
+            const response = await this.callApi({ action: 'requestAdminAccess' });
+            if (response.status === 'success') {
+                sessionStorage.setItem('adminEmailForOTP', this.userData.email);
+                window.location.href = 'otp-admin.html'; 
+            } else this.showNotification(response.message || 'Gagal meminta akses.', true);
         },
 
-        // ===============================================================
-        // == PROSES KELUAR SISTEM (LOGOUT)
-        // ===============================================================
-
-        async logout(callServer = true) {
-            this.showNotification('Mengakhiri sesi, mohon tunggu...', false, 'Logout');
-            
-            if (callServer) {
-                // Kirim permintaan hapus sesi ke backend (agar token di spreadsheet dikosongkan)
-                await this.callApi({ action: 'logout' });
-            }
-            
-            // Bersihkan data penyimpanan lokal frontend (Pendekatan B)
-            sessionStorage.removeItem('sessionToken');
+        async logout(callServer = true){
+            this.showNotification('Keluar dari sistem...');
+            if (callServer) await this.callApi({ action: 'logout' });
             localStorage.removeItem('sessionToken');
-            
-            // Alihkan kembali ke login utama. 
-            // Worker otomatis menangkap aksi logout ini dan menghapus Cookie sso_session (Max-Age=0)
-            setTimeout(() => {
-                window.location.href = 'login-new.html';
-            }, 1000);
+            sessionStorage.removeItem('sessionToken');
+            window.location.href = 'index.html';
         }
     };
 }
