@@ -67,10 +67,25 @@
                     <div class="relative flex justify-center text-sm"><span class="bg-white px-2 text-gray-500">Atau</span></div>
                 </div>
                 
-                <button id="googleSignInBtn" type="button" class="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
-                    <svg class="w-5 h-5 mr-3" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.64,9.2c0-.63-.06-1.25-.16-1.84H9.18v3.48h4.74c-.2,1.13-.83,2.08-1.78,2.72v2.26h2.9c1.7-1.56,2.68-3.87,2.68-6.62Z" fill="#4285F4"></path><path d="M9.18,18c2.43,0,4.47-.8,5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35,0-4.35-1.58-5.06-3.71H1.1v2.33C2.54,16.27,5.61,18,9.18,18Z" fill="#34A853"></path><path d="M4.12,10.71a5.37,5.37,0,0,1,0-3.42V4.96H1.1A8.99,8.99,0,0,0,0,9a8.99,8.99,0,0,0,1.1,4.04l3.02-2.33Z" fill="#FBBC05"></path><path d="M9.18,3.54c1.32,0,2.52.46,3.46,1.36l2.58-2.58C13.65.8,11.61,0,9.18,0,5.61,0,2.54,1.73,1.1,4.96l3.02,2.33C4.83,5.12,6.83,3.54,9.18,3.54Z" fill="#EA4335"></path></svg>
-                    Login dengan Google
-                </button>
+                <div id="g_id_onload"
+                     data-client_id="140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="true">
+                </div>
+
+                <div class="w-full flex justify-center">
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="360">
+                    </div>
+                </div>
                 
                 <div x-show="status.message" x-cloak class="mt-4 p-4 rounded-lg border-l-4" :class="status.success ? 'bg-green-100 border-green-400 text-green-800' : 'bg-red-100 border-red-400 text-red-800'">
                     <span class="font-medium" x-text="status.message"></span>
