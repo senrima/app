@@ -5,13 +5,13 @@
  */
 
 const API_ENDPOINT = "https://api.s-tools.id";
-const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
 
 // ===============================================================
-// 1. SISTEM GOOGLE SSO (TERINTEGRASI)
+// 1. SISTEM GOOGLE SSO (TERINTEGRASI VIA HTML API)
 // ===============================================================
 
-async function handleCredentialResponse(response) {
+// WAJIB: Jadikan fungsi ini global (window.) agar bisa dipanggil oleh tag HTML Google
+window.handleCredentialResponse = async function(response) {
     try {
         const responsePayload = jwt_decode(response.credential);
         
@@ -40,7 +40,7 @@ async function handleCredentialResponse(response) {
         console.error("Error SSO:", error);
         alert('Gagal terhubung ke server API Gateway.');
     }
-}
+};
 
 function jwt_decode(token) {
     var base64Url = token.split('.')[1];
@@ -51,37 +51,8 @@ function jwt_decode(token) {
     return JSON.parse(jsonPayload);
 }
 
-window.onload = function () {
-    if (window.google && google.accounts) {
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse
-        });
-        
-        // MENGGANTI TOMBOL KUSTOM DENGAN TOMBOL RESMI GOOGLE
-        const customBtn = document.getElementById('googleSignInBtn');
-        if (customBtn) {
-            // Buat kontainer penampung
-            const container = document.createElement('div');
-            container.className = 'w-full flex justify-center';
-            
-            // Timpa tombol lama dengan kontainer baru
-            customBtn.parentNode.replaceChild(container, customBtn);
-
-            // Render tombol resmi Google (Anti-Cooldown)
-            google.accounts.id.renderButton(container, {
-                theme: "outline",
-                size: "large",
-                width: 360, // Lebar disesuaikan dengan form
-                text: "signin_with",
-                shape: "rectangular"
-            });
-        }
-        
-        // Tetap panggil One-Tap di latar belakang
-        google.accounts.id.prompt(); 
-    }
-};
+// Catatan: window.onload dan google.accounts.id.initialize TELAH DIHAPUS.
+// Google sekarang otomatis membaca elemen <div id="g_id_onload"> dari HTML.
 
 // ===============================================================
 // 2. KONTROLER APLIKASI LOGIN (ALPINE.JS)
