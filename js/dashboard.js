@@ -97,49 +97,26 @@ function dashboardApp() {
             this.isLoading = true;
             
             try {
-                // Tetap mencoba mengambil data asli dari API Gateway
                 const response = await this.callApi({ action: 'getDashboardData' });
                 
                 if (response.status === 'success') {
-                    // Jika sesi API berhasil, gunakan data dari database
                     this.userData = response.userData;
                     this.notifPreference = response.userData.notifPreference || 'email';
                     
-                    // Muat data pendukung
                     await Promise.all([
                         this.loadAssets(),
                         this.loadBonuses(),
                         this.loadTutorials()
                     ]);
                 } else {
-                    // Jika API gagal/sesi kosong, bypass sistem login dan izinkan akses langsung ke antarmuka
-                    console.warn("Akses antarmuka langsung diaktifkan. Mengabaikan validasi API.");
-                    
-                    this.userData = {
-                        nama: "Senrima Margasandy",
-                        email: "senrima.ms@gmail.com",
-                        username: "senrimams",
-                        status: "Aktif",
-                        koin: 0,
-                        statusAfiliasi: "Tidak Aktif",
-                        isTelegramConnected: false
-                    };
+                    // Sesi tidak valid, tendang kembali ke halaman login
+                    console.warn("Sesi tidak sah. Mengembalikan ke login.");
+                    window.location.href = 'index.html';
                 }
             } catch (error) {
-                // Menangani kondisi jika server/Worker sedang mati total
-                console.warn("Koneksi ke API terputus. Mengaktifkan mode akses langsung.");
-                
-                this.userData = {
-                    nama: "Senrima Margasandy",
-                    email: "senrima.ms@gmail.com",
-                    username: "senrimams",
-                    status: "Aktif",
-                    koin: 0,
-                    statusAfiliasi: "Tidak Aktif",
-                    isTelegramConnected: false
-                };
+                console.error("Gagal memuat dashboard:", error);
+                window.location.href = 'index.html';
             } finally {
-                // Matikan animasi loading apa pun hasilnya
                 this.isLoading = false;
             }
         },
