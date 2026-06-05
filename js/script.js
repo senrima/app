@@ -2,9 +2,6 @@
 // S-TOOLS ID - GOOGLE SIGN-IN HANDLER (SSO BRIDGE)
 // ===============================================================
 
-const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
-const API_ENDPOINT = "https://api.s-tools.id"; // Diarahkan ke Worker Gateway, bukan langsung ke GAS
-
 // Fungsi yang dipanggil oleh Google setelah pengguna memilih akun
 async function handleCredentialResponse(response) {
     try {
