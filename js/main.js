@@ -64,6 +64,10 @@ function app() {
         isLoading: false, 
         profileData: {},
         loginData: { email: '', password: '' },
+
+        // 1. TAMBAHKAN VARIABEL INI
+        registerData: { nama: '', email: '', password: '' },
+        
         status: { message: '', success: false },
         
         async init() {
@@ -130,6 +134,47 @@ function app() {
             } catch (error) {
                 this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
                 console.error('Login error:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // 2. TAMBAHKAN FUNGSI REGISTER INI
+        async register() {
+            if (!this.registerData.nama || !this.registerData.email || !this.registerData.password) {
+                this.status = { message: 'Semua kolom wajib diisi.', success: false };
+                return;
+            }
+
+            this.isLoading = true;
+            this.status = { message: 'Memproses pendaftaran...', success: true };
+
+            try {
+                // Asumsi: Saat user mendaftar manual, GAS akan meminta OTP ke Email
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        kontrol: 'proteksi',
+                        action: 'requestOTPRegister', // Sesuaikan jika nama aksinya berbeda di GAS
+                        nama: this.registerData.nama,
+                        email: this.registerData.email,
+                        password: this.registerData.password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Simpan email dan lempar ke halaman OTP
+                    sessionStorage.setItem('tempEmail', this.registerData.email);
+                    window.location.href = 'otp.html';
+                } else {
+                    this.status = { message: result.message || 'Pendaftaran gagal', success: false };
+                }
+            } catch (error) {
+                this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
             } finally {
                 this.isLoading = false;
             }
