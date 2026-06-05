@@ -11,13 +11,36 @@ function app() {
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
         init() {
-            // Melewati sistem login untuk memberikan akses langsung ke antarmuka dashboard
-            this.isLoading = true;
-            this.status.message = 'Mengalihkan langsung ke dashboard...';
-            this.status.success = true;
-            console.log('Akses langsung diaktifkan. Membuka dashboard-new.html');
+            // 1. Cek Token Lokal
+            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
+            if (token) {
+                this.isLoading = true;
+                window.location.href = 'dashboard-new.html';
+                return;
+            }
+        
+            // 2. Cek Cookie SSO ke Gateway
+            try {
+                this.isLoading = true;
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', 
+                    body: JSON.stringify({ kontrol: 'proteksi', action: 'getDashboardData' })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Sesi ada, langsung lempar ke dashboard
+                    window.location.href = 'dashboard-new.html';
+                    return;
+                }
+            } catch (e) {
+                console.log('Tidak ada sesi otomatis, menampilkan form login.');
+            } 
             
-            window.location.href = 'dashboard-new.html';
+            // 3. JIKA SESI KOSONG: Matikan loading agar form login ditampilkan
+            this.isLoading = false; 
         },
 
             
