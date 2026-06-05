@@ -1,11 +1,79 @@
 /**
- * S-Tools ID Application
+ * S-Tools ID Application - Unified Gateway
  * Ownership Identity: Senrima Margasandy
  * Primary Contact: senrima.ms@gmail.com
  */
 
 const API_ENDPOINT = "https://api.s-tools.id";
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
+
+// ===============================================================
+// 1. SISTEM GOOGLE SSO (PENGGANTI SCRIPT.JS)
+// ===============================================================
+
+async function handleCredentialResponse(response) {
+    try {
+        const responsePayload = jwt_decode(response.credential);
+        
+        const res = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                kontrol: 'proteksi',
+                action: 'googleAuth',
+                email: responsePayload.email,
+                nama: responsePayload.name,
+                id: responsePayload.sub
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.status === 'success' || result.status === 'login_success') {
+            // Jika login SSO sukses, set token lokal dan langsung masuk dashboard
+            localStorage.setItem('sessionToken', result.token);
+            window.location.href = 'dashboard-new.html';
+        } else {
+            alert(result.message || 'Gagal menyelaraskan akun dengan SSO.');
+        }
+    } catch (error) {
+        console.error("Error SSO:", error);
+        alert('Gagal terhubung ke server API Gateway.');
+    }
+}
+
+function jwt_decode(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+}
+
+// Inisialisasi Google saat halaman dimuat
+window.onload = function () {
+    if (window.google && google.accounts) {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse
+        });
+        
+        const googleBtn = document.getElementById('googleSignInBtn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', () => {
+                google.accounts.id.prompt();
+            });
+        }
+        
+        google.accounts.id.prompt(); 
+    }
+};
+
+// ===============================================================
+// 2. KONTROLER APLIKASI LOGIN (ALPINE.JS)
+// ===============================================================
 
 function app() {
     return {
@@ -16,7 +84,7 @@ function app() {
         status: { message: '', success: false },
         
         async init() {
-            // 1. Cek Token Lokal 
+            // 1. Cek Token Lokal (Fitur Auto-Login yang terbukti jalan)
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             if (token) {
                 this.isLoading = true;
@@ -24,7 +92,7 @@ function app() {
                 return;
             }
         
-            // 2. Cek Cookie SSO Worker 
+            // 2. Cek Cookie SSO Latar Belakang
             try {
                 this.isLoading = true;
                 const response = await fetch(API_ENDPOINT, {
@@ -40,278 +108,50 @@ function app() {
                     return;
                 }
             } catch (e) {
-                console.log('Tidak ada sesi. Menyiapkan form login...');
+                console.log('Tidak ada sesi cookie. Form login siap digunakan.');
             } 
             
-            // 3. JIKA SESI KOSONG: Matikan loading agar UI form login digambar oleh browser
+            // 3. JIKA SESI KOSONG: Matikan animasi loading agar UI muncul utuh
             this.isLoading = false; 
         },
 
-            
-        // Ganti fungsi loadProfile() yang lama dengan yang ini
-        async loadPublicProfile(username) {
+        async login() {
+            if (!this.loginData.email || !this.loginData.password) {
+                this.status = { message: 'Email dan Password wajib diisi.', success: false };
+                return;
+            }
+
+            this.isLoading = true;
+            this.status = { message: 'Memproses login...', success: true };
+
             try {
                 const response = await fetch(API_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        kontrol: 'proteksi', 
-                        action: 'getPublicProfile', 
-                        username: username 
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        kontrol: 'proteksi',
+                        action: 'requestOTP', // Menuju mekanisme OTP di GAS
+                        email: this.loginData.email,
+                        password: this.loginData.password
                     })
                 });
 
-                
                 const result = await response.json();
-        
+
                 if (result.status === 'success') {
-                    this.status = 'found';
-                    this.profile = result.data;
-                    // Fungsi loadAssets(username) Anda sudah benar, tidak perlu diubah
-                    // this.loadAssets(username); 
-                } else if (result.status === 'not_found') {
-                    this.status = 'not_found';
-                    this.message = result.message;
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (err) {
-                this.status = 'error';
-                this.message = err.message || 'Gagal memuat profil.';
-            }
-        },
-        async login() {
-            this.isLoading = true;
-            this.status = { message: '', success: false };
-            try {
-                sessionStorage.setItem('userEmailForOTP', this.loginData.email);
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kontrol: 'proteksi', action: 'requestOTP', email: this.loginData.email, password: this.loginData.password })
-                });
-                const result = await response.json();
-                this.status.message = result.message;
-                this.status.success = result.status === 'success';
-                
-                if (result.status === 'success') {
-                    const remember = document.getElementById('remember-me').checked;
-                    sessionStorage.setItem('rememberMeStatus', remember);
+                    // Jika sukses OTP, simpan email dan bawa ke halaman verifikasi OTP
+                    sessionStorage.setItem('tempEmail', this.loginData.email);
                     window.location.href = 'otp.html';
-                } else if (result.status === 'google_login_required') {
-                    this.status.message = result.message;
-                    this.status.success = false;
+                } else {
+                    this.status = { message: result.message || 'Login gagal', success: false };
                 }
-                
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
-            } finally { this.isLoading = false; }
-        }
-    };
-}
-
-// Daftar
-function registrationApp() {
-    return {
-        isLoading: false,
-        formData: { nama: '', email: '', jawaban: '' },
-        captcha: { angka1: 0, angka2: 0, question: '' },
-        status: { message: '', success: false },
-        isPasswordModalOpen: false,
-        googleUserData: {},        
-        passwordForGoogle: '',  
-
-        init() { this.generateCaptcha(); },
-        generateCaptcha() {
-            this.captcha.angka1 = Math.floor(Math.random() * 10) + 1;
-            this.captcha.angka2 = Math.floor(Math.random() * 10) + 1;
-            this.captcha.question = `${this.captcha.angka1} + ${this.captcha.angka2}`;
-        },
-        async submit() {
-            this.isLoading = true;
-            this.status = { message: '', success: false };
-            try {
-                const payload = { ...this.formData, ...this.captcha, kontrol: 'proteksi', action: 'register' };
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-        
-                this.status.message = result.message;
-                this.status.success = result.status === 'success';
-        
-                if (this.status.success) {
-
-                setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 3000); 
-                } 
-                else {
-                    this.generateCaptcha();
-                }
-        
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
+            } catch (error) {
+                this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
+                console.error('Login error:', error);
             } finally {
                 this.isLoading = false;
             }
-        },
-    };
-}
-
-// ===============================================================
-// == BAGIAN 2: LOGIKA BARU UNTUK GOOGLE SIGN-IN (GLOBAL)
-// ===============================================================
-
-
-function initializeGoogleSignIn() {
-    google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCallback 
-    });
-    
-    const googleBtn = document.getElementById('googleSignInBtn');
-    if (googleBtn) {
-        googleBtn.addEventListener('click', () => {
-
-            googleBtn.disabled = true;
-            googleBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V4a10 10 0 00-10 10h2z"></path>
-                </svg>
-                Memproses...
-            `;
-            googleBtn.classList.add('opacity-75', 'cursor-not-allowed');
-            google.accounts.id.prompt();
-
-        });
-    }
-}
-
-function handleGoogleCallback(response) {
-    const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
-    const userData = {
-        id: googleUser.sub,
-        email: googleUser.email,
-        nama: googleUser.name,
-        foto: googleUser.picture
-    };
-    handleGoogleAuth(userData);
-}
-
-async function handleGoogleAuth(userData) {
-    const payload = { ...userData };
-    try {
-        const response = await fetch(API_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ kontrol: 'proteksi', action: 'googleAuth', ...payload })
-        });
-        const result = await response.json();
-        if (result.status === 'login_success') {
-            const remember = document.getElementById('remember-me').checked;
-            if (remember) {
-                localStorage.setItem('sessionToken', result.token);
-            } else {
-                sessionStorage.setItem('sessionToken', result.token);
-            }
-            setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
-        } else {
-            alert(result.message || 'Terjadi kesalahan saat otentikasi Google.');
-        }
-    } catch (error) {
-        alert('Gagal terhubung ke server.');
-    }
-}
-
-// ===============================================================
-// == BAGIAN 3: LOGIKA LAIN
-// ===============================================================
-
-// OTP
-function otpApp() {
-    return {
-        isLoading: false,
-        otp: '',
-        status: { message: '', success: false },
-        submit() {
-            this.isLoading = true;
-            this.status = { message: '', success: false };
-            const email = sessionStorage.getItem('userEmailForOTP');
-            if (!email) {
-                this.status.message = 'Sesi tidak ditemukan, silakan login ulang.';
-                this.status.success = false;
-                this.isLoading = false;
-                return;
-            }
-            (async () => {
-                try {
-                    const response = await fetch(API_ENDPOINT, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ kontrol: 'proteksi', action: 'verifyOTP', email: email, otp: this.otp })
-                    });
-                    const result = await response.json();
-                    this.status.message = result.message;
-                    this.status.success = result.status.includes('success');
-                    if (result.status.includes('success') || result.status.includes('change_password_required')) {
-                        const token = result.token;
-                        if (token) {
-                            sessionStorage.removeItem('userEmailForOTP');
-                            const remember = sessionStorage.getItem('rememberMeStatus') === 'true';
-                            sessionStorage.removeItem('rememberMeStatus');
-                            if (remember) {
-                                localStorage.setItem('sessionToken', token);
-                            } else {
-                                sessionStorage.setItem('sessionToken', token);
-                            }
-                            setTimeout(() => window.location.href = 'dashboard-new.html', 3000);
-
-                        } else { this.status = { message: 'Gagal mendapatkan token sesi.', success: false }; }
-                    }
-                } catch (e) {
-                    this.status.message = 'Gagal terhubung ke server.';
-                    this.status.success = false;
-                } finally { this.isLoading = false; }
-            })();
         }
     };
 }
-
-// Lupa Password
-function forgotPasswordApp() {
-    return {
-        isLoading: false,
-        email: '',
-        status: { message: '', success: false },
-        async submit() {
-            this.isLoading = true;
-            this.status = { message: '', success: false };
-            try {
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kontrol: 'proteksi', action: 'forgotPassword', email: this.email })
-                });
-                const result = await response.json();
-                this.status.message = result.message;
-                this.status.success = result.status === 'success';
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
-            } finally { this.isLoading = false; }
-        }
-    };
-}
-
-
-
-
-
-
-
-
-
