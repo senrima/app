@@ -1,17 +1,22 @@
+/**
+ * S-Tools ID Application
+ * Ownership Identity: Senrima Margasandy
+ * Primary Contact: senrima.ms@gmail.com
+ */
+
 const API_ENDPOINT = "https://api.s-tools.id";
 const GOOGLE_CLIENT_ID = '140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com';
-// ===============================================================
-// == BAGIAN 1: FUNGSI LOGIN & DAFTAR MANUAL (TIDAK BERUBAH)
-// ===============================================================
 
-// Login
 function app() {
     return {
-        view: 'login', isLoading: false, profileData: {},
+        view: 'login', 
+        isLoading: false, 
+        profileData: {},
         loginData: { email: '', password: '' },
         status: { message: '', success: false },
-        init() {
-            // 1. Cek Token Lokal
+        
+        async init() {
+            // 1. Cek Token Lokal 
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             if (token) {
                 this.isLoading = true;
@@ -19,27 +24,26 @@ function app() {
                 return;
             }
         
-            // 2. Cek Cookie SSO ke Gateway
+            // 2. Cek Cookie SSO Worker 
             try {
                 this.isLoading = true;
                 const response = await fetch(API_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include', 
+                    credentials: 'include',
                     body: JSON.stringify({ kontrol: 'proteksi', action: 'getDashboardData' })
                 });
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    // Sesi ada, langsung lempar ke dashboard
                     window.location.href = 'dashboard-new.html';
                     return;
                 }
             } catch (e) {
-                console.log('Tidak ada sesi otomatis, menampilkan form login.');
+                console.log('Tidak ada sesi. Menyiapkan form login...');
             } 
             
-            // 3. JIKA SESI KOSONG: Matikan loading agar form login ditampilkan
+            // 3. JIKA SESI KOSONG: Matikan loading agar UI form login digambar oleh browser
             this.isLoading = false; 
         },
 
