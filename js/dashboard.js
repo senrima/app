@@ -59,65 +59,76 @@ function dashboardApp() {
         // ===============================================================
 
         init() {
-            // JALUR SSO A: Jangan langsung kunci jika localStorage kosong.
-            // Biarkan sistem langsung memanggil data, karena sesi login bisa jadi
-            // tersimpan secara aman di Cookie browser (sso_session) dikelola oleh Worker.
+            // Hapus pengecekan manual localStorage.
+            // Langsung panggil data dan biarkan API Gateway yang memvalidasi Cookie.
             this.isLoading = true;
-            this.loadData();
+            try {
+                await this.getDashboardData();
+            } catch (e) {
+                console.error("Gagal inisialisasi:", e);
+                window.location.href = 'index.html';
+            }
         },
 
         /**
          * Fungsi Sentral Komunikasi API Gateway (Cloudflare Worker)
          */
         async callApi(payload) {
-            // Ambil token lokal jika ada (Untuk dukungan Pendekatan B / Aplikasi Eksternal)
-            const localToken = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
+            // Ambil token lokal sebagai cadangan (jika ada)
+            const localToken = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken') || '';
             
+            const headers = { 'Content-Type': 'application/json' };
+            if (localToken) headers['x-auth-token'] = localToken;
+
             try {
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-auth-token': localToken || '' 
-                    },
-                    // KRUSIAL UNTUK SSO JALUR A: Memaksa browser mengirim & menerima Cookie 
-                    // lintas-subdomain (.s-tools.id) secara otomatis di latar belakang.
+                const response = await fetch(API_ENDPOINT, { 
+                    method: 'POST', 
+                    headers: headers, 
+                    // SANGAT KRUSIAL: Wajib ada agar Cookie SSO dikirim ke Worker
                     credentials: 'include', 
-                    body: JSON.stringify({ kontrol: 'proteksi', ...payload })
+                    body: JSON.stringify({ ...payload, kontrol: 'proteksi' }) 
                 });
                 
-                return await response.json();
+                const result = await response.json();
+                
+                // Tangkap respon jika sesi/cookie terbukti mati di server
+                if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
+                    this.showNotification('Sesi Anda telah berakhir. Mengalihkan ke login...', true);
+                    setTimeout(() => {
+                        localStorage.removeItem('sessionToken');
+                        sessionStorage.removeItem('sessionToken');
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+                
+                return result;
             } catch (e) {
-                console.error("Koneksi API Error:", e);
-                return { status: 'error', message: 'Gagal terhubung ke server API Gateway.' };
+                this.showNotification('Koneksi ke server gagal.', true);
+                return { status: 'error', message: 'Koneksi ke server gagal.' };
             }
         },
 
-        async loadData() {
-            this.isLoading = true;
+        async getDashboardData() {
+            const response = await this.callApi({ action: 'getDashboardData' });
             
-            try {
-                const response = await this.callApi({ action: 'getDashboardData' });
+            if (response.status === 'success' || response.status === 'sukses') {
+                // Sesi sah! Masukkan data ke antarmuka
+                this.userData = response.userData || {};
+                this.dashboardSummary = response.dashboardSummary || {}; 
                 
-                if (response.status === 'success') {
-                    this.userData = response.userData;
-                    this.notifPreference = response.userData.notifPreference || 'email';
-                    
-                    await Promise.all([
-                        this.loadAssets(),
-                        this.loadBonuses(),
-                        this.loadTutorials()
-                    ]);
-                } else {
-                    // Sesi tidak valid, tendang kembali ke halaman login
-                    console.warn("Sesi tidak sah. Mengembalikan ke login.");
-                    window.location.href = 'index.html';
+                if (this.userData.status === 'Wajib Ganti Password' && this.activeView !== 'akun') {
+                    this.activeView = 'akun';
+                    this.activeSubView = 'profile';
                 }
-            } catch (error) {
-                console.error("Gagal memuat dashboard:", error);
-                window.location.href = 'index.html';
-            } finally {
-                this.isLoading = false;
+                
+                await this.loadNotifications();
+                
+                // SUKSES: Matikan animasi loading agar Dashboard tampil!
+                this.isLoading = false; 
+            } else {
+                // Sesi ditolak
+                this.showNotification(response.message || 'Sesi tidak sah.', true);
+                setTimeout(() => window.location.href = 'index.html', 1500);
             }
         },
 
