@@ -7,14 +7,11 @@
 const API_ENDPOINT = "https://api.s-tools.id";
 
 // ===============================================================
-// 1. SISTEM GOOGLE SSO (TERINTEGRASI VIA HTML API)
+// 1. SISTEM GOOGLE SSO (HTML API)
 // ===============================================================
-
-// WAJIB: Jadikan fungsi ini global (window.) agar bisa dipanggil oleh tag HTML Google
 window.handleCredentialResponse = async function(response) {
     try {
         const responsePayload = jwt_decode(response.credential);
-        
         const res = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -27,9 +24,8 @@ window.handleCredentialResponse = async function(response) {
                 id: responsePayload.sub
             })
         });
-
         const result = await res.json();
-
+        
         if (result.status === 'success' || result.status === 'login_success') {
             localStorage.setItem('sessionToken', result.token);
             window.location.href = 'dashboard-new.html';
@@ -51,27 +47,21 @@ function jwt_decode(token) {
     return JSON.parse(jsonPayload);
 }
 
-// Catatan: window.onload dan google.accounts.id.initialize TELAH DIHAPUS.
-// Google sekarang otomatis membaca elemen <div id="g_id_onload"> dari HTML.
-
 // ===============================================================
-// 2. KONTROLER APLIKASI LOGIN (ALPINE.JS)
+// 2. KONTROLER APLIKASI LOGIN & DAFTAR (ALPINE.JS)
 // ===============================================================
-
 function app() {
     return {
         view: 'login', 
         isLoading: false, 
         profileData: {},
-        loginData: { email: '', password: '' },
-
-        // 1. TAMBAHKAN VARIABEL INI
-        registerData: { nama: '', email: '', password: '' },
         
+        // State Form Manual
+        loginData: { email: '', password: '' },
+        registerData: { nama: '', email: '', password: '' }, 
         status: { message: '', success: false },
         
         async init() {
-            // Cek Token Lokal
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             if (token) {
                 this.isLoading = true;
@@ -79,7 +69,6 @@ function app() {
                 return;
             }
         
-            // Cek Cookie ke Worker
             try {
                 this.isLoading = true;
                 const response = await fetch(API_ENDPOINT, {
@@ -95,7 +84,7 @@ function app() {
                     return;
                 }
             } catch (e) {
-                console.log('Tidak ada sesi. Form login disiapkan.');
+                console.log('Sesi kosong. Form siap digunakan.');
             } finally {
                 this.isLoading = false; 
             }
@@ -117,7 +106,7 @@ function app() {
                     credentials: 'include',
                     body: JSON.stringify({
                         kontrol: 'proteksi',
-                        action: 'requestOTP',
+                        action: 'requestOTP', // Menuju fungsi Login GAS
                         email: this.loginData.email,
                         password: this.loginData.password
                     })
@@ -133,13 +122,11 @@ function app() {
                 }
             } catch (error) {
                 this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
-                console.error('Login error:', error);
             } finally {
                 this.isLoading = false;
             }
         },
 
-        // 2. TAMBAHKAN FUNGSI REGISTER INI
         async register() {
             if (!this.registerData.nama || !this.registerData.email || !this.registerData.password) {
                 this.status = { message: 'Semua kolom wajib diisi.', success: false };
@@ -150,14 +137,13 @@ function app() {
             this.status = { message: 'Memproses pendaftaran...', success: true };
 
             try {
-                // Asumsi: Saat user mendaftar manual, GAS akan meminta OTP ke Email
                 const response = await fetch(API_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({
                         kontrol: 'proteksi',
-                        action: 'requestOTPRegister', // Sesuaikan jika nama aksinya berbeda di GAS
+                        action: 'registerManual', // Menuju fungsi Register GAS
                         nama: this.registerData.nama,
                         email: this.registerData.email,
                         password: this.registerData.password
@@ -167,8 +153,8 @@ function app() {
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // Simpan email dan lempar ke halaman OTP
                     sessionStorage.setItem('tempEmail', this.registerData.email);
+                    // Arahkan ke halaman OTP karena pendaftaran manual butuh verifikasi email
                     window.location.href = 'otp.html';
                 } else {
                     this.status = { message: result.message || 'Pendaftaran gagal', success: false };
