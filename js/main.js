@@ -167,3 +167,76 @@ function app() {
         }
     };
 }
+
+// ===============================================================
+// 3. KONTROLER APLIKASI OTP (Khusus untuk otp.html)
+// ===============================================================
+function otpApp() {
+    return {
+        otp: '',
+        isLoading: false,
+        status: { message: '', success: false },
+        
+        // Pengecekan awal saat halaman OTP dibuka
+        init() {
+            const tempEmail = sessionStorage.getItem('tempEmail');
+            if (!tempEmail) {
+                this.status = { message: 'Sesi pendaftaran hilang. Silakan daftar ulang.', success: false };
+                // Opsional: Lempar kembali ke halaman pendaftaran setelah 3 detik
+                setTimeout(() => { window.location.href = 'daftar.html'; }, 3000);
+            }
+        },
+        
+        async submit() {
+            if (this.otp.length < 6) {
+                this.status = { message: 'Masukkan 6 digit kode OTP.', success: false };
+                return;
+            }
+
+            this.isLoading = true;
+            this.status = { message: 'Memverifikasi kode...', success: true };
+            
+            const tempEmail = sessionStorage.getItem('tempEmail');
+            if (!tempEmail) {
+                this.status = { message: 'Sesi hilang. Silakan daftar ulang.', success: false };
+                this.isLoading = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        kontrol: 'proteksi',
+                        action: 'verifyOTP',
+                        email: tempEmail,
+                        otp: this.otp
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success' || result.status === 'sukses') {
+                    // OTP sukses! Simpan token SSO dan buka Dashboard
+                    localStorage.setItem('sessionToken', result.token);
+                    sessionStorage.removeItem('tempEmail'); // Bersihkan email sementara
+                    
+                    this.status = { message: 'Verifikasi berhasil! Mengalihkan...', success: true };
+                    
+                    // Beri jeda sedikit agar user bisa melihat pesan sukses
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-new.html';
+                    }, 1000);
+                } else {
+                    this.status = { message: result.message || 'OTP salah atau sudah kedaluwarsa.', success: false };
+                }
+            } catch (error) {
+                this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    };
+}
