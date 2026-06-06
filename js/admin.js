@@ -142,7 +142,6 @@ function adminDashboardApp() {
         },
         closeUserModal() { this.isUserModalOpen = false; },
         async saveUserUpdate() {
-            // Ubah tombol jadi loading
             const btn = event.target;
             const originalText = btn.innerText;
             btn.innerText = 'Menyimpan...';
@@ -164,8 +163,6 @@ function adminDashboardApp() {
             if (response.status === 'success') {
                 this.closeUserModal();
                 this.loadUsers(); // Refresh tabel secara otomatis
-                
-                // Tampilkan notifikasi sukses di layar admin
                 alert('Berhasil! Data pengguna telah diperbarui.');
             } else {
                 alert(response.message || 'Gagal menyimpan perubahan.');
