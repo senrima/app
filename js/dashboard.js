@@ -39,6 +39,18 @@ function dashboardApp() {
         editingCoupon: { IDProduk: null, NamaProduk: '', KodeKupon: '', Status: '' },
         newCoupon: { IDProduk: '', NamaProduk: '', DiskonAfiliasi: 0, KodeKupon: '' },
 
+        // FITUR KLAIM VOUCHER
+        voucherCode: '',
+        isClaiming: false,
+
+        // FITUR PANEL AFILIASI
+        affiliateData: { kode: '', status: '', koin: 0, link: '' },
+
+        copyAffiliateLink() {
+            navigator.clipboard.writeText(this.affiliateData.link);
+            alert('Link Afiliasi disalin ke clipboard!');
+        },
+        
         formatCurrency(value) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(value) || 0);
         },
@@ -90,6 +102,27 @@ function dashboardApp() {
             } catch (e) {
                 return { status: 'error', message: 'Koneksi ke server gagal.' };
             }
+        },
+
+        async claimProduct() {
+            if (!this.voucherCode) return alert('Masukkan kode voucher terlebih dahulu.');
+            this.isClaiming = true;
+            try {
+                const res = await this.callApi({ action: 'claimProduct', voucherCode: this.voucherCode });
+                alert(res.message);
+                if (res.status === 'success') {
+                    this.voucherCode = '';
+                    this.loadAsetDigital(); // Segarkan tabel aset otomatis
+                }
+            } catch (e) { alert('Gagal mengklaim produk.'); }
+            this.isClaiming = false;
+        },
+
+        async loadAffiliateData() {
+            try {
+                const res = await this.callApi({ action: 'getAffiliateData' });
+                if (res.status === 'success') this.affiliateData = res.data;
+            } catch (e) { console.log('Gagal memuat data afiliasi'); }
         },
 
         async getDashboardData() {
