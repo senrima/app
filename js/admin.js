@@ -1,59 +1,50 @@
-// ===============================================================
-// == JAVASCRIPT UNTUK SEMUA HALAMAN ADMIN ==
-// ===============================================================
+/**
+ * S-Tools ID - Admin Panel Controller
+ */
 
 const API_ENDPOINT = "https://api.s-tools.id";
 
-// ---------------------------------------------------------------
-// -- Otak untuk halaman otp-admin.html
-// ---------------------------------------------------------------
+// ===============================================================
+// 1. KONTROLER OTP ADMIN (otp-admin.html)
+// ===============================================================
 function adminOtpApp() {
     return {
-        isLoading: false,
         otp: '',
+        isLoading: false,
         status: { message: '', success: false },
         
         async submit() {
+            if (this.otp.length < 6) return this.status = { message: 'Masukkan 6 digit kode.', success: false };
+            
             this.isLoading = true;
-            this.status = { message: '', success: false };
+            this.status = { message: 'Memverifikasi hak akses...', success: true };
             
-            const email = sessionStorage.getItem('adminEmailForOTP');
-            
-            if (!email) {
-                this.status.message = 'Sesi admin tidak ditemukan. Silakan minta akses ulang dari dasbor.';
-                this.status.success = false;
-                this.isLoading = false;
+            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
+            if (!token) {
+                window.location.href = 'index.html';
                 return;
             }
 
             try {
                 const response = await fetch(API_ENDPOINT, {
-                    method: 'POST', 
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        kontrol: 'proteksi', 
-                        action: 'verifyAdminOtp',
-                        payload: { email: email, otp: this.otp }
-                    })
+                    credentials: 'include',
+                    body: JSON.stringify({ kontrol: 'proteksi', action: 'verifyAdminOTP', token: token, otp: this.otp })
                 });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.token) {
-                    this.status.message = 'Verifikasi berhasil! Mengarahkan ke dasbor admin...';
-                    this.status.success = true;
-                    
-                    sessionStorage.removeItem('adminEmailForOTP');
-                    
-                    window.location.href = `Dashboard-admin.html?token=${result.token}`;
-                } else {
-                   this.status.message = result.message || 'Terjadi kesalahan.';
-                   this.status.success = false;
-                }
 
-            } catch (e) {
-                this.status.message = 'Gagal terhubung ke server.';
-                this.status.success = false;
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Beri penanda khusus di session browser bahwa admin ini sudah lolos OTP
+                    sessionStorage.setItem('adminAkses', 'sah');
+                    this.status = { message: 'Akses Diberikan! Mengalihkan...', success: true };
+                    setTimeout(() => window.location.href = 'dashboard-admin.html', 1000);
+                } else {
+                    this.status = { message: result.message || 'OTP Salah.', success: false };
+                }
+            } catch (error) {
+                this.status = { message: 'Terjadi kesalahan server.', success: false };
             } finally {
                 this.isLoading = false;
             }
@@ -61,209 +52,103 @@ function adminOtpApp() {
     };
 }
 
-
-// ---------------------------------------------------------------
-// -- Otak untuk halaman Dashboard-admin.html
-// ---------------------------------------------------------------
+// ===============================================================
+// 2. KONTROLER DASHBOARD ADMIN (dashboard-admin.html)
+// ===============================================================
 function adminDashboardApp() {
     return {
-        // State Utama
         isLoading: true,
         isSidebarOpen: false,
         activeView: 'beranda',
-        adminSessionToken: null,
-        adminData: {},
-
-        // State untuk Manajemen Pengguna
+        notifSubView: 'dashboard',
+        adminData: { nama: 'Administrator' },
+        
+        // Manajemen Pengguna
         users: [],
         isUsersLoading: false,
         usersSearchQuery: '',
         usersCurrentPage: 1,
         usersItemsPerPage: 10,
+        
+        // Modal Edit Pengguna
         isUserModalOpen: false,
-        userToEdit: { ID: null, Status: '', Username: '', NotifReferensi: '' },
-
-        notifSubView: 'dashboard', // Submenu default
+        userToEdit: {},
+        
+        // Broadcast
+        templates: { dashboard: [], channel: [] },
+        selectedTemplate: '',
         broadcast: {
             dashboard: { judul: '', pesan: '', link: '' },
-            channel: { subjek: '', pesanTeks: '', pesanHtml: '' }
+            channel: { subjek: '', pesanHtml: '', pesanTeks: '' }
         },
 
-        templates: { dashboard: [], channel: [] }, // Ubah menjadi objek
-        selectedTemplate: '',
-
-        // Fungsi inisialisasi
         async init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-
-            if (!token) {
-                alert('Akses tidak sah. Token admin tidak ditemukan.');
-                window.location.href = 'index.html';
+            // Cek Ganda: Harus punya token regular DAN tiket akses admin dari OTP
+            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
+            const akses = sessionStorage.getItem('adminAkses');
+            
+            if (!token || akses !== 'sah') {
+                window.location.href = 'dashboard-new.html';
                 return;
             }
-            this.adminSessionToken = token;
-            
+            this.isLoading = false;
+        },
+
+        async callAdminApi(payload) {
+            const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             try {
-                const response = await this.callApi({ action: 'verifySession' });
-                if (response.status === 'success') {
-                    this.adminData = response.adminData;
-                    this.isLoading = false;
-                    this.loadTemplates();
-                } else {
-                    throw new Error(response.message || 'Sesi admin tidak valid.');
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ kontrol: 'proteksi', token: token, ...payload })
+                });
+                const result = await response.json();
+                if (result.message && result.message.includes('bukan Admin')) {
+                    sessionStorage.removeItem('adminAkses');
+                    window.location.href = 'dashboard-new.html';
                 }
-            } catch (error) {
-                alert('Sesi admin gagal diverifikasi: ' + error.message);
-                window.location.href = 'index.html';
+                return result;
+            } catch (e) {
+                return { status: 'error', message: 'Koneksi gagal.' };
             }
         },
 
-        // Fungsi helper untuk semua panggilan API admin
-        async callApi(payload) {
-            const headers = { 'Content-Type': 'application/json' };
-            const body = JSON.stringify({
-                kontrol: 'admin',
-                token: this.adminSessionToken,
-                action: payload.action,
-                payload: payload.payload || {}
-            });
-
-            const response = await fetch(API_ENDPOINT, { method: 'POST', headers, body });
-            return await response.json();
+        // --- Logika Tabel Pengguna ---
+        async loadUsers() {
+            this.isUsersLoading = true;
+            const res = await this.callAdminApi({ action: 'getAdminUsers' });
+            if (res.status === 'success') this.users = res.data || [];
+            this.isUsersLoading = false;
         },
-        
-        // Computed Properties & Fungsi untuk Manajemen Pengguna
         get filteredUsers() {
-            if (!this.usersSearchQuery) return this.users;
+            if (!this.usersSearchQuery.trim()) return this.users;
             this.usersCurrentPage = 1;
             const search = this.usersSearchQuery.toLowerCase();
-            return this.users.filter(user => 
-                user.Nama.toLowerCase().includes(search) || 
-                user.Email.toLowerCase().includes(search) ||
-                user.Username.toLowerCase().includes(search)
-            );
+            return this.users.filter(u => u.Nama.toLowerCase().includes(search) || u.Email.toLowerCase().includes(search) || (u.Username || '').toLowerCase().includes(search));
         },
         get paginatedUsers() {
             const start = (this.usersCurrentPage - 1) * this.usersItemsPerPage;
             return this.filteredUsers.slice(start, start + this.usersItemsPerPage);
         },
-        get totalUsersPages() {
-            return Math.ceil(this.filteredUsers.length / this.usersItemsPerPage);
-        },
+        get totalUsersPages() { return Math.ceil(this.filteredUsers.length / this.usersItemsPerPage) || 1; },
         nextUsersPage() { if (this.usersCurrentPage < this.totalUsersPages) this.usersCurrentPage++; },
         prevUsersPage() { if (this.usersCurrentPage > 1) this.usersCurrentPage--; },
 
-        async loadUsers() {
-            if (this.users.length > 0) return;
-            this.isUsersLoading = true;
-            const response = await this.callApi({ action: 'adminGetAllUsers' });
-            this.isUsersLoading = false;
-            if (response.status === 'success') {
-                this.users = response.data || [];
-            }
-        },
-
+        // --- Modal Edit ---
         openUserModal(user) {
-            this.userToEdit = {
-                ID: user.ID,
-                Nama: user.Nama, // <-- TAMBAHKAN BARIS INI
-                Status: user.Status,
-                Username: user.Username,
-                NotifReferensi: user.NotifReferensi
-            };
+            this.userToEdit = JSON.parse(JSON.stringify(user)); // Copy data
             this.isUserModalOpen = true;
         },
-        
-        closeUserModal() {
-            this.isUserModalOpen = false;
-        },
+        closeUserModal() { this.isUserModalOpen = false; },
         async saveUserUpdate() {
-            const response = await this.callApi({ 
-                action: 'adminUpdateUser', 
-                payload: this.userToEdit 
-            });
-
-            if (response.status === 'success') {
-                alert('Data berhasil diperbarui!');
-                this.closeUserModal();
-                this.users = []; 
-                await this.loadUsers();
-            } else {
-                alert('Gagal memperbarui: ' + response.message);
-            }
+            alert("Fitur update status pengguna akan segera diaktifkan di backend!");
+            this.closeUserModal();
         },
 
-        async sendDashboardBroadcast() {
-            if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
-                alert('Judul dan Pesan harus diisi.');
-                return;
-            }
-            if (!confirm('Anda yakin ingin mengirim notifikasi ini ke SEMUA pengguna?')) return;
-        
-            const response = await this.callApi({
-                action: 'broadcastDashboard',
-                payload: this.broadcast.dashboard
-            });
-            alert(response.message);
-            if (response.status === 'success') {
-                this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; // Reset form
-            }
-        },
-        
-        async sendChannelBroadcast() {
-            if (!this.broadcast.channel.subjek || !this.broadcast.channel.pesanTeks) {
-                alert('Subjek dan Pesan harus diisi.');
-                return;
-            }
-            if (!confirm('Anda yakin ingin mengirim broadcast Email/Telegram ini ke SEMUA pengguna?')) return;
-        
-            const response = await this.callApi({
-                action: 'broadcastChannel',
-                payload: {
-                    subjek: this.broadcast.channel.subjek,
-                    pesanTeks: this.broadcast.channel.pesanTeks,
-                    pesanHtml: this.broadcast.channel.pesanHtml || this.broadcast.channel.pesanTeks
-                }
-            });
-            alert(response.message);
-            if (response.status === 'success') {
-                this.broadcast.channel = { subjek: '', pesanTeks: '', pesanHtml: '' };
-            }
-        },
-
-        async loadTemplates() {
-            const response = await this.callApi({ action: 'getTemplates' });
-            if (response.status === 'success') {
-                this.templates = response.data; // Langsung simpan objeknya
-            }
-        },
-
-        applyTemplate() {
-            const [type, name] = this.selectedTemplate.split('|');
-            if (!type || !name) return;
-    
-            const template = this.templates[type].find(t => t.NamaTemplate === name);
-            if (!template) return;
-    
-            if (type === 'dashboard') {
-                this.broadcast.dashboard.judul = template.Judul;
-                this.broadcast.dashboard.pesan = template.Pesan;
-                this.broadcast.dashboard.link = template.Link;
-            } else if (type === 'channel') {
-                this.broadcast.channel.subjek = template['Judul/Subjek'];
-                this.broadcast.channel.pesanHtml = template.PesanHTML;
-                this.broadcast.channel.pesanTeks = template.PesanTeks;
-            }
-        },
-
-        // Fungsi logout
-        logout() {
-            console.log('Logout admin...');
-            window.location.href = 'index.html';
-        }
+        // --- Broadcast Dummy ---
+        applyTemplate() {},
+        sendDashboardBroadcast() { alert("Broadcast ke Dashboard akan dikirim (Segera Hadir)."); },
+        sendChannelBroadcast() { alert("Broadcast Email/Telegram akan dikirim (Segera Hadir)."); }
     };
 }
-
-
-
