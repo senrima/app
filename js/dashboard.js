@@ -62,8 +62,10 @@ function dashboardApp() {
             this.isLoading = true;
             try {
                 await this.getDashboardData();
+                await this.loadAffiliateData();
             } catch (e) {
                 console.error("Gagal inisialisasi:", e);
+                alert("Sesi Anda telah berakhir atau koneksi bermasalah. Silakan login kembali.");
                 window.location.href = 'index.html';
             }
         },
