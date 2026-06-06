@@ -147,6 +147,7 @@ function dashboardApp() {
                 const response = await this.callApi({ action: 'getNotif' });
                 if (response.status === 'success' || response.status === 'sukses') {
                     this.notifications = response.data || [];
+                    console.log("Notifikasi termuat: ", this.notifications); // Log untuk pengecekan
                 }
             } catch (e) {
                 console.error("Gagal menarik notifikasi global:", e);
@@ -200,7 +201,7 @@ function dashboardApp() {
                 this.voucherCode = '';
                 this.klaimKode = '';
                 
-                // Refresh data laci produk
+                // Refresh data laci produk otomatis
                 if(this.activeView === 'aset-produk') {
                      this.loadAsetDigital();
                 } else if(this.activeView === 'aset' && this.assetSubView === 'produk'){
@@ -211,7 +212,7 @@ function dashboardApp() {
             }
         },
         
-        // Jembatan untuk sinkronisasi form html lama (b/w compat)
+        // Jembatan untuk sinkronisasi form html lama
         async claimProduct() {
             await this.klaimProduk();
         },
@@ -235,7 +236,7 @@ function dashboardApp() {
         },
 
         // ===============================================================
-        // == PROFILE & KEAMANAN AKUN (MENGHINDARI ERROR UNDEFINED JSON)
+        // == PROFILE & KEAMANAN AKUN
         // ===============================================================
         async updateProfile() {
             const inputNama = this.profileForm.nama || this.userData.nama;
@@ -254,7 +255,6 @@ function dashboardApp() {
         },
         
         async changePassword() {
-            // Ambil dari variabel Form lama atau Form Baru agar kompatibel dengan semua versi HTML
             const oldPass = this.passwordForm.oldPassword || this.passwordFields.old;
             const newPass = this.passwordForm.newPassword || this.passwordFields.new;
             
@@ -269,7 +269,6 @@ function dashboardApp() {
             
             if (response.status === 'success') {
                 this.showNotification('Sandi berhasil diperbarui secara terenkripsi.');
-                // Kosongkan seluruh field password setelah berhasil
                 this.passwordForm = { oldPassword: '', newPassword: '' };
                 this.passwordFields = { old: '', new: '' };
             } else {
@@ -278,7 +277,7 @@ function dashboardApp() {
         },
 
         // ===============================================================
-        // == AKSES UTALITAS PANEL ADMIN & BOT TELEGRAM
+        // == AKSES PANEL ADMIN
         // ===============================================================
         async requestAdminAccess() {
             this.showNotification('Memeriksa izin Administrator...');
@@ -295,6 +294,10 @@ function dashboardApp() {
             this.modal.message = message;
             this.modal.isError = isError;
             this.modal.isOpen = true;
+            // Jika ada UI modal, bisa digunakan di sini. Jika tidak ada fallback ke alert:
+            if(!document.getElementById('notification-modal')) {
+                alert(message);
+            }
         },
         
         async logout() {
@@ -307,5 +310,3 @@ function dashboardApp() {
         }
     };
 }
-```
-eof
