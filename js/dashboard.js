@@ -3,13 +3,20 @@ const API_ENDPOINT = "https://api.s-tools.id";
 function dashboardApp() {
     return {
         // ===============================================================
-        // == STATE APLIKASI UTAMA
+        // == STATE APLIKASI UTAMA (SEMUA VARIABEL YANG DIBUTUHKAN HTML)
         // ===============================================================
         isLoading: true,
         isSidebarOpen: false,
         activeView: 'beranda',
-        userData: { statusAfiliasi: 'Tidak Aktif' },
-        notifications: [], // TAMBAHKAN BARIS INI
+        userData: {
+            nama: '',
+            email: '',
+            username: '',
+            status: '',
+            koin: 0,
+            statusAfiliasi: 'Tidak Aktif',
+            isTelegramConnected: false
+        },
         dashboardSummary: {},
         modal: {
             isOpen: false, title: 'Pemberitahuan', message: '',
@@ -17,60 +24,75 @@ function dashboardApp() {
             confirmText: 'Ya, Lanjutkan', cancelText: 'Batal',
             onConfirm: () => {}
         },
-        
+
+        // Navigasi & Tampilan Submenu
         isAssetMenuOpen: false, assetSubView: 'produk',
         isAkunMenuOpen: false, activeSubView: 'profile',
-        notifications: [], unreadCount: 0,
-        digitalAssets: [], isAssetsLoading: false, digitalAssetsSearchQuery: '',
-        bonuses: [], isBonusesLoading: false, bonusesSearchQuery: '',
-        passwordFields: { old: '', new: '' },
+
+        // Notifikasi & Pesan Pengumuman Global
+        notifications: [],
+        unreadCount: 0,
+
+        // Data Tabel Aset Digital & Bonus (Versi Baru)
+        tableItems: [],
+        isTableLoading: false,
+
+        // Data Lama Produk Digital & Bonus (Untuk Backup Kompatibilitas)
+        digitalAssets: [],
+        isAssetsLoading: false,
+        digitalAssetsSearchQuery: '',
         
-        // VARIABEL TABEL YANG SEMPAT HILANG
+        bonuses: [],
+        isBonusesLoading: false,
+        bonusesSearchQuery: '',
+
+        // Form Ganti Profil & Password
+        profileForm: { nama: '' },
+        passwordForm: { oldPassword: '', newPassword: '' },
+        passwordFields: { old: '', new: '' }, // Cadangan untuk compat b/w
+
+        // Tabel Data Paginasi Dinamis
         riwayatPembelian: [], isPembelianLoading: false, pembelianSearchQuery: '', pembelianCurrentPage: 1, pembelianItemsPerPage: 5,
         historyKoin: [], isKoinLoading: false, koinSearchQuery: '', koinCurrentPage: 1, koinItemsPerPage: 10,
         aksesProduk: [], isAksesProdukLoading: false, aksesProdukSearchQuery: '', aksesProdukCurrentPage: 1, aksesProdukItemsPerPage: 10,
         bonusPengguna: [], isBonusPenggunaLoading: false, bonusPenggunaSearchQuery: '', bonusPenggunaCurrentPage: 1, bonusPenggunaItemsPerPage: 10,
-        klaimKode: '',
         
-        // VARIABEL AFILIASI
-        affiliateData: { summary: { komisi: 0, penjualan: 0, produk: 0 }, coupons: [], products: [] },
+        // Pendaftaran & Klaim Kode Voucher
+        klaimKode: '',
+        voucherCode: '', // Cadangan sinkronisasi dengan claimProduct
+        isClaiming: false,
+        
+        // Data Afiliasi
+        affiliateData: { kode: '', status: '', koin: 0, link: '' },
         affiliateProductList: [], isAffiliateProductListLoading: false, affiliateProductSearchQuery: '',
         affiliateProductCurrentPage: 1, affiliateProductItemsPerPage: 10,
-        isEditCouponModalOpen: false, isAddCouponModalOpen: false,
-        editingCoupon: { IDProduk: null, NamaProduk: '', KodeKupon: '', Status: '' },
-        newCoupon: { IDProduk: '', NamaProduk: '', DiskonAfiliasi: 0, KodeKupon: '' },
 
-        // FITUR KLAIM VOUCHER
-        voucherCode: '',
-        isClaiming: false,
-
-        // FITUR PANEL AFILIASI
-        affiliateData: { kode: '', status: '', koin: 0, link: '' },
-
-        copyAffiliateLink() {
-            navigator.clipboard.writeText(this.affiliateData.link);
-            alert('Link Afiliasi disalin ke clipboard!');
+        formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
+            }).format(Number(value) || 0);
         },
         
-        formatCurrency(value) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(value) || 0);
-        },
-
         // ===============================================================
-        // == FUNGSI INISIALISASI & API GATEWAY 
+        // == FUNGSI INISIALISASI & API GATEWAY SSO
         // ===============================================================
         async init() {
             this.isLoading = true;
             try {
+                // Panggil data profil dasar untuk otentikasi awal
                 await this.getDashboardData();
-                await this.loadAffiliateData();
-                await this.loadNotifications();
+                
+                // Jika login valid, muat seluruh data pendukung secara paralel
+                await Promise.all([
+                    this.loadNotifications(),
+                    this.loadAffiliateData()
+                ]);
             } catch (e) {
-                console.error("Gagal inisialisasi:", e);
-                alert("Sesi Anda telah berakhir atau koneksi bermasalah. Silakan login kembali.");
+                console.error("Gagal inisialisasi sesi:", e);
                 window.location.href = 'index.html';
             } finally {
-            this.isLoading = false;
+                this.isLoading = false;
+            }
         },
 
         async callApi(payload) {
@@ -78,8 +100,7 @@ function dashboardApp() {
             const headers = { 'Content-Type': 'application/json' };
             if (localToken) headers['x-auth-token'] = localToken;
 
-            // PERBAIKAN KRUSIAL: Masukkan token langsung ke dalam jantung data (Payload)
-            // Ini menjamin GAS pasti bisa membacanya meskipun HTTP Header terpotong di jalan
+            // Suntik Token Ganda ke Body Payload (Sebagai pengaman limitasi GAS)
             const bodyPayload = { ...payload, kontrol: 'proteksi' };
             if (localToken) bodyPayload.token = localToken;
 
@@ -87,348 +108,204 @@ function dashboardApp() {
                 const response = await fetch(API_ENDPOINT, { 
                     method: 'POST', 
                     headers: headers, 
-                    credentials: 'include', 
+                    credentials: 'include', // Mengirim Cookie SSO ke Cloudflare Worker
                     body: JSON.stringify(bodyPayload) 
                 });
                 
                 const result = await response.json();
                 
-                // Menangkap pesan penolakan dari server dengan aman
                 if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
-                    this.showNotification(result.message || 'Sesi Anda telah berakhir.', true);
+                    this.showNotification('Sesi otentikasi berakhir. Silakan login kembali.', true);
                     setTimeout(() => {
                         localStorage.removeItem('sessionToken');
                         sessionStorage.removeItem('sessionToken');
                         window.location.href = 'index.html';
-                    }, 2000);
+                    }, 1500);
                 }
-                
                 return result;
             } catch (e) {
-                return { status: 'error', message: 'Koneksi ke server gagal.' };
+                return { status: 'error', message: 'Koneksi API terputus.' };
             }
-        },
-
-        async claimProduct() {
-            if (!this.voucherCode) return alert('Masukkan kode voucher terlebih dahulu.');
-            this.isClaiming = true;
-            try {
-                const res = await this.callApi({ action: 'claimProduct', voucherCode: this.voucherCode });
-                alert(res.message);
-                if (res.status === 'success') {
-                    this.voucherCode = '';
-                    this.loadAsetDigital(); // Segarkan tabel aset otomatis
-                }
-            } catch (e) { alert('Gagal mengklaim produk.'); }
-            this.isClaiming = false;
-        },
-
-        async loadAffiliateData() {
-            try {
-                const res = await this.callApi({ action: 'getAffiliateData' });
-                if (res.status === 'success') this.affiliateData = res.data;
-            } catch (e) { console.log('Gagal memuat data afiliasi'); }
         },
 
         async getDashboardData() {
             const response = await this.callApi({ action: 'getDashboardData' });
             if (response.status === 'success' || response.status === 'sukses') {
                 this.userData = response.userData || {};
-                this.dashboardSummary = response.dashboardSummary || {};
-
-                if (this.userData.status === 'Wajib Ganti Password' && this.activeView !== 'akun') {
-                    this.activeView = 'akun';
-                    this.activeSubView = 'profile';
-                }
-
-                await this.loadNotifications();
-                this.isLoading = false;
+                this.profileForm.nama = this.userData.nama;
+                this.dashboardSummary = response.dashboardSummary || {}; 
             } else {
-                this.showNotification(response.message || 'Sesi tidak sah.', true);
-                setTimeout(() => window.location.href = 'index.html', 1500);
+                throw new Error("Sesi tidak valid di database.");
             }
         },
 
         // ===============================================================
-        // == MODAL & NOTIFIKASI
+        // == FUNGSI NOTIFIKASI BROADCAST GLOBAL
         // ===============================================================
+        async loadNotifications() {
+            try {
+                const response = await this.callApi({ action: 'getNotif' });
+                if (response.status === 'success' || response.status === 'sukses') {
+                    this.notifications = response.data || [];
+                }
+            } catch (e) {
+                console.error("Gagal menarik notifikasi global:", e);
+            }
+        },
+        async markNotificationsAsRead() {
+            this.unreadCount = 0;
+        },
+
+        // ===============================================================
+        // == TABEL: ASET DIGITAL, BONUS, & TUTORIALS (Ver. Baru: tableItems)
+        // ===============================================================
+        async loadAsetDigital() {
+            this.isTableLoading = true;
+            this.tableItems = [];
+            const res = await this.callApi({ action: 'getAsetDigital' });
+            if (res.status === 'success') this.tableItems = res.data || [];
+            this.isTableLoading = false;
+        },
+        async loadBonus() {
+            this.isTableLoading = true;
+            this.tableItems = [];
+            const res = await this.callApi({ action: 'getBonus' });
+            if (res.status === 'success') this.tableItems = res.data || [];
+            this.isTableLoading = false;
+        },
+        async loadTutorials() {
+            this.isTableLoading = true;
+            this.tableItems = [];
+            const res = await this.callApi({ action: 'getTutorials' });
+            if (res.status === 'success') this.tableItems = res.data || [];
+            this.isTableLoading = false;
+        },
+
+        // ===============================================================
+        // == FITUR KLAIM VOUCHER
+        // ===============================================================
+        async klaimProduk() {
+            // Deteksi input dari form lama (klaimKode) atau baru (voucherCode)
+            const inputKode = this.voucherCode || this.klaimKode;
+            
+            if (!inputKode.trim()) return this.showNotification('Masukkan kode klaim.', true);
+            this.isClaiming = true;
+            
+            const response = await this.callApi({ action: 'claimProduct', voucherCode: inputKode });
+            
+            this.isClaiming = false;
+            
+            if (response.status === 'success') {
+                this.showNotification(response.message || 'Klaim Voucher berhasil!');
+                this.voucherCode = '';
+                this.klaimKode = '';
+                
+                // Refresh data laci produk
+                if(this.activeView === 'aset-produk') {
+                     this.loadAsetDigital();
+                } else if(this.activeView === 'aset' && this.assetSubView === 'produk'){
+                     this.loadDigitalAssets();
+                }
+            } else {
+                this.showNotification(response.message || 'Gagal menebus voucher.', true);
+            }
+        },
+        
+        // Jembatan untuk sinkronisasi form html lama (b/w compat)
+        async claimProduct() {
+            await this.klaimProduk();
+        },
+
+        // ===============================================================
+        // == MITRA AFILIASI
+        // ===============================================================
+        async loadAffiliateData() {
+            try {
+                const res = await this.callApi({ action: 'getAffiliateData' });
+                if (res.status === 'success') this.affiliateData = res.data;
+            } catch (e) {
+                console.error("Gagal tarik data afiliasi:", e);
+            }
+        },
+        copyAffiliateLink() {
+            if (this.affiliateData.link) {
+                navigator.clipboard.writeText(this.affiliateData.link);
+                alert('Tautan afiliasi unik Anda telah berhasil disalin!');
+            }
+        },
+
+        // ===============================================================
+        // == PROFILE & KEAMANAN AKUN (MENGHINDARI ERROR UNDEFINED JSON)
+        // ===============================================================
+        async updateProfile() {
+            const inputNama = this.profileForm.nama || this.userData.nama;
+            
+            if (!inputNama.trim()) return this.showNotification('Nama tidak boleh kosong.', true);
+            this.showNotification('Menyimpan perubahan nama...');
+            
+            const response = await this.callApi({ action: 'updateProfile', payload: { newName: inputNama } });
+            
+            if (response.status === 'success') {
+                this.userData.nama = inputNama; // Perbarui UI lokal
+                this.showNotification('Nama profil berhasil diperbarui.');
+            } else {
+                this.showNotification(response.message || 'Gagal memperbarui profil.', true);
+            }
+        },
+        
+        async changePassword() {
+            // Ambil dari variabel Form lama atau Form Baru agar kompatibel dengan semua versi HTML
+            const oldPass = this.passwordForm.oldPassword || this.passwordFields.old;
+            const newPass = this.passwordForm.newPassword || this.passwordFields.new;
+            
+            if (!oldPass || !newPass) return this.showNotification('Semua kolom password wajib diisi.', true);
+            
+            this.showNotification('Mengamankan kata sandi baru...');
+            
+            const response = await this.callApi({ 
+                action: 'changePassword', 
+                payload: { oldPassword: oldPass, newPassword: newPass } 
+            });
+            
+            if (response.status === 'success') {
+                this.showNotification('Sandi berhasil diperbarui secara terenkripsi.');
+                // Kosongkan seluruh field password setelah berhasil
+                this.passwordForm = { oldPassword: '', newPassword: '' };
+                this.passwordFields = { old: '', new: '' };
+            } else {
+                this.showNotification(response.message || 'Gagal mengubah password.', true);
+            }
+        },
+
+        // ===============================================================
+        // == AKSES UTALITAS PANEL ADMIN & BOT TELEGRAM
+        // ===============================================================
+        async requestAdminAccess() {
+            this.showNotification('Memeriksa izin Administrator...');
+            const response = await this.callApi({ action: 'requestAdminAccess' });
+            if (response.status === 'success') {
+                window.location.href = 'otp-admin.html'; 
+            } else {
+                this.showNotification(response.message || 'Akses ke Panel Admin ditolak.', true);
+            }
+        },
+        
         showNotification(message, isError = false) {
             this.modal.title = isError ? 'Terjadi Kesalahan' : 'Pemberitahuan';
             this.modal.message = message;
-            this.modal.isConfirmDialog = false;
             this.modal.isError = isError;
             this.modal.isOpen = true;
         },
-        showConfirm(message, onConfirmCallback) {
-            this.modal.title = 'Konfirmasi Tindakan';
-            this.modal.message = message;
-            this.modal.isConfirmDialog = true;
-            this.modal.isError = false;
-            this.modal.onConfirm = () => { this.modal.isOpen = false; onConfirmCallback(); };
-            this.modal.isOpen = true;
-        },
-      async loadNotifications() {
-        try {
-           const res = await this.callApi({ action: 'getNotif' });
-           if (res.status === 'success') {
-               this.notifications = res.data || [];
-           }
-           } catch (e) {
-           console.error("Gagal memuat notifikasi ekosistem:", e);
-            }
-      },
-        async markNotificationsAsRead() {
-            if (this.unreadCount === 0) return;
-            this.unreadCount = 0;
-            await this.callApi({ action: 'tandainotifikasidibaca' });
-        },
-
-        // ===============================================================
-        // == PRODUK DIGITAL & BONUS
-        // ===============================================================
-        get filteredDigitalAssets() {
-            if (!this.digitalAssetsSearchQuery.trim()) return this.digitalAssets;
-            const search = this.digitalAssetsSearchQuery.toLowerCase();
-            return this.digitalAssets.filter(asset => asset.NamaAset.toLowerCase().includes(search));
-        },
-        get filteredBonuses() {
-            if (!this.bonusesSearchQuery.trim()) return this.bonuses;
-            const search = this.bonusesSearchQuery.toLowerCase();
-            return this.bonuses.filter(bonus => bonus.Judul.toLowerCase().includes(search));
-        },
-        async loadDigitalAssets(forceRefresh = false) {
-            if (this.digitalAssets.length > 0 && !forceRefresh) return;
-            this.isAssetsLoading = true;
-            const response = await this.callApi({ action: 'getAsetDigital' });
-            if (response.status === 'success') this.digitalAssets = response.data || [];
-            this.isAssetsLoading = false;
-        },
-        async loadBonuses(forceRefresh = false) {
-            if (this.bonuses.length > 0 && !forceRefresh) return;
-            this.isBonusesLoading = true;
-            const response = await this.callApi({ action: 'getBonus' });
-            if (response.status === 'success') this.bonuses = response.data || [];
-            this.isBonusesLoading = false;
-        },
-        async klaimProduk() {
-            if (!this.klaimKode.trim()) {
-                this.showNotification('Kode Klaim tidak boleh kosong.', true);
-                return;
-            }
-            this.showNotification('Memproses kode klaim...');
-            const response = await this.callApi({ action: 'klaimProduk', payload: { kodeKlaim: this.klaimKode } });
-            if (response.status === 'sukses' || response.status === 'success') {
-                this.showNotification('Klaim berhasil! Produk sedang ditambahkan.');
-                this.klaimKode = '';
-                setTimeout(() => {
-                    this.digitalAssets = [];
-                    this.loadDigitalAssets();
-                    this.activeView = 'aset';
-                    this.assetSubView = 'produk';
-                }, 2000);
-            } else {
-                this.showNotification(response.message || 'Gagal melakukan klaim.', true);
-            }
-        },
-
-        // ===============================================================
-        // == PENGATURAN AKUN & KEAMANAN
-        // ===============================================================
-        async updateProfile() {
-            if (!this.userData.nama.trim()) return this.showNotification('Nama tidak boleh kosong.', true);
-            this.showNotification('Menyimpan perubahan...');
-            const response = await this.callApi({ action: 'updateProfile', payload: { newName: this.userData.nama } });
-            if (response.status === 'success') this.showNotification('Profil berhasil diperbarui.');
-            else this.showNotification(response.message || 'Gagal memperbarui profil.', true);
-        },
-        async changePassword() {
-            const { old: oldPassword, new: newPassword } = this.passwordFields;
-            if (!oldPassword || !newPassword) return this.showNotification('Password lama dan baru wajib diisi.', true);
-            this.showNotification('Mengubah password...');
-            const response = await this.callApi({ action: 'changePassword', payload: { oldPassword, newPassword } });
-            if (response.status === 'success') {
-                this.showNotification('Password berhasil diubah.');
-                this.passwordFields = { old: '', new: '' };
-            } else this.showNotification(response.message || 'Gagal mengubah password.', true);
-        },
-        async startTelegramVerification() {
-            this.showNotification('Membuat link aman...');
-            const response = await this.callApi({ action: 'generateTelegramToken' });
-            if (response.status === 'success' && response.token) {
-                window.open(`https://t.me/notif_sboots_bot?start=${response.token}`, '_blank');
-                this.showNotification('Silakan lanjutkan verifikasi di Telegram.');
-            } else this.showNotification('Gagal membuat link.', true);
-        },
-        async disconnectTelegram() {
-            this.showConfirm('Yakin putuskan hubungan Telegram?', async () => {
-                const response = await this.callApi({ action: 'disconnectTelegram' });
-                if (response.status === 'success') await this.getDashboardData();
-            });
-        },
-
-        // ===============================================================
-        // == LOGIKA TABEL & PAGINASI (YANG SEBELUMNYA HILANG)
-        // ===============================================================
         
-        // --- 1. Akses Produk ---
-        get filteredAksesProduk() {
-            if (!this.aksesProdukSearchQuery.trim()) return this.aksesProduk;
-            this.aksesProdukCurrentPage = 1;
-            const searchLower = this.aksesProdukSearchQuery.toLowerCase();
-            return this.aksesProduk.filter(item => item.IDProduk.toLowerCase().includes(searchLower) || item.Status.toLowerCase().includes(searchLower));
-        },
-        get paginatedAksesProduk() {
-            const start = (this.aksesProdukCurrentPage - 1) * this.aksesProdukItemsPerPage;
-            return this.filteredAksesProduk.slice(start, start + this.aksesProdukItemsPerPage);
-        },
-        get totalAksesProdukPages() { return Math.ceil(this.filteredAksesProduk.length / this.aksesProdukItemsPerPage); },
-        nextAksesProdukPage() { if (this.aksesProdukCurrentPage < this.totalAksesProdukPages) this.aksesProdukCurrentPage++; },
-        prevAksesProdukPage() { if (this.aksesProdukCurrentPage > 1) this.aksesProdukCurrentPage--; },
-        async loadAksesProduk() {
-            if (this.aksesProduk.length > 0) return;
-            this.isAksesProdukLoading = true;
-            const response = await this.callApi({ action: 'getAksesProduk' });
-            this.isAksesProdukLoading = false;
-            if (response && (response.status === 'success' || response.status === 'sukses')) this.aksesProduk = response.data || [];
-        },
-
-        // --- 2. Bonus Pengguna ---
-        get filteredBonusPengguna() {
-            if (!this.bonusPenggunaSearchQuery.trim()) return this.bonusPengguna;
-            this.bonusPenggunaCurrentPage = 1;
-            const searchLower = this.bonusPenggunaSearchQuery.toLowerCase();
-            return this.bonusPengguna.filter(item => item.IDBonus.toLowerCase().includes(searchLower));
-        },
-        get paginatedBonusPengguna() {
-            const start = (this.bonusPenggunaCurrentPage - 1) * this.bonusPenggunaItemsPerPage;
-            return this.filteredBonusPengguna.slice(start, start + this.bonusPenggunaItemsPerPage);
-        },
-        get totalBonusPenggunaPages() { return Math.ceil(this.filteredBonusPengguna.length / this.bonusPenggunaItemsPerPage); },
-        nextBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage < this.totalBonusPenggunaPages) this.bonusPenggunaCurrentPage++; },
-        prevBonusPenggunaPage() { if (this.bonusPenggunaCurrentPage > 1) this.bonusPenggunaCurrentPage--; },
-        async loadBonusPengguna() {
-            if (this.bonusPengguna.length > 0) return;
-            this.isBonusPenggunaLoading = true;
-            const response = await this.callApi({ action: 'getBonusPengguna' });
-            this.isBonusPenggunaLoading = false;
-            if (response && (response.status === 'success' || response.status === 'sukses')) this.bonusPengguna = response.data || [];
-        },
-
-        // --- 3. Riwayat Pembelian ---
-        get filteredPembelian() {
-            if (!this.pembelianSearchQuery) return this.riwayatPembelian;
-            this.pembelianCurrentPage = 1;
-            const searchLower = this.pembelianSearchQuery.toLowerCase();
-            return this.riwayatPembelian.filter(item => item.NomorInvoice.toLowerCase().includes(searchLower) || item.Status.toLowerCase().includes(searchLower));
-        },
-        get paginatedPembelian() {
-            const start = (this.pembelianCurrentPage - 1) * this.pembelianItemsPerPage;
-            return this.filteredPembelian.slice(start, start + this.pembelianItemsPerPage);
-        },
-        get totalPembelianPages() { return Math.ceil(this.filteredPembelian.length / this.pembelianItemsPerPage); },
-        nextPembelianPage() { if (this.pembelianCurrentPage < this.totalPembelianPages) this.pembelianCurrentPage++; },
-        prevPembelianPage() { if (this.pembelianCurrentPage > 1) this.pembelianCurrentPage--; },
-        async loadRiwayatPembelian() {
-            if (this.riwayatPembelian.length === 0) this.isPembelianLoading = true;
-            const response = await this.callApi({ action: 'getRiwayatPembelian' });
-            this.isPembelianLoading = false;
-            if (response.status === 'sukses') this.riwayatPembelian = response.data || [];
-        },
-
-        // --- 4. Riwayat Koin ---
-        get filteredKoin() {
-            if (!this.koinSearchQuery.trim()) return this.historyKoin;
-            this.koinCurrentPage = 1;
-            const searchLower = this.koinSearchQuery.toLowerCase();
-            return this.historyKoin.filter(item => item.Deskripsi.toLowerCase().includes(searchLower));
-        },
-        get paginatedKoin() {
-            const start = (this.koinCurrentPage - 1) * this.koinItemsPerPage;
-            return this.filteredKoin.slice(start, start + this.koinItemsPerPage);
-        },
-        get totalKoinPages() { return Math.ceil(this.filteredKoin.length / this.koinItemsPerPage); },
-        nextKoinPage() { if (this.koinCurrentPage < this.totalKoinPages) this.koinCurrentPage++; },
-        prevKoinPage() { if (this.koinCurrentPage > 1) this.koinCurrentPage--; },
-        async loadHistoryKoin() {
-            if (this.historyKoin.length > 0) return;
-            this.isKoinLoading = true;
-            const response = await this.callApi({ action: 'getHistoryKoin' });
-            if (response.status === 'sukses') this.historyKoin = response.data || [];
-            this.isKoinLoading = false;
-        },
-
-        // ===============================================================
-        // == PANEL AFILIASI
-        // ===============================================================
-        async loadAffiliatePanel() {
-            const response = await this.callApi({ action: 'getAffiliatePanelData' });
-            if (response.status === 'sukses') this.affiliateData.summary = response.data.summary;
-        },
-        get filteredAffiliateProductList() {
-            if (!this.affiliateProductSearchQuery) return this.affiliateProductList;
-            this.affiliateProductCurrentPage = 1;
-            const searchQuery = this.affiliateProductSearchQuery.toLowerCase();
-            return this.affiliateProductList.filter(product => {
-                return product.NamaProduk.toLowerCase().includes(searchQuery) || (product.KodeKupon || '').toLowerCase().includes(searchQuery);
-            });
-        },
-        get paginatedAffiliateProductList() {
-            const start = (this.affiliateProductCurrentPage - 1) * this.affiliateProductItemsPerPage;
-            return this.filteredAffiliateProductList.slice(start, start + this.affiliateProductItemsPerPage);
-        },
-        get totalAffiliateProductPages() { return Math.ceil(this.filteredAffiliateProductList.length / this.affiliateProductItemsPerPage); },
-        nextAffiliateProductPage() { if (this.affiliateProductCurrentPage < this.totalAffiliateProductPages) this.affiliateProductCurrentPage++; },
-        prevAffiliateProductPage() { if (this.affiliateProductCurrentPage > 1) this.affiliateProductCurrentPage--; },
-        async loadAffiliateProductList() {
-            this.isAffiliateProductListLoading = true;
-            const response = await this.callApi({ action: 'getAffiliateProductsAndCoupons' });
-            if (response.status === 'sukses') this.affiliateProductList = response.data;
-            this.isAffiliateProductListLoading = false;
-        },
-        openAddCouponModal(product) {
-            this.newCoupon = { IDProduk: product.IDProduk, NamaProduk: product.NamaProduk, DiskonAfiliasi: product.DiskonAfiliasi, KodeKupon: '' };
-            this.isAddCouponModalOpen = true;
-        },
-        async createAffiliateCoupon() {
-            if (!this.newCoupon.KodeKupon.trim()) return this.showNotification('Kode kupon wajib diisi.', true);
-            this.showNotification('Membuat kupon...');
-            const response = await this.callApi({ action: 'createAffiliateCoupon', payload: { IDProduk: this.newCoupon.IDProduk, KodeKupon: this.newCoupon.KodeKupon } });
-            if (response.status === 'sukses') {
-                this.isAddCouponModalOpen = false;
-                this.loadAffiliateProductList();
-                this.showNotification(response.message);
-            } else this.showNotification(response.message || 'Gagal membuat kupon.', true);
-        },
-        openEditCouponModal(product) {
-            this.editingCoupon = { IDProduk: product.IDProduk, NamaProduk: product.NamaProduk, KodeKupon: product.KodeKupon, Status: product.Status };
-            this.isEditCouponModalOpen = true;
-        },
-        async saveCouponStatus() {
-            this.showNotification('Menyimpan perubahan...');
-            const response = await this.callApi({ action: 'updateAffiliateCouponStatus', payload: { IDProduk: this.editingCoupon.IDProduk, Status: this.editingCoupon.Status } });
-            if (response.status === 'sukses') {
-                this.showNotification('Status berhasil diubah!');
-                this.isEditCouponModalOpen = false;
-                this.loadAffiliateProductList();
-            } else this.showNotification(response.message || 'Gagal menyimpan.', true);
-        },
-
-        // ===============================================================
-        // == ADMIN & LOGOUT
-        // ===============================================================
-        async requestAdminAccess() {
-            const response = await this.callApi({ action: 'requestAdminAccess' });
-            if (response.status === 'success') {
-                sessionStorage.setItem('adminEmailForOTP', this.userData.email);
-                window.location.href = 'otp-admin.html'; 
-            } else this.showNotification(response.message || 'Gagal meminta akses.', true);
-        },
-        async logout(callServer = true){
-            this.showNotification('Keluar dari sistem...');
-            if (callServer) await this.callApi({ action: 'logout' });
+        async logout() {
+            this.showNotification('Menghapus sesi...');
+            await this.callApi({ action: 'logout' });
             localStorage.removeItem('sessionToken');
             sessionStorage.removeItem('sessionToken');
-            window.location.href = 'index.html';
+            sessionStorage.removeItem('adminAkses');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
         }
     };
 }
+```
+eof
