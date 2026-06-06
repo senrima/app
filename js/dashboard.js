@@ -9,6 +9,7 @@ function dashboardApp() {
         isSidebarOpen: false,
         activeView: 'beranda',
         userData: { statusAfiliasi: 'Tidak Aktif' },
+        notifications: [], // TAMBAHKAN BARIS INI
         dashboardSummary: {},
         modal: {
             isOpen: false, title: 'Pemberitahuan', message: '',
@@ -63,11 +64,13 @@ function dashboardApp() {
             try {
                 await this.getDashboardData();
                 await this.loadAffiliateData();
+                await this.loadNotifications();
             } catch (e) {
                 console.error("Gagal inisialisasi:", e);
                 alert("Sesi Anda telah berakhir atau koneksi bermasalah. Silakan login kembali.");
                 window.location.href = 'index.html';
-            }
+            } finally {
+            this.isLoading = false;
         },
 
         async callApi(payload) {
@@ -164,14 +167,16 @@ function dashboardApp() {
             this.modal.onConfirm = () => { this.modal.isOpen = false; onConfirmCallback(); };
             this.modal.isOpen = true;
         },
-        async loadNotifications() {
-            const response = await this.callApi({ action: 'getnotifikasi' });
-            if (response.status === 'sukses' && response.data) {
-                const data = (typeof response.data === 'string') ? JSON.parse(response.data) : response.data;
-                this.notifications = data || [];
-                this.unreadCount = this.notifications.filter(n => n.StatusBaca === 'BELUM').length;
+      async loadNotifications() {
+        try {
+           const res = await this.callApi({ action: 'getNotif' });
+           if (res.status === 'success') {
+               this.notifications = res.data || [];
+           }
+           } catch (e) {
+           console.error("Gagal memuat notifikasi ekosistem:", e);
             }
-        },
+      },
         async markNotificationsAsRead() {
             if (this.unreadCount === 0) return;
             this.unreadCount = 0;
