@@ -171,7 +171,32 @@ function adminDashboardApp() {
 
         // --- Broadcast Dummy ---
         applyTemplate() {},
-        sendDashboardBroadcast() { alert("Broadcast ke Dashboard akan dikirim (Segera Hadir)."); },
-        sendChannelBroadcast() { alert("Broadcast Email/Telegram akan dikirim (Segera Hadir)."); }
+        async sendDashboardBroadcast() {
+            if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
+                return alert("Judul dan Pesan wajib diisi!");
+            }
+            const btn = event.target; btn.innerText = "Memproses..."; btn.disabled = true;
+            
+            const payload = { action: 'sendBroadcast', type: 'dashboard', broadcastData: this.broadcast.dashboard };
+            const res = await this.callAdminApi(payload);
+            
+            btn.innerText = "Kirim ke Semua Pengguna"; btn.disabled = false;
+            if (res.status === 'success') { alert(res.message); this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; } 
+            else alert(res.message);
+        },
+
+        async sendChannelBroadcast() {
+            if (!this.broadcast.channel.subjek || !this.broadcast.channel.pesanHtml) {
+                return alert("Subjek dan Pesan HTML wajib diisi!");
+            }
+            const btn = event.target; btn.innerText = "Mengirim Email..."; btn.disabled = true;
+            
+            const payload = { action: 'sendBroadcast', type: 'channel', broadcastData: this.broadcast.channel };
+            const res = await this.callAdminApi(payload);
+            
+            btn.innerText = "Kirim Broadcast"; btn.disabled = false;
+            if (res.status === 'success') { alert(res.message); this.broadcast.channel = { subjek: '', pesanHtml: '', pesanTeks: '' }; } 
+            else alert(res.message);
+        }
     };
 }
