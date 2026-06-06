@@ -142,8 +142,34 @@ function adminDashboardApp() {
         },
         closeUserModal() { this.isUserModalOpen = false; },
         async saveUserUpdate() {
-            alert("Fitur update status pengguna akan segera diaktifkan di backend!");
-            this.closeUserModal();
+            // Ubah tombol jadi loading
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Menyimpan...';
+            btn.disabled = true;
+
+            const payload = {
+                action: 'updateAdminUser',
+                userId: this.userToEdit.ID,
+                newUsername: this.userToEdit.Username,
+                newStatus: this.userToEdit.Status,
+                newNotifPref: this.userToEdit.NotifReferensi
+            };
+
+            const response = await this.callAdminApi(payload);
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            if (response.status === 'success') {
+                this.closeUserModal();
+                this.loadUsers(); // Refresh tabel secara otomatis
+                
+                // Tampilkan notifikasi sukses di layar admin
+                alert('Berhasil! Data pengguna telah diperbarui.');
+            } else {
+                alert(response.message || 'Gagal menyimpan perubahan.');
+            }
         },
 
         // --- Broadcast Dummy ---
