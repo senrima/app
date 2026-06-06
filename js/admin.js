@@ -172,17 +172,36 @@ function adminDashboardApp() {
         // --- Broadcast Dummy ---
         applyTemplate() {},
         async sendDashboardBroadcast() {
+            // 1. Validasi Input
             if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
                 return alert("Judul dan Pesan wajib diisi!");
             }
-            const btn = event.target; btn.innerText = "Memproses..."; btn.disabled = true;
-            
-            const payload = { action: 'sendBroadcast', type: 'dashboard', broadcastData: this.broadcast.dashboard };
+    
+            // 2. Tampilkan status loading
+            const btn = event.target; 
+            const originalText = btn.innerText;
+            btn.innerText = "Mengirim..."; 
+            btn.disabled = true;
+    
+            // 3. Kirim ke Backend GAS
+            const payload = { 
+                action: 'sendBroadcast', 
+                type: 'dashboard', 
+                broadcastData: this.broadcast.dashboard 
+            };
+    
             const res = await this.callAdminApi(payload);
-            
-            btn.innerText = "Kirim ke Semua Pengguna"; btn.disabled = false;
-            if (res.status === 'success') { alert(res.message); this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; } 
-            else alert(res.message);
+    
+            // 4. Reset tombol dan beri feedback
+            btn.innerText = originalText; 
+            btn.disabled = false;
+    
+            if (res.status === 'success') { 
+                alert('Notifikasi berhasil dipublikasikan ke dasbor semua pengguna!'); 
+                this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; // Reset form
+            } else { 
+                alert('Gagal: ' + (res.message || 'Terjadi kesalahan sistem.')); 
+            }
         },
 
         async sendChannelBroadcast() {
