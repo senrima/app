@@ -4,474 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Senrima Margasandy">
-    <meta name="contact" content="senrima.ms@gmail.com">
     <title>Dashboard > S-Tools ID</title>
     
-    <!-- Tailwind CSS & Google Fonts -->
+    <!-- Tailwind CSS (Konfigurasi Dark Mode Manual) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Alpine.js Plugins & Core (Urutan Pemuatan Stabil) -->
+    <!-- AlpineJS & Collapse -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <style>
         body { font-family: 'Poppins', sans-serif; }
-        .menu-active { background-color: #eff6ff; color: #2563eb; font-weight: 600; }
         [x-cloak] { display: none !important; }
-        .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-        .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
-        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
-        .animate-shimmer { animation: shimmer 2s infinite linear; background: linear-gradient(to right, #f3f4f6 4%, #e5e7eb 25%, #f3f4f6 36%); background-size: 1000px 100%; }
+        .menu-active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 4px solid #2563eb; }
+        .dark .menu-active { background-color: #1e3a8a; color: #60a5fa; border-right: 4px solid #60a5fa; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800" x-data="dashboardApp()" x-init="init()" x-cloak>
-    
-    <!-- SCREEN LOADING INISIALISASI -->
-    <div x-show="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/90 backdrop-blur-sm">
-        <div class="text-center">
-            <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <h2 class="text-xl font-semibold text-gray-700 font-mono">Memuat Sesi Pengguna...</h2>
-        </div>
+<!-- Deteksi Tema Saat Halaman Dimuat -->
+<body class="bg-gray-50 text-gray-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100" 
+      x-data="app()" 
+      x-init="init(); darkMode = localStorage.getItem('theme') === 'dark'; $watch('darkMode', val => { localStorage.setItem('theme', val ? 'dark' : 'light'); if(val) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); })" 
+      x-cloak>
+
+    <!-- KONTROL INISIALISASI TEMA SEBELUM RENDER -->
+    <script>if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
+
+    <!-- WADAH POPUP PEMBERITAHUAN (TOAST) -->
+    <div class="fixed top-5 right-5 z-[100] flex flex-col gap-3 w-80">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.visible" x-transition.opacity.duration.300ms 
+                 class="flex items-start gap-3 p-4 rounded-xl shadow-lg border backdrop-blur-md"
+                 :class="toast.type === 'error' ? 'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-900/80 dark:border-red-800 dark:text-red-100' : 'bg-white/90 border-gray-200 text-gray-800 dark:bg-slate-800/90 dark:border-slate-700 dark:text-slate-100'">
+                
+                <!-- Ikon Dinamis -->
+                <div class="shrink-0 mt-0.5">
+                    <svg x-show="toast.type === 'success'" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg x-show="toast.type === 'error'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg x-show="toast.type === 'info'" class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="flex-1 text-sm font-medium" x-text="toast.message"></div>
+                <button @click="removeToast(toast.id)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">&times;</button>
+            </div>
+        </template>
     </div>
 
-    <div x-show="!isLoading" class="flex h-screen w-full bg-gray-50 overflow-hidden">
+    <!-- STRUKTUR UTAMA DASHBOARD -->
+    <div x-show="!isLoading" class="flex h-screen w-full overflow-hidden">
         
-        <!-- SIDEBAR MOBILE BACKGROUND -->
-        <div x-show="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"></div>
-        
-        <!-- SIDEBAR NAVIGATION -->
-        <nav class="fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col bg-white border-r transition-transform duration-300 lg:static lg:translate-x-0"
+        <!-- SIDEBAR UTAMA -->
+        <nav class="fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col bg-white border-r border-gray-200 dark:bg-slate-800 dark:border-slate-700 transition-transform duration-300 lg:static lg:translate-x-0"
              :class="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}">
-            <div class="p-4 flex items-center justify-center border-b h-16"><span class="text-2xl font-bold text-gray-800">Dashboard</span></div>
-            <div class="flex-1 mt-6 px-4 space-y-2 overflow-y-auto">
- 
-                <a href="#" @click.prevent="activeView = 'beranda'; isSidebarOpen = false" :class="activeView === 'beranda' ? 'menu-active' : ''" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Beranda</a>
-
-                <!-- MENU: ASET DIGITAL -->
-                <div x-data="{ open: false }" x-init="$watch('activeView', v => { if(value.startsWith('aset')) open = true })">
-                    <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
-                        <span>Aset Digital</span>
-                        <svg class="w-5 h-5 transition-transform duration-300" :class="{'rotate-180': open}" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </button>
-                    <div x-show="open" x-collapse class="mt-2 space-y-1 pl-4">
-                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'produk'; loadDigitalAssets(); isSidebarOpen = false" :class="{'menu-active': activeView === 'aset' && assetSubView === 'produk'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Produk Saya</a>
-                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'bonus'; loadBonuses(); isSidebarOpen = false" :class="{'menu-active': activeView === 'aset' && assetSubView === 'bonus'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Bonus</a>
-                        <a href="#" @click.prevent="activeView = 'aset'; assetSubView = 'klaim'; isSidebarOpen = false" :class="{'menu-active': activeView === 'aset' && assetSubView === 'klaim'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Klaim Produk</a>
-                    </div>
-                </div>
+            
+            <div class="p-4 flex items-center justify-center border-b border-gray-200 dark:border-slate-700 h-16 bg-blue-600 dark:bg-blue-700">
+                <span class="text-xl font-bold text-white tracking-wider">🚀 S-Tools ID</span>
+            </div>
+            
+            <div class="flex-1 mt-6 px-3 space-y-1 overflow-y-auto">
+                <a href="#" @click.prevent="activeView = 'beranda'" :class="activeView === 'beranda' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium">
+                    <span>Beranda</span>
+                </a>
                 
-                <!-- MENU: AKUN SAYA -->
-                <div x-data="{ open: false }" x-init="$watch('activeView', v => { if(value.startsWith('akun')) open = true })">
-                    <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
-                        <span>Akun Saya</span>
-                        <svg class="w-5 h-5 transition-transform duration-300" :class="{'rotate-180': open}" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                <div x-data="{ open: false }" x-init="$watch('activeView', value => { if(value.startsWith('aset')) open = true })">
+                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium">
+                        <span class="flex items-center gap-3">Aset Digital</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div x-show="open" x-collapse class="mt-2 space-y-1 pl-4">
-                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'profile'; isSidebarOpen = false" :class="{'menu-active': activeView === 'akun' && activeSubView === 'profile'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Profile</a>
-                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'notifikasi'; isSidebarOpen = false" :class="{'menu-active': activeView === 'akun' && activeSubView === 'notifikasi'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Notifikasi</a>
-                        <a href="#" @click.prevent="activeView = 'akun'; activeSubView = 'pembelian'; loadRiwayatPembelian(); isSidebarOpen = false" :class="{'menu-active': activeView === 'akun' && activeSubView === 'pembelian'}" class="block px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Riwayat Pembelian</a>
+                    <div x-show="open" x-collapse class="mt-1 space-y-1 pl-4">
+                        <a href="#" @click.prevent="activeView = 'aset-produk'; loadAsetDigital()" :class="activeView === 'aset-produk' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Produk Saya</a>
+                        <a href="#" @click.prevent="activeView = 'aset-bonus'; loadBonus()" :class="activeView === 'aset-bonus' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Bonus Tersedia</a>
                     </div>
                 </div>
 
-                <!-- MENU: AFILIASI -->
-                <a href="#" @click.prevent="activeView = 'afiliasi'; loadAffiliatePanel(); loadAffiliateProductList(); isSidebarOpen = false" :class="{'menu-active': activeView === 'afiliasi'}" class="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Panel Afiliasi</a>
-                
-                <!-- LAYAR PORTAL AKSES ADMINISTRATOR (DISELEKSI BACKEND) -->
-                <div x-show="userData.status === 'Admin'" class="px-4 mt-4">
-                    <button @click="requestAdminAccess()" class="w-full flex items-center justify-center px-4 py-2.5 text-gray-800 bg-yellow-400 rounded-lg font-semibold hover:bg-yellow-500 transition shadow-lg text-sm">
-                       <span>🔑 Panel Admin</span>
+                <div x-data="{ open: false }" x-init="$watch('activeView', value => { if(value.startsWith('akun')) open = true })">
+                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium">
+                        <span class="flex items-center gap-3">Akun Saya</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
+                    <div x-show="open" x-collapse class="mt-1 space-y-1 pl-4">
+                        <a href="#" @click.prevent="activeView = 'akun-profil'" :class="activeView === 'akun-profil' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Profil Akun</a>
+                        <a href="#" @click.prevent="activeView = 'akun-keamanan'" :class="activeView === 'akun-keamanan' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Ganti Password</a>
+                    </div>
                 </div>
+
+                <a href="#" @click.prevent="activeView = 'afiliasi'; loadAffiliateData()" :class="activeView === 'afiliasi' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium">
+                    <span>Panel Afiliasi</span>
+                </a>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200 dark:border-slate-700 space-y-2">
+                <button @click="requestAdminAccess()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-amber-950 font-semibold rounded-xl hover:bg-amber-600 transition shadow-sm text-sm dark:bg-amber-600 dark:text-white dark:hover:bg-amber-500">
+                    <span>🔑 Panel Admin</span>
+                </button>
+                <button @click="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:text-red-400 font-semibold rounded-xl transition text-sm">
+                    <span>Keluar Sesi</span>
+                </button>
             </div>
         </nav>
         
-        <!-- BADAN AREA UTAMA KONTEN -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center p-4 bg-white border-b shadow-sm h-16 shrink-0">
-                <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
-
-                <!-- AREA NOTIFIKASI DROPDOWN & AVATAR PROFIL -->
+            
+            <!-- HEADER ATAS (TOMBOL TEMA ADA DI SINI) -->
+            <header class="flex justify-between items-center p-4 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 h-16 shadow-sm shrink-0 transition-colors">
+                <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500 dark:text-slate-400 p-2 rounded-lg">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                
                 <div class="ml-auto flex items-center gap-4">
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open; markNotificationsAsRead()" class="relative text-gray-500 hover:text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                            <span x-show="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center" x-text="unreadCount"></span>
-                        </button>
-                        <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-20" x-cloak>
-                            <div class="p-4 font-semibold border-b text-sm">Notifikasi Masuk</div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <template x-if="notifications.length === 0">
-                                    <p class="text-center text-gray-500 py-6 text-sm">Tidak ada notifikasi baru.</p>
-                                </template>
-                                <template x-for="notif in notifications" :key="notif.waktu">
-                                    <a :href="notif.link || '#'" class="block px-4 py-3 hover:bg-gray-100 border-b">
-                                        <p class="font-semibold text-gray-800 text-sm" x-text="notif.judul"></p>
-                                        <p class="text-xs text-gray-600" x-text="notif.pesan"></p>
-                                    </a>
-                                </template>
-                            </div>
-                        </div>
+                    <!-- Tombol Toggle Tema Terang/Gelap -->
+                    <button @click="darkMode = !darkMode" class="p-2 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:ring-2 ring-blue-500 transition">
+                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </button>
+
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-slate-100" x-text="userData.nama"></p>
+                        <p class="text-xs text-gray-500 dark:text-slate-400" x-text="userData.email"></p>
                     </div>
-                    
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="relative w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center hover:ring-2 hover:ring-blue-500">
-                            <img class="rounded-xl" :src="`https://ui-avatars.com/api/?name=${userData.nama || 'User'}&background=random&color=fff&size=128`" :alt="userData.nama">
-                        </button>
-                        <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border z-20" x-cloak>
-                            <div class="p-4 border-b">
-                                <p class="font-semibold text-gray-800 text-sm" x-text="userData.nama || 'Pengguna'"></p>
-                                <p class="text-xs text-gray-500" x-text="userData.email || 'Email Sesi'"></p>
-                            </div>
-                            <div class="p-4">
-                                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg text-sm">
-                                    <span class="font-semibold text-gray-700">Jumlah Koin</span>
-                                    <span class="font-bold text-yellow-500" x-text="userData.koin !== undefined ? userData.koin : '0'"></span>
-                                </div>
-                            </div>
-                            <div class="p-4 border-t"><button @click="logout()" class="w-full text-left text-sm font-semibold text-red-600 hover:bg-red-50 p-2 rounded-md">Keluar</button></div>
-                        </div>
-                    </div>
+                    <div class="h-10 w-10 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center shadow-md shadow-blue-200 dark:shadow-none" x-text="userData.nama ? userData.nama.substring(0,2).toUpperCase() : 'ST'"></div>
                 </div>
             </header>
             
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-
-                <!-- ========================================== -->
-                <!-- 1. VIEW BERANDA                            -->
-                <!-- ========================================== -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 transition-colors">
+                
+                <!-- BERANDA -->
                 <div x-show="activeView === 'beranda'" class="space-y-6">
-                    
-                    <!-- KOTAK NOTIFIKASI BROADCAST GLOBAL DARI ADMIN -->
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-xl">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-1" x-text="'Selamat Datang, ' + (userData.nama || 'User') + '!'"></h2>
+                        <p class="text-blue-100 text-sm">Berikut adalah ringkasan aktivitas akun Anda.</p>
+                    </div>
+
+                    <!-- KOTAK NOTIFIKASI BROADCAST -->
                     <template x-if="notifications && notifications.length > 0">
                         <div class="space-y-3">
                             <template x-for="notif in notifications" :key="notif.waktu">
-                                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
+                                <div class="bg-blue-50 border-l-4 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
                                     <div class="flex gap-3">
-                                        <div class="p-2 bg-blue-100 text-blue-600 rounded-lg mt-0.5 shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                        <div class="p-2 bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-lg mt-0.5 shrink-0">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                         </div>
                                         <div>
-                                            <h4 class="font-bold text-gray-800 text-base" x-text="notif.judul"></h4>
-                                            <p class="text-sm text-gray-600 mt-1" x-text="notif.pesan"></p>
+                                            <h4 class="font-bold text-gray-800 dark:text-slate-100 text-base" x-text="notif.judul"></h4>
+                                            <p class="text-sm text-gray-600 dark:text-slate-400 mt-1" x-text="notif.pesan"></p>
                                         </div>
                                     </div>
-                                    <template x-if="notif.link && notif.link.trim() !== ''">
-                                        <a :href="notif.link" target="_blank" class="ml-4 inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg transition shrink-0">Buka Link</a>
-                                    </template>
                                 </div>
                             </template>
                         </div>
                     </template>
 
-                    <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800" x-text="'Selamat Datang, ' + (userData.nama || 'Pengguna') + '!'"></h1>
-                        <p class="text-gray-500 mt-1">Berikut adalah ringkasan aktivitas akun Anda.</p>
-                    </div>
-                
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <button @click="activeView = 'aksesProduk'; loadAksesProduk()" class="w-full text-left bg-white p-6 rounded-xl shadow-sm border flex items-center justify-between hover:ring-2 hover:ring-blue-500">
-                            <div><p class="text-sm font-medium text-gray-500">Aset Digital</p><p class="text-3xl font-bold text-gray-800 mt-1">Lihat Detail</p></div>
-                            <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg></div>
-                        </button>
-                        <button @click="activeView = 'bonusPengguna'; loadBonusPengguna()" class="w-full text-left bg-white p-6 rounded-xl shadow-sm border flex items-center justify-between hover:ring-2 hover:ring-green-500">
-                            <div><p class="text-sm font-medium text-gray-500">Bonus Saya</p><p class="text-3xl font-bold text-gray-800 mt-1">Lihat Detail</p></div>
-                            <div class="bg-green-100 text-green-600 p-3 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg></div>
-                        </button>
-                        <button @click="activeView = 'koin'; loadHistoryKoin()" class="w-full text-left bg-white p-6 rounded-xl shadow-sm border flex items-center justify-between hover:ring-2 hover:ring-yellow-500">
-                            <div><p class="text-sm font-medium text-gray-500">Saldo Koin</p><p class="text-3xl font-bold text-gray-800 mt-1" x-text="userData.koin !== undefined ? userData.koin : '0'"></p></div>
-                            <div class="bg-yellow-100 text-yellow-600 p-3 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1" /></svg></div>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ========================================== -->
-                <!-- 2. VIEW ASET DIGITAL                       -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'aset'">  
-                    <div x-show="assetSubView === 'produk'">
-                        <h3 class="text-gray-800 text-3xl font-medium">Aset Digital Anda</h3>
-                        <div class="flex flex-col sm:flex-row justify-between items-center my-4 gap-4">
-                            <input x-model.debounce.300ms="digitalAssetsSearchQuery" type="text" placeholder="Cari nama produk..." class="w-full sm:w-64 pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500">
-                            <button @click="digitalAssets = []; loadDigitalAssets(true)" :disabled="isAssetsLoading" class="bg-white text-gray-700 border border-gray-300 px-5 py-2 rounded-lg font-semibold hover:bg-gray-50 flex items-center gap-2"><span>Refresh</span></button>
+                    <!-- STAT CARDS -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <p class="text-sm text-gray-500 dark:text-slate-400 font-medium">Status Akun</p>
+                            <h3 class="text-xl font-bold text-green-600 dark:text-green-400 mt-1" x-text="userData.status || 'Aktif'"></h3>
                         </div>
-                        <div x-show="isAssetsLoading" class="mt-8 text-center"><p class="text-sm text-gray-500">Memuat produk...</p></div>
-                        <div x-show="!isAssetsLoading && digitalAssets.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <template x-for="asset in filteredDigitalAssets" :key="asset.TokenAkses">
-                                <div class="bg-white rounded-lg border shadow-sm overflow-hidden flex flex-col h-full">
-                                    <div class="p-4 flex flex-col flex-grow">
-                                        <h4 class="text-lg font-semibold text-gray-800 line-clamp-2 mb-2" x-text="asset.NamaAset"></h4>
-                                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 mb-4" x-text="asset.Deskripsi || 'Akses aktif'"></p>
-                                        <a :href="`${asset.UrlProduk}?tokenakses=${asset.TokenAkses}`" target="_blank" class="mt-auto block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 text-sm font-semibold">Akses Produk</a>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                
-                    <div x-show="assetSubView === 'bonus'">
-                        <h3 class="text-gray-800 text-3xl font-medium">Bonus Spesial</h3>
-                        <div x-show="isBonusesLoading" class="mt-8 text-center"><p class="text-sm text-gray-500">Memuat bonus...</p></div>
-                        <div x-show="!isBonusesLoading && bonuses.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <template x-for="bonus in filteredBonuses" :key="bonus.IDbonus">
-                                <div class="bg-white rounded-lg border p-6 flex flex-col h-full">
-                                    <h4 class="text-xl font-semibold text-gray-800 mb-2" x-text="bonus.Judul"></h4>
-                                    <p class="text-gray-600 text-sm flex-grow mb-4" x-text="bonus.Deskripsi || 'Gunakan tautan untuk klaim'"></p>
-                                    <a :href="`${bonus.UrlBonus}?tokenbonus=${bonus.TokenBonus}`" target="_blank" class="mt-auto block w-full text-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-sm font-semibold">Akses Bonus</a>
-                                </div>
-                            </template>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <p class="text-sm text-gray-500 dark:text-slate-400 font-medium">Jumlah Koin</p>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mt-1" x-text="userData.koin || 0"></h3>
                         </div>
                     </div>
 
-                    <div x-show="assetSubView === 'klaim'">
-                        <h3 class="text-gray-800 text-3xl font-medium">Klaim Voucher Produk</h3>
-                        <div class="mt-8 bg-white p-8 rounded-lg border shadow-sm max-w-lg">
-                            <p class="text-sm text-gray-500 mb-4">Masukkan kode klaim untuk produk digital Anda di bawah ini:</p>
-                            <div class="space-y-4">
-                                <input type="text" x-model="klaimKode" class="w-full p-3 border rounded-lg uppercase tracking-widest text-center text-lg font-bold" placeholder="KODE-VOUCHER-ANDA">
-                                <button @click="klaimProduk()" class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition">Tebus Voucher</button>
-                            </div>
-                        </div>
-                    </div>     
+                    <!-- FORM KLAIM -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 max-w-xl">
+                        <h4 class="font-bold text-gray-800 dark:text-slate-100 text-lg mb-2">Klaim Produk Digital</h4>
+                        <form @submit.prevent="claimProduct()" class="flex gap-3 mt-4">
+                            <input type="text" x-model="voucherCode" placeholder="Masukkan Kode" class="flex-1 p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase font-semibold text-sm">
+                            <button type="submit" :disabled="isClaiming" class="bg-blue-600 text-white px-6 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Klaim</button>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- 3. VIEW AKUN SAYA                          -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'akun'">
-                    <div x-show="activeSubView === 'profile'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Profil Akun</h3>
-                        <div class="bg-white p-6 rounded-lg border shadow-sm max-w-xl space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                <input type="text" x-model="userData.nama" class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600">Email Utama (Terkunci Sesi)</label>
-                                <input type="email" x-model="userData.email" disabled class="mt-1 w-full p-3 border rounded-lg bg-gray-50 cursor-not-allowed">
-                            </div>
-                            <div class="text-right">
-                                <button @click="updateProfile()" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 font-semibold text-sm">Simpan Perubahan</button>
-                            </div>
-                            <hr class="my-6">
-                            <h4 class="text-lg font-semibold text-gray-800">Ganti Password</h4>
-                            <div class="space-y-4">
-                                <div><label class="block text-sm font-medium text-gray-600">Password Lama</label><input type="password" x-model="passwordFields.old" class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"></div>
-                                <div><label class="block text-sm font-medium text-gray-600">Password Baru</label><input type="password" x-model="passwordFields.new" class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"></div>
-                                <div class="text-right"><button @click="changePassword()" class="bg-blue-600 text-white py-2 px-6 rounded-lg text-sm font-semibold hover:bg-blue-700">Ubah Password</button></div>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div x-show="activeSubView === 'notifikasi'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Saluran Notifikasi Keamanan</h3>
-                        <div class="bg-white p-6 rounded-lg border shadow-sm max-w-xl space-y-6">
-                            <div class="space-y-3">
-                                <h5 class="font-semibold text-gray-700">Telegram Bot Integration</h5>
-                                <p class="text-sm text-gray-500">Dapatkan notifikasi instan seperti OTP dan pemberitahuan sistem melalui Bot Telegram.</p>
-                                <div x-show="!userData.isTelegramConnected" class="space-y-2">
-                                    <button @click="startTelegramVerification()" class="block w-full text-center bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600 font-semibold text-sm">Hubungkan Telegram</button>
-                                </div>
-                                <div x-show="userData.isTelegramConnected">
-                                     <p class="text-xs text-green-600 bg-green-50 p-2.5 rounded-md font-semibold">Status: Terhubung dengan Bot</p>
-                                     <button @click="disconnectTelegram()" class="mt-2 w-full text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 text-sm font-semibold">Putuskan Sesi Telegram</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div x-show="activeSubView === 'pembelian'">
-                        <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Pembelian</h3>
-                        <div class="bg-white p-6 rounded-2xl border shadow-sm w-full">
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full bg-white divide-y">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Invoice</th>
-                                            <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Tanggal</th>
-                                            <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                            <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y text-sm">
-                                        <template x-if="isPembelianLoading">
-                                            <tr><td colspan="4" class="p-6 text-center animate-pulse">Memuat riwayat...</td></tr>
-                                        </template>
-                                        <template x-if="!isPembelianLoading && riwayatPembelian.length === 0">
-                                            <tr><td colspan="4" class="text-center p-6 text-gray-500">Tidak ada riwayat pembelian.</td></tr>
-                                        </template>
-                                        <template x-if="!isPembelianLoading">
-                                            <template x-for="item in riwayatPembelian" :key="item.NomorInvoice">
-                                                <tr class="hover:bg-gray-50">
-                                                    <td class="py-4 px-6 font-semibold" x-text="item.NomorInvoice"></td>
-                                                    <td class="py-4 px-6 text-gray-500" x-text="new Date(item.TanggalTerbit).toLocaleDateString('id-ID')"></td>
-                                                    <td class="py-4 px-6"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800" x-text="item.Status"></span></td>
-                                                    <td class="py-4 px-6 font-bold" x-text="formatCurrency(item.TotalPembayaran)"></td>
-                                                </tr>
-                                            </template>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                <!-- TABEL DATA DINAMIS -->
+                <div x-show="activeView.startsWith('aset-')" class="space-y-4" style="display: none;">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-slate-100" x-text="activeView === 'aset-produk' ? 'Aset Digital Saya' : 'Bonus Eksklusif'"></h3>
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                            <thead class="bg-gray-50 dark:bg-slate-900/50">
+                                <tr>
+                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Nama Item</th>
+                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Keterangan</th>
+                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                <template x-for="item in tableItems" :key="item.Timestamp || Math.random()">
+                                    <tr class="hover:bg-gray-50/70 dark:hover:bg-slate-700/30 transition">
+                                        <td class="px-6 py-4 text-sm font-semibold text-gray-800 dark:text-slate-200" x-text="item.NamaProduk || item.NamaBonus"></td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-slate-400" x-text="item.Keterangan || 'Akses Aktif'"></td>
+                                        <td class="px-6 py-4 text-sm"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400">Aktif</span></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                
-                <!-- ========================================== -->
-                <!-- 4. VIEW MITRA AFILIASI                     -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'afiliasi'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Program Afiliasi</h3>
-                    <div class="bg-white p-6 rounded-lg border shadow-sm max-w-2xl space-y-6">
+
+                <!-- PENGATURAN PROFIL & PASSWORD -->
+                <div x-show="activeView === 'akun-profil'" class="max-w-xl bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-6" style="display: none;">
+                    <div><h3 class="text-xl font-bold text-gray-800 dark:text-slate-100">Informasi Profil</h3></div>
+                    <form @submit.prevent="updateProfile()" class="space-y-4">
                         <div>
-                            <h4 class="text-xl font-bold text-gray-900">Mulai Dapatkan Penghasilan Pasif</h4>
-                            <p class="text-sm text-gray-500 mt-1">Gunakan link referal unik Anda untuk mengajak rekan kerja bergabung di S-Tools ID.</p>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+                            <input type="text" x-model="profileForm.nama" class="w-full p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tautan Afiliasi Anda</p>
-                            <div class="flex flex-col sm:flex-row gap-2 mt-2">
-                                <input type="text" :value="affiliateData.link || 'Mengenerate link...'" class="flex-1 p-2.5 border bg-white rounded-lg text-sm font-medium text-gray-700 select-all" readonly>
-                                <button @click="copyAffiliateLink()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg whitespace-nowrap shrink-0">Salin Link</button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="p-4 bg-amber-50 rounded-xl border"><p class="text-xs font-medium text-amber-700">Kode Afiliasi</p><h4 class="text-xl font-bold text-amber-800 mt-1" x-text="affiliateData.kode || '-'"></h4></div>
-                            <div class="p-4 bg-indigo-50 rounded-xl border"><p class="text-xs font-medium text-indigo-700">Komisi Terkumpul</p><h4 class="text-xl font-bold text-indigo-800 mt-1" x-text="(affiliateData.koin || 0) + ' KOIN'"></h4></div>
-                        </div>
-                    </div>
-                </div>
-        
-                <!-- ========================================== -->
-                <!-- 5. VIEW DETAIL AKSES PRODUK                 -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'aksesProduk'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Akses Produk</h3>
-                    <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white divide-y">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">ID Produk</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Nama Produk</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y text-sm">
-                                    <template x-if="isAksesProdukLoading">
-                                        <tr><td colspan="3" class="p-6 text-center animate-pulse">Memuat data akses...</td></tr>
-                                    </template>
-                                    <template x-if="!isAksesProdukLoading && aksesProduk.length === 0">
-                                         <tr><td colspan="3" class="text-center p-6 text-gray-500">Anda belum memiliki lisensi produk digital.</td></tr>
-                                    </template>
-                                    <template x-if="!isAksesProdukLoading">
-                                        <template x-for="item in aksesProduk" :key="item.IDProduk">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-gray-500" x-text="item.IDProduk"></td>
-                                                <td class="py-4 px-6 font-semibold" x-text="item.NamaProduk"></td>
-                                                <td class="py-4 px-6"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800" x-text="item.Status"></span></td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ========================================== -->
-                <!-- 6. VIEW DETAIL BONUS                        -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'bonusPengguna'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Detail Klaim Bonus</h3>
-                    <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white divide-y">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">ID Bonus</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Judul Bonus</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y text-sm">
-                                    <template x-if="isBonusPenggunaLoading">
-                                        <tr><td colspan="2" class="p-6 text-center animate-pulse">Memuat bonus...</td></tr>
-                                    </template>
-                                    <template x-if="!isBonusPenggunaLoading && bonusPengguna.length === 0">
-                                        <tr><td colspan="2" class="text-center p-6 text-gray-500">Belum ada bonus yang diklaim.</td></tr>
-                                    </template>
-                                    <template x-if="!isBonusPenggunaLoading">
-                                        <template x-for="item in bonusPengguna" :key="item.IDBonus">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-gray-500" x-text="item.IDBonus"></td>
-                                                <td class="py-4 px-6 font-semibold" x-text="item.Judul"></td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition">Simpan Perubahan</button>
+                    </form>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- 7. VIEW RIWAYAT KOIN                       -->
-                <!-- ========================================== -->
-                <div x-show="activeView === 'koin'">
-                    <h3 class="text-gray-800 text-3xl font-medium mb-8">Riwayat Koin Komisi</h3>
-                    <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white divide-y">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Tanggal</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Deskripsi</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Jenis</th>
-                                        <th class="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Jumlah</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y text-sm">
-                                    <template x-if="isKoinLoading">
-                                        <tr><td colspan="4" class="p-6 text-center animate-pulse">Memuat mutasi koin...</td></tr>
-                                    </template>
-                                    <template x-if="!isKoinLoading && historyKoin.length === 0">
-                                        <tr><td colspan="4" class="text-center p-6 text-gray-500">Belum ada riwayat mutasi koin.</td></tr>
-                                    </template>
-                                    <template x-if="!isKoinLoading">
-                                        <template x-for="item in historyKoin" :key="item.IDTransaksi">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="py-4 px-6 text-gray-500" x-text="new Date(item.Tanggal).toLocaleDateString('id-ID')"></td>
-                                                <td class="py-4 px-6 text-gray-800" x-text="item.Deskripsi"></td>
-                                                <td class="py-4 px-6"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="item.JenisTransaksi === 'KREDIT' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="item.Jenis"></span></td>
-                                                <td class="py-4 px-6 font-bold" x-text="item.Jumlah"></td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>        
             </main>
         </div>
     </div>
-    
-    <!-- MODAL GLOBAL UNTUK NOTIFIKASI ERROR / SUKSES -->
-    <div x-show="modal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" x-cloak>
-        <div @click.outside="modal.isOpen = false" class="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 text-center">
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full" :class="modal.isError ? 'bg-red-100' : 'bg-blue-100'">
-                <svg class="h-6 w-6" :class="modal.isError ? 'text-red-600' : 'text-blue-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900" x-text="modal.title"></h3>
-            <p class="mt-2 text-sm text-gray-600" x-text="modal.message"></p>
-            <div class="mt-6 flex justify-center">
-                <button @click="modal.isOpen = false" type="button" class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Oke</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANGGIL FILE JAVASCRIPT KONTROL UTAMA -->
     <script src="js/dashboard.js"></script>
 </body>
 </html>
