@@ -25,6 +25,25 @@ function dashboardApp() {
             onConfirm: () => {}
         },
 
+        darkMode: false, // Menangani Status Dark Mode
+        
+        // --------------------------------------------------------
+        // MESIN TOAST NOTIFICATION (TAMBAHKAN BLOK INI)
+        // --------------------------------------------------------
+        toasts: [],
+        addToast(message, type = 'success') {
+            const id = Date.now();
+            this.toasts.push({ id, message, type, visible: true });
+            // Hilangkan otomatis setelah 3,5 detik
+            setTimeout(() => this.removeToast(id), 3500);
+        },
+        removeToast(id) {
+            const toast = this.toasts.find(t => t.id === id);
+            if (toast) toast.visible = false;
+            // Beri waktu animasi menghilang selesai sebelum membuang data dari array
+            setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 300);
+        },
+        
         // Navigasi & Tampilan Submenu
         isAssetMenuOpen: false, assetSubView: 'produk',
         isAkunMenuOpen: false, activeSubView: 'profile',
