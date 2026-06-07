@@ -6,14 +6,12 @@
     <meta name="author" content="Senrima Margasandy">
     <title>Dashboard > S-Tools ID</title>
     
-    <!-- Tailwind CSS (Konfigurasi Dark Mode Manual) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: {} } }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- AlpineJS & Collapse -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
@@ -22,6 +20,9 @@
         [x-cloak] { display: none !important; }
         .menu-active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 4px solid #2563eb; }
         .dark .menu-active { background-color: #1e3a8a; color: #60a5fa; border-right: 4px solid #60a5fa; }
+        /* Transisi halus agar popup tidak kaku */
+        .toast-enter { transition: all 0.3s ease-out; transform: translateY(-1rem); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100" 
@@ -29,182 +30,210 @@
       x-init="init(); darkMode = localStorage.getItem('theme') === 'dark'; $watch('darkMode', val => { localStorage.setItem('theme', val ? 'dark' : 'light'); if(val) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); })" 
       x-cloak>
 
-    <!-- KONTROL TEMA SEBELUM RENDER -->
     <script>if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
 
-    <!-- LOADING LAYAR PENUH -->
     <div x-show="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm">
-        <div class="text-center">
-            <svg class="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <h2 class="text-lg font-semibold text-gray-700 dark:text-slate-300">Menyelaraskan Sesi Ekosistem...</h2>
+        <div class="text-center p-4">
+            <svg class="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-700 dark:text-slate-300">Menyelaraskan Sesi Ekosistem...</h2>
         </div>
     </div>
 
-    <!-- WADAH POPUP PEMBERITAHUAN (TOAST) -->
-    <div class="fixed top-5 right-5 z-[100] flex flex-col gap-3 w-80">
+    <div class="fixed top-4 right-4 left-4 sm:left-auto sm:w-80 z-[100] flex flex-col gap-3 pointer-events-none">
         <template x-for="toast in toasts" :key="toast.id">
             <div x-show="toast.visible" x-transition.opacity.duration.300ms 
-                 class="flex items-start gap-3 p-4 rounded-xl shadow-lg border backdrop-blur-md"
-                 :class="toast.type === 'error' ? 'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-900/90 dark:border-red-800 dark:text-red-100' : 'bg-white/90 border-gray-200 text-gray-800 dark:bg-slate-800/90 dark:border-slate-700 dark:text-slate-100'">
+                 class="pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-lg border backdrop-blur-md w-full"
+                 :class="toast.type === 'error' ? 'bg-red-50/95 border-red-200 text-red-800 dark:bg-red-900/95 dark:border-red-800 dark:text-red-100' : 'bg-white/95 border-gray-200 text-gray-800 dark:bg-slate-800/95 dark:border-slate-700 dark:text-slate-100'">
                 <div class="shrink-0 mt-0.5">
                     <svg x-show="toast.type === 'success'" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <svg x-show="toast.type === 'error'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div class="flex-1 text-sm font-medium" x-text="toast.message"></div>
-                <button @click="removeToast(toast.id)" class="text-gray-400 hover:text-gray-600 transition">&times;</button>
+                <button @click="removeToast(toast.id)" class="text-gray-400 hover:text-gray-600 transition p-1">&times;</button>
             </div>
         </template>
     </div>
 
-    <!-- STRUKTUR UTAMA DASHBOARD -->
     <div x-show="!isLoading" class="flex h-screen w-full overflow-hidden">
         
-        <!-- SIDEBAR -->
-        <nav class="fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col bg-white border-r border-gray-200 dark:bg-slate-800 dark:border-slate-700 transition-transform duration-300 lg:static lg:translate-x-0" :class="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}">
-            <div class="p-4 flex items-center justify-center border-b border-gray-200 dark:border-slate-700 h-16 bg-blue-600 dark:bg-blue-700">
-                <span class="text-xl font-bold text-white tracking-wider">🚀 S-Tools ID</span>
+        <div x-show="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black/50 lg:hidden" x-transition.opacity></div>
+        
+        <nav class="fixed inset-y-0 left-0 z-30 flex h-full w-[260px] flex-col bg-white border-r border-gray-200 dark:bg-slate-800 dark:border-slate-700 transition-transform duration-300 lg:static lg:translate-x-0" 
+             :class="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}">
+            
+            <div class="p-4 flex items-center justify-between border-b border-gray-200 dark:border-slate-700 h-16 bg-blue-600 dark:bg-blue-700 shrink-0">
+                <span class="text-xl font-bold text-white tracking-wider mx-auto">🚀 S-Tools ID</span>
+                <button @click="isSidebarOpen = false" class="lg:hidden text-white/80 hover:text-white p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
             
-            <div class="flex-1 mt-6 px-3 space-y-1 overflow-y-auto">
-                <a href="#" @click.prevent="activeView = 'beranda'" :class="activeView === 'beranda' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium">Beranda</a>
+            <div class="flex-1 mt-4 px-3 space-y-1 overflow-y-auto pb-4">
+                <a href="#" @click.prevent="activeView = 'beranda'; if(window.innerWidth < 1024) isSidebarOpen = false;" 
+                   :class="activeView === 'beranda' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-sm">Beranda</a>
                 
                 <div x-data="{ open: false }" x-init="$watch('activeView', value => { if(value.startsWith('aset')) open = true })">
-                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium">
+                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium text-sm">
                         <span class="flex items-center gap-3">Aset Digital</span>
                         <svg class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div x-show="open" x-collapse class="mt-1 space-y-1 pl-4">
-                        <a href="#" @click.prevent="activeView = 'aset-produk'; loadAsetDigital()" :class="activeView === 'aset-produk' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Produk Saya</a>
-                        <a href="#" @click.prevent="activeView = 'aset-bonus'; loadBonus()" :class="activeView === 'aset-bonus' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Bonus Tersedia</a>
+                        <a href="#" @click.prevent="activeView = 'aset-produk'; loadAsetDigital(); if(window.innerWidth < 1024) isSidebarOpen = false;" :class="activeView === 'aset-produk' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Produk Saya</a>
+                        <a href="#" @click.prevent="activeView = 'aset-bonus'; loadBonus(); if(window.innerWidth < 1024) isSidebarOpen = false;" :class="activeView === 'aset-bonus' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Bonus Tersedia</a>
                     </div>
                 </div>
 
                 <div x-data="{ open: false }" x-init="$watch('activeView', value => { if(value.startsWith('akun')) open = true })">
-                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium">
+                    <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-xl transition font-medium text-sm">
                         <span class="flex items-center gap-3">Akun Saya</span>
                         <svg class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div x-show="open" x-collapse class="mt-1 space-y-1 pl-4">
-                        <a href="#" @click.prevent="activeView = 'akun-profil'" :class="activeView === 'akun-profil' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Profil Akun</a>
-                        <a href="#" @click.prevent="activeView = 'akun-keamanan'" :class="activeView === 'akun-keamanan' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Ganti Password</a>
+                        <a href="#" @click.prevent="activeView = 'akun-profil'; if(window.innerWidth < 1024) isSidebarOpen = false;" :class="activeView === 'akun-profil' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Profil Akun</a>
+                        <a href="#" @click.prevent="activeView = 'akun-keamanan'; if(window.innerWidth < 1024) isSidebarOpen = false;" :class="activeView === 'akun-keamanan' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Ganti Password</a>
                     </div>
                 </div>
 
-                <a href="#" @click.prevent="activeView = 'afiliasi'; loadAffiliateData()" :class="activeView === 'afiliasi' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium">Panel Afiliasi</a>
+                <a href="#" @click.prevent="activeView = 'afiliasi'; loadAffiliateData(); if(window.innerWidth < 1024) isSidebarOpen = false;" 
+                   :class="activeView === 'afiliasi' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-sm">Panel Afiliasi</a>
             </div>
             
-            <div class="p-4 border-t border-gray-200 dark:border-slate-700 space-y-2">
-                <button @click="requestAdminAccess()" class="w-full py-2.5 bg-amber-500 text-amber-950 font-semibold rounded-xl hover:bg-amber-600 transition text-sm">🔑 Panel Admin</button>
+            <div class="p-4 border-t border-gray-200 dark:border-slate-700 space-y-2 shrink-0">
+                <button x-show="['senrima.ms@gmail.com', 'pulletbone@gmail.com'].includes(userData.email)" 
+                        @click="requestAdminAccess()" 
+                        class="w-full py-2.5 bg-amber-500 text-amber-950 font-semibold rounded-xl hover:bg-amber-600 transition text-sm">
+                    🔑 Panel Admin
+                </button>
                 <button @click="logout()" class="w-full py-2.5 text-red-600 dark:text-red-400 font-semibold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition text-sm">Keluar Sesi</button>
             </div>
         </nav>
         
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- HEADER -->
+        <div class="flex-1 flex flex-col overflow-hidden w-full">
+            
             <header class="flex justify-between items-center p-4 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 h-16 shadow-sm shrink-0">
-                <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500 dark:text-slate-400 p-2"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+                <div class="flex items-center gap-3">
+                    <button @click="isSidebarOpen = true" class="lg:hidden text-gray-500 dark:text-slate-400 p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <span class="font-bold text-gray-800 dark:text-slate-100 lg:hidden text-sm uppercase tracking-wide truncate" x-text="activeView.replace('-', ' ')"></span>
+                </div>
                 
-                <div class="ml-auto flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4">
                     <button @click="darkMode = !darkMode" class="p-2 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 transition">
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg x-show="!darkMode" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="darkMode" x-cloak class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     </button>
                     <div class="text-right hidden sm:block">
-                        <p class="text-sm font-semibold text-gray-800 dark:text-slate-100" x-text="userData.nama"></p>
-                        <p class="text-xs text-gray-500 dark:text-slate-400" x-text="userData.email"></p>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-slate-100 truncate w-32" x-text="userData.nama"></p>
                     </div>
-                    <div class="h-10 w-10 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center shadow-md dark:shadow-none" x-text="userData.nama ? userData.nama.substring(0,2).toUpperCase() : 'ST'"></div>
+                    <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full sm:rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm sm:text-base shadow-md dark:shadow-none shrink-0" x-text="userData.nama ? userData.nama.substring(0,2).toUpperCase() : 'ST'"></div>
                 </div>
             </header>
             
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
-                <!-- BERANDA -->
-                <div x-show="activeView === 'beranda'" class="space-y-6">
-                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-xl">
-                        <h2 class="text-2xl md:text-3xl font-bold mb-1" x-text="'Selamat Datang, ' + (userData.nama || 'User') + '!'"></h2>
-                        <p class="text-blue-100 text-sm">Berikut adalah ringkasan aktivitas akun Anda.</p>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8">
+                
+                <div x-show="activeView === 'beranda'" class="space-y-4 sm:space-y-6">
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 sm:p-8 rounded-2xl text-white shadow-lg">
+                        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words" x-text="'Selamat Datang, ' + (userData.nama || 'User') + '!'"></h2>
+                        <p class="text-blue-100 text-xs sm:text-sm">Berikut adalah ringkasan aktivitas akun Anda.</p>
                     </div>
 
                     <template x-if="notifications && notifications.length > 0">
                         <div class="space-y-3">
                             <template x-for="notif in notifications" :key="notif.waktu">
-                                <div class="bg-blue-50 border-l-4 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400 p-4 rounded-r-xl shadow-sm flex items-start gap-3">
-                                    <div class="p-2 bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-lg mt-0.5 shrink-0">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400 p-3 sm:p-4 rounded-r-xl shadow-sm flex items-start gap-3">
+                                    <div class="p-1.5 sm:p-2 bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-lg shrink-0 mt-0.5">
+                                        <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                     </div>
-                                    <div>
-                                        <h4 class="font-bold text-gray-800 dark:text-slate-100 text-base" x-text="notif.judul"></h4>
-                                        <p class="text-sm text-gray-600 dark:text-slate-400 mt-1" x-text="notif.pesan"></p>
+                                    <div class="flex-1 min-w-0"> <h4 class="font-bold text-gray-800 dark:text-slate-100 text-sm sm:text-base break-words" x-text="notif.judul"></h4>
+                                        <p class="text-xs sm:text-sm text-gray-600 dark:text-slate-400 mt-1 break-words" x-text="notif.pesan"></p>
                                     </div>
                                 </div>
                             </template>
                         </div>
                     </template>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <p class="text-sm text-gray-500 dark:text-slate-400 font-medium">Status Akun</p>
-                            <h3 class="text-xl font-bold text-green-600 dark:text-green-400 mt-1" x-text="userData.status || 'Aktif'"></h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        <div class="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-center">
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400 font-medium">Status Akun</p>
+                            <h3 class="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400 mt-1 truncate" x-text="userData.status || 'Aktif'"></h3>
                         </div>
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <p class="text-sm text-gray-500 dark:text-slate-400 font-medium">Jumlah Koin</p>
-                            <h3 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mt-1" x-text="userData.koin || 0"></h3>
+                        <div class="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-center">
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400 font-medium">Jumlah Koin</p>
+                            <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100 mt-1 truncate" x-text="userData.koin || 0"></h3>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 max-w-xl">
-                        <h4 class="font-bold text-gray-800 dark:text-slate-100 text-lg mb-2">Klaim Produk Digital</h4>
-                        <form @submit.prevent="claimProduct()" class="flex gap-3 mt-4">
-                            <input type="text" x-model="voucherCode" placeholder="Masukkan Kode" class="flex-1 p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase font-semibold text-sm">
-                            <button type="submit" :disabled="isClaiming" class="bg-blue-600 text-white px-6 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Klaim</button>
+                    <div class="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 max-w-xl w-full">
+                        <h4 class="font-bold text-gray-800 dark:text-slate-100 text-base sm:text-lg mb-1 sm:mb-2">Klaim Produk Digital</h4>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mb-3 sm:mb-4">Masukkan kode voucher Anda.</p>
+                        <form @submit.prevent="claimProduct()" class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" x-model="voucherCode" placeholder="Masukkan Kode" class="w-full sm:flex-1 p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase font-semibold text-sm">
+                            <button type="submit" :disabled="isClaiming" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-blue-700 transition flex justify-center items-center shrink-0">Klaim Kode</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- TABEL ASET -->
                 <div x-show="activeView.startsWith('aset-')" class="space-y-4" style="display: none;">
-                    <h3 class="text-2xl font-bold text-gray-800 dark:text-slate-100" x-text="activeView === 'aset-produk' ? 'Aset Digital Saya' : 'Bonus Eksklusif'"></h3>
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                            <thead class="bg-gray-50 dark:bg-slate-900/50">
-                                <tr>
-                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Nama Item</th>
-                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
-                                <template x-for="item in tableItems" :key="item.Timestamp || Math.random()">
-                                    <tr class="hover:bg-gray-50/70 dark:hover:bg-slate-700/30">
-                                        <td class="px-6 py-4 text-sm font-semibold text-gray-800 dark:text-slate-200" x-text="item.NamaProduk || item.NamaBonus"></td>
-                                        <td class="px-6 py-4 text-sm"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400">Aktif</span></td>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100" x-text="activeView === 'aset-produk' ? 'Aset Digital Saya' : 'Bonus Eksklusif'"></h3>
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm w-full overflow-hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                <thead class="bg-gray-50 dark:bg-slate-900/50">
+                                    <tr>
+                                        <th class="px-4 sm:px-6 py-3 sm:py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Nama Item</th>
+                                        <th class="px-4 sm:px-6 py-3 sm:py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Status</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <template x-for="item in tableItems" :key="item.Timestamp || Math.random()">
+                                        <tr class="hover:bg-gray-50/70 dark:hover:bg-slate-700/30">
+                                            <td class="px-4 sm:px-6 py-4 text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-200 whitespace-nowrap" x-text="item.NamaProduk || item.NamaBonus"></td>
+                                            <td class="px-4 sm:px-6 py-4 text-xs sm:text-sm whitespace-nowrap"><span class="px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400">Aktif</span></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- AKUN PROFIL & PASSWORD -->
-                <div x-show="activeView === 'akun-profil'" class="max-w-xl bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-6" style="display: none;">
-                    <div><h3 class="text-xl font-bold text-gray-800 dark:text-slate-100">Informasi Profil</h3></div>
+                <div x-show="activeView === 'akun-profil'" class="max-w-xl w-full bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 sm:space-y-6" style="display: none;">
+                    <div><h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100">Informasi Profil</h3></div>
                     <form @submit.prevent="updateProfile()" class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
                             <input type="text" x-model="profileForm.nama" class="w-full p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
                         </div>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition">Simpan</button>
+                        <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl text-sm transition">Simpan Perubahan</button>
+                    </form>
+                </div>
+
+                <div x-show="activeView === 'akun-keamanan'" class="max-w-xl w-full bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 sm:space-y-6" style="display: none;">
+                    <div><h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100">Manajemen Kata Sandi</h3></div>
+                    <form @submit.prevent="changePassword()" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Sandi Lama</label>
+                            <input type="password" x-model="passwordForm.oldPassword" class="w-full p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Sandi Baru</label>
+                            <input type="password" x-model="passwordForm.newPassword" class="w-full p-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
+                        </div>
+                        <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl text-sm transition">Perbarui Password</button>
                     </form>
                 </div>
                 
-                <!-- AFILIASI -->
-                <div x-show="activeView === 'afiliasi'" class="space-y-6 max-w-2xl" style="display: none;">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-4">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-slate-100">S-Tools Mitra Afiliasi</h3>
-                        <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-dashed border-gray-300 dark:border-slate-600">
-                            <p class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Link Referal Unik Anda</p>
-                            <div class="flex gap-2 mt-2">
-                                <input type="text" :value="affiliateData.link" class="flex-1 p-2.5 border dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-sm font-medium dark:text-white focus:outline-none" readonly>
-                                <button @click="copyAffiliateLink()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 rounded-lg">Salin</button>
+                <div x-show="activeView === 'afiliasi'" class="space-y-4 sm:space-y-6 max-w-2xl w-full" style="display: none;">
+                    <div class="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100">S-Tools Mitra Afiliasi</h3>
+                        <div class="p-3 sm:p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-dashed border-gray-300 dark:border-slate-600 w-full overflow-hidden">
+                            <p class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Link Referal Unik Anda</p>
+                            <div class="flex flex-col sm:flex-row gap-2 mt-2 w-full">
+                                <input type="text" :value="affiliateData.link" class="w-full sm:flex-1 p-2 sm:p-2.5 border dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-xs sm:text-sm font-medium dark:text-white focus:outline-none" readonly>
+                                <button @click="copyAffiliateLink()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold py-2 px-5 rounded-lg shrink-0">Salin Link</button>
                             </div>
                         </div>
                     </div>
