@@ -4,60 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Senrima Margasandy">
     <title>Akses > S-Tools ID</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style> 
         body { font-family: 'Poppins', sans-serif; }
         [x-cloak] { display: none !important; }
     </style>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-100" x-data="app()" x-init="init()">
-    <div class="min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 text-gray-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100" 
+      x-data="app()" x-init="init(); darkMode = localStorage.getItem('theme') === 'dark'; if(darkMode) document.documentElement.classList.add('dark');">
 
-        <div x-show="view === 'login'" x-cloak class="grid md:grid-cols-2 gap-0 w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="hidden md:block bg-gradient-to-br from-blue-600 to-indigo-700 p-12 text-white">
-                <div class="flex flex-col justify-center h-full">
-                    <h2 class="text-4xl font-bold mb-4">Session Tools</h2>
-                    <p class="text-indigo-100">Keamanan data Anda adalah prioritas utama kami. Login untuk mengakses sistem yang andal dan aman.</p>
+    <script>if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
+
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative">
+        
+        <div class="absolute top-4 right-4 z-50">
+            <button @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light'); if(darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');" 
+                    class="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:ring-2 ring-blue-500 transition shadow-sm">
+                <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+        </div>
+
+        <div x-show="view === 'login'" x-cloak class="grid md:grid-cols-2 gap-0 w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300">
+            
+            <div class="hidden md:flex flex-col justify-between bg-gradient-to-br from-blue-600 to-indigo-700 p-12 text-white relative">
+                <div class="flex flex-col justify-center h-full space-y-4">
+                    <h2 class="text-4xl font-bold tracking-tight">Session Tools</h2>
+                    <p class="text-blue-100 text-sm leading-relaxed">Keamanan data Anda adalah prioritas utama kami. Login untuk mengakses sistem kontrol yang andal, aman, dan efisien.</p>
+                </div>
+                <div class="border-t border-blue-500/40 pt-4 text-xs text-blue-200">
+                    S-Tools ID Ekosistem Manajemen Aplikasi v3.0
                 </div>
             </div>
-            <div class="p-8 md:p-12">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang</h1>
-                <p class="text-gray-500 mb-8">Silakan login untuk melanjutkan.</p>
+            
+            <div class="p-6 sm:p-10 lg:p-12 flex flex-col justify-center w-full">
+                <div class="mb-6">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-slate-100">Selamat Datang</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">Silakan login untuk melanjutkan sesi aman Anda.</p>
+                </div>
                 
-                <form @submit.prevent="login()">
-                    <div class="mb-5">
-                        <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input x-model="loginData.email" id="login-email" type="email" autocomplete="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                <form @submit.prevent="login()" class="space-y-4">
+                    <div>
+                        <label for="login-email" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Alamat Email</label>
+                        <input x-model="loginData.email" id="login-email" type="email" autocomplete="email" 
+                               class="w-full p-3 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition duration-200" required>
                     </div>
-                    <div class="mb-5">
-                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input x-model="loginData.password" id="login-password" type="password" autocomplete="current-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    <div>
+                        <label for="login-password" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+                        <input x-model="loginData.password" id="login-password" type="password" autocomplete="current-password" 
+                               class="w-full p-3 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition duration-200" required>
                     </div>
-                    <div class="flex items-center justify-between mt-4 mb-6">
+                    
+                    <div class="flex items-center justify-between mt-2 mb-4">
                         <div class="flex items-center">
-                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="remember-me" class="ml-2 block text-sm text-gray-900">Ingat Saya</label>
+                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded transition cursor-pointer">
+                            <label for="remember-me" class="ml-2 block text-xs sm:text-sm text-gray-700 dark:text-slate-300 cursor-pointer select-none">Ingat Saya</label>
                         </div>
-                        <div class="text-sm">
-                            <a href="lupa-password.html" class="font-medium text-indigo-600 hover:text-indigo-500">Lupa password?</a>
+                        <div class="text-xs sm:text-sm">
+                            <a href="lupa-password.html" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">Lupa password?</a>
                         </div>
                     </div>
-                    <button type="submit" :disabled="isLoading" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 font-semibold transition flex justify-center items-center">
-                         <span x-show="!isLoading">Lanjutkan</span>
-                         <svg x-show="isLoading" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    
+                    <button type="submit" :disabled="isLoading" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition text-sm shadow-lg shadow-blue-200 dark:shadow-none flex justify-center items-center shrink-0">
+                         <span x-show="!isLoading">Lanjutkan Akses</span>
+                         <svg x-show="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </button>
                 </form>
                 
-                <div class="relative my-6">
-                    <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-300"></div></div>
-                    <div class="relative flex justify-center text-sm"><span class="bg-white px-2 text-gray-500">Atau</span></div>
+                <div class="relative my-5">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-200 dark:border-slate-700"></div></div>
+                    <div class="relative flex justify-center text-xs"><span class="bg-white dark:bg-slate-800 px-3 text-gray-400 dark:text-slate-500 font-medium uppercase tracking-wider">Atau Masuk Dengan</span></div>
                 </div>
                 
                 <div id="g_id_onload"
@@ -67,7 +96,7 @@
                      data-callback="handleCredentialResponse"
                      data-auto_prompt="true">
                 </div>
-                <div class="w-full flex justify-center">
+                <div class="w-full flex justify-center overflow-hidden rounded-xl">
                     <div class="g_id_signin"
                          data-type="standard"
                          data-shape="rectangular"
@@ -78,12 +107,14 @@
                          data-width="360">
                     </div>
                 </div>
-                <div x-show="status.message" x-cloak class="mt-4 p-4 rounded-lg border-l-4" :class="status.success ? 'bg-green-100 border-green-400 text-green-800' : 'bg-red-100 border-red-400 text-red-800'">
+
+                <div x-show="status.message" x-cloak class="mt-4 p-4 rounded-xl border-l-4 text-xs sm:text-sm animate-fade-in" 
+                     :class="status.success ? 'bg-green-50 dark:bg-green-950/30 border-green-500 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-950/30 border-red-500 text-red-800 dark:text-red-300'">
                     <span class="font-medium" x-text="status.message"></span>
                 </div>
                 
-                <div class="text-center mt-6 text-sm">
-                    <p class="text-gray-600">Belum punya akun? <a href="daftar.html" class="font-medium text-blue-600 hover:underline">Daftar di sini</a></p>
+                <div class="text-center mt-6 text-xs sm:text-sm border-t border-gray-100 dark:border-slate-700/60 pt-4">
+                    <p class="text-gray-500 dark:text-slate-400">Belum punya akun ekosistem? <a href="daftar.html" class="font-bold text-blue-600 dark:text-blue-400 hover:underline ml-1">Daftar di sini</a></p>
                 </div>
             </div>
         </div>
