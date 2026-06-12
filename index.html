@@ -13,7 +13,7 @@
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: {} } }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style> 
         body { font-family: 'Poppins', sans-serif; }
@@ -48,76 +48,103 @@
         </div>
         
         <div class="p-5 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center w-full">
-            <div class="mb-5">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Selamat Datang</h1>
-                <p class="text-xs text-gray-400 dark:text-slate-400 mt-1">Silakan login untuk melanjutkan.</p>
-            </div>
             
-            <form @submit.prevent="login()" class="space-y-3.5">
-                <div>
-                    <label for="login-email" class="block text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email</label>
-                    <input x-model="loginData.email" id="login-email" type="email" autocomplete="email" 
-                           class="w-full p-2.5 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" required>
-                </div>
-                <div>
-                    <label for="login-password" class="block text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Password</label>
-                    <input x-model="loginData.password" id="login-password" type="password" autocomplete="current-password" 
-                           class="w-full p-2.5 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+            <div x-show="view === 'login'">
+                <div class="mb-5">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Selamat Datang</h1>
+                    <p class="text-xs text-gray-400 dark:text-slate-400 mt-1">Silakan login untuk melanjutkan.</p>
                 </div>
                 
-                <div class="flex items-center justify-between pt-1 pb-2">
-                    <label class="flex items-center text-xs text-gray-600 dark:text-slate-300 cursor-pointer select-none">
-                        <input id="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded transition cursor-pointer">
-                        <span class="ml-2">Ingat Saya</span>
-                    </label>
-                    <a href="lupa-password.html" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">Lupa password?</a>
+                <form @submit.prevent="login()" class="space-y-3.5">
+                    <div>
+                        <label for="login-email" class="block text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email</label>
+                        <input x-model="loginData.email" id="login-email" type="email" autocomplete="email" 
+                               class="w-full p-2.5 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Password</label>
+                        <input x-model="loginData.password" id="login-password" type="password" autocomplete="current-password" 
+                               class="w-full p-2.5 text-sm border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                    </div>
+                    
+                    <div class="flex items-center justify-between pt-1 pb-2">
+                        <label class="flex items-center text-xs text-gray-600 dark:text-slate-300 cursor-pointer select-none">
+                            <input id="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded transition cursor-pointer">
+                            <span class="ml-2">Ingat Saya</span>
+                        </label>
+                        <a href="lupa-password.html" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">Lupa password?</a>
+                    </div>
+                    
+                    <button type="submit" :disabled="isLoading" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition text-sm shadow-md flex justify-center items-center shrink-0">
+                         <span x-show="!isLoading">Lanjutkan</span>
+                         <svg x-show="isLoading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                </form>
+                
+                <div class="relative my-4">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-200 dark:border-slate-700"></div></div>
+                    <div class="relative flex justify-center text-[10px]"><span class="bg-white dark:bg-slate-800 px-2 text-gray-400 uppercase font-semibold tracking-wider">Atau</span></div>
                 </div>
                 
-                <button type="submit" :disabled="isLoading" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition text-sm shadow-md flex justify-center items-center shrink-0">
-                     <span x-show="!isLoading">Lanjutkan</span>
-                     <svg x-show="isLoading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </button>
-            </form>
-            
-            <div class="relative my-4">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-200 dark:border-slate-700"></div></div>
-                <div class="relative flex justify-center text-[10px]"><span class="bg-white dark:bg-slate-800 px-2 text-gray-400 uppercase font-semibold tracking-wider">Atau</span></div>
-            </div>
-            
-            <div id="g_id_onload"
-                 data-client_id="140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com"
-                 data-context="signin"
-                 data-ux_mode="popup"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="true">
-            </div>
-            <div class="w-full flex justify-center overflow-hidden max-w-full">
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-shape="rectangular"
-                     data-theme="outline"
-                     data-text="signin_with"
-                     data-size="large"
-                     data-logo_alignment="left"
-                     data-width="280">
+                <div id="g_id_onload"
+                     data-client_id="140122260876-rea6sfsmcd32acgie6ko7hrr2rj65q6v.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="true">
                 </div>
+                <div class="w-full flex justify-center overflow-hidden max-w-full">
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="280">
+                    </div>
+                </div>
+
+                <div class="text-center mt-5 text-xs border-t border-gray-100 dark:border-slate-700/60 pt-3">
+                    <p class="text-gray-500 dark:text-slate-400">Belum punya akun? <a :href="'daftar.html' + window.location.search" class="font-bold text-blue-600 dark:text-blue-400 hover:underline ml-0.5">Daftar di sini</a></p>
+                </div>
+            </div>
+
+            <div x-show="view === 'otp'" x-cloak>
+                <div class="mb-5">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Verifikasi Keamanan</h1>
+                    <p class="text-xs text-gray-400 dark:text-slate-400 mt-1">Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk.</p>
+                </div>
+
+                <form @submit.prevent="verifyOTP()" class="space-y-4">
+                    <div>
+                        <label for="otp-code" class="block text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Kode OTP</label>
+                        <input x-model="otp" id="otp-code" type="text" maxlength="6" placeholder="******" autocomplete="one-time-code"
+                               class="w-full p-2.5 text-center text-lg font-bold tracking-widest border border-gray-300 dark:border-slate-600 bg-transparent dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                    </div>
+
+                    <button type="submit" :disabled="isLoading" 
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-xl transition text-sm shadow-md flex justify-center items-center shrink-0">
+                        <span x-show="!isLoading">Verifikasi OTP</span>
+                        <svg x-show="isLoading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                    
+                    <button type="button" @click="view = 'login'; status.message = ''" class="w-full text-center text-xs text-gray-500 dark:text-slate-400 hover:underline">
+                        Kembali ke Halaman Login
+                    </button>
+                </form>
             </div>
 
             <div x-show="status.message" x-cloak class="mt-3 p-3 rounded-xl border-l-4 text-xs" 
                  :class="status.success ? 'bg-green-50 dark:bg-green-950/20 border-green-500 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-800 dark:text-red-300'">
                 <span class="font-medium" x-text="status.message"></span>
             </div>
-            
-            <div class="text-center mt-5 text-xs border-t border-gray-100 dark:border-slate-700/60 pt-3">
-                <p class="text-gray-500 dark:text-slate-400">Belum punya akun? <a href="daftar.html" class="font-bold text-blue-600 dark:text-blue-400 hover:underline ml-0.5">Daftar di sini</a></p>
-            </div>
+
         </div>
     </div>
     
-    <script>
-        if(!window.appToasts) window.appToasts = [];
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
