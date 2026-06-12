@@ -7,6 +7,34 @@
 const API_ENDPOINT = "https://api.s-tools.id";
 
 // ===============================================================
+// FUNGSI GLOBAL PEMBANTU: CEK & EKSEKUSI REDIRECT URL (ANTI-OPEN REDIRECT)
+// ===============================================================
+function eksekusiPengalihanSukses() {
+    const parameterUrl = new URLSearchParams(window.location.search);
+    const tautanRedirect = parameterUrl.get('redirect');
+    
+    if (tautanRedirect) {
+        try {
+            // Mengubah kode enkripsi URL (?redirect=https%3A%2F%2F...) kembali menjadi teks asli
+            const decodedUrl = decodeURIComponent(tautanRedirect);
+            
+            // VALIDASI KEAMANAN KETAT: Izinkan pengalihan jika merupakan internal path (/) atau menuju subdomain s-tools.id
+            if (decodedUrl.startsWith('/') || decodedUrl.includes('s-tools.id')) {
+                window.location.href = decodedUrl;
+                return;
+            } else {
+                console.warn("Proteksi Keamanan: Percobaan pengalihan ke luar domain s-tools.id diblokir.");
+            }
+        } catch (e) {
+            console.error("Gagal memproses parsing parameter URL redirect:", e);
+        }
+    }
+    
+    // Alur Default: Jika tidak ada parameter redirect atau domain dicurigai berbahaya, arahkan ke dashboard utama
+    window.location.href = 'dashboard-new.html';
+}
+
+// ===============================================================
 // 1. SISTEM GOOGLE SSO (HTML API)
 // ===============================================================
 window.handleCredentialResponse = async function(response) {
@@ -28,7 +56,9 @@ window.handleCredentialResponse = async function(response) {
         
         if (result.status === 'success' || result.status === 'login_success') {
             localStorage.setItem('sessionToken', result.token);
-            window.location.href = 'dashboard-new.html';
+            
+            // Menggunakan pengalihan pintar berbasis redirect URL
+            eksekusiPengalihanSukses();
         } else {
             alert(result.message || 'Gagal menyelaraskan akun dengan SSO.');
         }
@@ -48,24 +78,37 @@ function jwt_decode(token) {
 }
 
 // ===============================================================
-// 2. KONTROLER APLIKASI LOGIN & DAFTAR (ALPINE.JS)
+// 2. KONTROLER CENTRAL GLOBAL APLIKASI (ALPINE.JS)
 // ===============================================================
 function app() {
     return {
-        view: 'login', 
-        isLoading: false, 
+        view: 'login', // Mengatur tampilan panel ('login' atau 'otp')
+        isLoading: false,
+        toasts: [],
         profileData: {},
         
-        // State Form Manual
+        // State Form Struktural Asli
         loginData: { email: '', password: '' },
         registerData: { nama: '', email: '', password: '' }, 
+        otp: '',
         status: { message: '', success: false },
-        
+        darkMode: false,
+
         async init() {
+            // Cek jika ada token sesi aktif lokal, langsung alihkan tanpa tunggu loading form
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             if (token) {
                 this.isLoading = true;
-                window.location.href = 'dashboard-new.html';
+                eksekusiPengalihanSukses();
+                return;
+            }
+
+            // Memeriksa apakah ada interupsi session email temporer untuk alur pemrosesan kode OTP
+            const tempEmail = sessionStorage.getItem('tempEmail');
+            if (tempEmail) {
+                this.loginData.email = tempEmail;
+                this.registerData.email = tempEmail;
+                this.view = 'otp';
                 return;
             }
         
@@ -80,7 +123,7 @@ function app() {
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    window.location.href = 'dashboard-new.html';
+                    eksekusiPengalihanSukses();
                     return;
                 }
             } catch (e) {
@@ -90,9 +133,28 @@ function app() {
             }
         },
 
+        // MANAJEMEN TOAST NOTIFIKASI INTERNAL
+        addToast(message, type = 'error') {
+            const id = Date.now();
+            this.toasts.push({ id, message, type, visible: true });
+            setTimeout(() => this.removeToast(id), 4000);
+        },
+
+        removeToast(id) {
+            const index = this.toasts.findIndex(t => t.id === id);
+            if (index !== -1) {
+                this.toasts[index].visible = false;
+                setTimeout(() => {
+                    this.toasts = this.toasts.filter(t => t.id !== id);
+                }, 300);
+            }
+        },
+
+        // ALUR LOGIN MANUAL UTAMA
         async login() {
             if (!this.loginData.email || !this.loginData.password) {
                 this.status = { message: 'Email dan Password wajib diisi.', success: false };
+                this.addToast(this.status.message, 'error');
                 return;
             }
 
@@ -106,7 +168,7 @@ function app() {
                     credentials: 'include',
                     body: JSON.stringify({
                         kontrol: 'proteksi',
-                        action: 'requestOTP', // Menuju fungsi Login GAS
+                        action: 'requestOTP', // Menuju endpoint Login GAS asli Anda
                         email: this.loginData.email,
                         password: this.loginData.password
                     })
@@ -114,22 +176,34 @@ function app() {
 
                 const result = await response.json();
 
-                if (result.status === 'success') {
-                    sessionStorage.setItem('tempEmail', this.loginData.email);
-                    window.location.href = 'otp.html';
+                if (result.status === 'success' || result.status === 'sukses') {
+                    if (result.step === 'otp') {
+                        sessionStorage.setItem('tempEmail', this.loginData.email);
+                        this.view = 'otp';
+                        this.status = { message: 'Silakan masukkan kode OTP yang telah dikirim.', success: true };
+                    } else {
+                        // Jika dalam skenario bypass/langsung mengembalikan token tanpa OTP
+                        localStorage.setItem('sessionToken', result.token);
+                        this.status = { message: 'Login berhasil! Mengalihkan...', success: true };
+                        setTimeout(() => { eksekusiPengalihanSukses(); }, 1000);
+                    }
                 } else {
-                    this.status = { message: result.message || 'Login gagal', success: false };
+                    this.status = { message: result.message || 'Login gagal, email atau password salah.', success: false };
+                    this.addToast(this.status.message, 'error');
                 }
             } catch (error) {
                 this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
+                this.addToast(this.status.message, 'error');
             } finally {
                 this.isLoading = false;
             }
         },
 
+        // ALUR PENDAFTARAN MANUAL (UNTUK DAFTAR.HTML)
         async register() {
             if (!this.registerData.nama || !this.registerData.email || !this.registerData.password) {
-                this.status = { message: 'Semua kolom wajib diisi.', success: false };
+                this.status = { message: 'Semua kolom pendaftaran wajib diisi.', success: false };
+                this.addToast(this.status.message, 'error');
                 return;
             }
 
@@ -143,7 +217,7 @@ function app() {
                     credentials: 'include',
                     body: JSON.stringify({
                         kontrol: 'proteksi',
-                        action: 'registerManual', // Menuju fungsi Register GAS
+                        action: 'registerManual', // Menuju endpoint Register GAS asli Anda
                         nama: this.registerData.nama,
                         email: this.registerData.email,
                         password: this.registerData.password
@@ -152,12 +226,74 @@ function app() {
 
                 const result = await response.json();
 
-                if (result.status === 'success') {
+                if (result.status === 'success' || result.status === 'sukses') {
                     sessionStorage.setItem('tempEmail', this.registerData.email);
-                    // Arahkan ke halaman OTP karena pendaftaran manual butuh verifikasi email
-                    window.location.href = 'otp.html';
+                    this.status = { message: result.message || 'Pendaftaran berhasil! Mengalihkan ke halaman verifikasi...', success: true };
+                    
+                    if (result.token) {
+                        localStorage.setItem('sessionToken', result.token);
+                    }
+
+                    // Pengalihan cerdas: Jika pendaftaran membutuhkan validasi OTP, arahkan ke view OTP instan
+                    setTimeout(() => {
+                        // Jika file pendaftaran Anda menggunakan halaman terpisah otp.html, jalankan pengalihan fisik:
+                        window.location.href = 'otp.html';
+                    }, 1500);
                 } else {
-                    this.status = { message: result.message || 'Pendaftaran gagal', success: false };
+                    this.status = { message: result.message || 'Pendaftaran akun baru gagal.', success: false };
+                    this.addToast(this.status.message, 'error');
+                }
+            } catch (error) {
+                this.status = { message: 'Terjadi kesalahan jaringan saat menghubungi server pendaftaran.', success: false };
+                this.addToast(this.status.message, 'error');
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // ALUR VERIFIKASI KODE OTP
+        async verifyOTP() {
+            const tempEmail = sessionStorage.getItem('tempEmail') || this.loginData.email || this.registerData.email;
+            if (!tempEmail) {
+                this.status = { message: 'Sesi hilang. Silakan ulangi proses pendaftaran atau login.', success: false };
+                this.view = 'login';
+                return;
+            }
+
+            if (this.otp.length < 6) {
+                this.status = { message: 'Masukkan 6 digit kode OTP secara lengkap.', success: false };
+                return;
+            }
+
+            this.isLoading = true;
+            this.status = { message: 'Memverifikasi kode...', success: true };
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        kontrol: 'proteksi',
+                        action: 'verifyOTP',
+                        email: tempEmail,
+                        otp: this.otp
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success' || result.status === 'sukses') {
+                    localStorage.setItem('sessionToken', result.token);
+                    sessionStorage.removeItem('tempEmail'); // Bersihkan email sementara
+                    
+                    this.status = { message: 'Verifikasi berhasil! Mengalihkan...', success: true };
+                    
+                    setTimeout(() => {
+                        eksekusiPengalihanSukses();
+                    }, 1000);
+                } else {
+                    this.status = { message: result.message || 'OTP salah atau sudah kedaluwarsa.', success: false };
                 }
             } catch (error) {
                 this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
@@ -169,7 +305,7 @@ function app() {
 }
 
 // ===============================================================
-// 3. KONTROLER APLIKASI OTP (Khusus untuk otp.html)
+// 3. KONTROLER BACKUP SUBSIDIER KHUSUS HALAMAN SEPARASI (OTP.HTML)
 // ===============================================================
 function otpApp() {
     return {
@@ -177,13 +313,11 @@ function otpApp() {
         isLoading: false,
         status: { message: '', success: false },
         
-        // Pengecekan awal saat halaman OTP dibuka
         init() {
             const tempEmail = sessionStorage.getItem('tempEmail');
             if (!tempEmail) {
-                this.status = { message: 'Sesi pendaftaran hilang. Silakan daftar ulang.', success: false };
-                // Opsional: Lempar kembali ke halaman pendaftaran setelah 3 detik
-                setTimeout(() => { window.location.href = 'daftar.html'; }, 3000);
+                this.status = { message: 'Sesi tindakan hilang. Silakan ulangi kembali.', success: false };
+                setTimeout(() => { window.location.href = 'index.html'; }, 2500);
             }
         },
         
@@ -198,7 +332,7 @@ function otpApp() {
             
             const tempEmail = sessionStorage.getItem('tempEmail');
             if (!tempEmail) {
-                this.status = { message: 'Sesi hilang. Silakan daftar ulang.', success: false };
+                this.status = { message: 'Sesi hilang. Silakan ulangi tindakan dari beranda.', success: false };
                 this.isLoading = false;
                 return;
             }
@@ -219,15 +353,12 @@ function otpApp() {
                 const result = await response.json();
 
                 if (result.status === 'success' || result.status === 'sukses') {
-                    // OTP sukses! Simpan token SSO dan buka Dashboard
                     localStorage.setItem('sessionToken', result.token);
-                    sessionStorage.removeItem('tempEmail'); // Bersihkan email sementara
-                    
+                    sessionStorage.removeItem('tempEmail');
                     this.status = { message: 'Verifikasi berhasil! Mengalihkan...', success: true };
                     
-                    // Beri jeda sedikit agar user bisa melihat pesan sukses
                     setTimeout(() => {
-                        window.location.href = 'dashboard-new.html';
+                        eksekusiPengalihanSukses();
                     }, 1000);
                 } else {
                     this.status = { message: result.message || 'OTP salah atau sudah kedaluwarsa.', success: false };
