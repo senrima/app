@@ -103,6 +103,8 @@ function adminDashboardApp() {
                 return;
             }
             this.isLoading = false;
+            // Memuat data pengguna secara otomatis di awal
+            this.loadUsers();
         },
 
         async callAdminApi(payload) {
@@ -129,14 +131,23 @@ function adminDashboardApp() {
         async loadUsers() {
             this.isUsersLoading = true;
             const res = await this.callAdminApi({ action: 'getAdminUsers' });
-            if (res.status === 'success') this.users = res.data || [];
+            if (res.status === 'success') {
+                this.users = res.data || [];
+                // Reset halaman kembali ke satu jika data di-refresh
+                this.usersCurrentPage = 1;
+            } else {
+                this.addToast(res.message || 'Gagal memuat data pengguna.', 'error');
+            }
             this.isUsersLoading = false;
         },
         get filteredUsers() {
             if (!this.usersSearchQuery.trim()) return this.users;
-            this.usersCurrentPage = 1;
             const search = this.usersSearchQuery.toLowerCase();
-            return this.users.filter(u => u.Nama.toLowerCase().includes(search) || u.Email.toLowerCase().includes(search) || (u.Username || '').toLowerCase().includes(search));
+            return this.users.filter(u => 
+                (u.Nama || '').toLowerCase().includes(search) || 
+                (u.Email || '').toLowerCase().includes(search) || 
+                (u.Username || '').toLowerCase().includes(search)
+            );
         },
         get paginatedUsers() {
             const start = (this.usersCurrentPage - 1) * this.usersItemsPerPage;
@@ -155,7 +166,7 @@ function adminDashboardApp() {
             this.isUserModalOpen = false; 
         },
         
-        // --- SIMPAN DATA PERUBAHAN BARU SINKRON KE backend ---
+        // --- SIMPAN DATA PERUBAHAN BARU SINKRON KE BACKEND GAS ---
         async saveUserUpdate(e) {
             const btn = e ? e.target : null;
             let originalText = "Simpan Perubahan";
@@ -165,13 +176,14 @@ function adminDashboardApp() {
                 btn.disabled = true;
             }
 
+            // Membangun payload sinkron dengan penamaan backend GAS
             const payload = {
                 action: 'updateAdminUser',
                 userId: this.userToEdit.ID,
-                newNama: this.userToEdit.Nama,                   // Opsi 1: Nama Lengkap
-                newStatus: this.userToEdit.Status,               // Opsi 2: Status (Aktif / Diblokir)
-                newNotifPref: this.userToEdit.NotifReferensi,    // Opsi 3: NotifPreference (email / telegram)
-                newStatusAfiliasi: this.userToEdit.StatusAfiliasi // Opsi 4: StatusAfiliasi (Aktif / Tidak Aktif)
+                newNama: this.userToEdit.Nama,                   // Properti 1
+                newStatus: this.userToEdit.Status,               // Properti 2
+                newNotifPref: this.userToEdit.NotifReferensi,    // Properti 3
+                newStatusAfiliasi: this.userToEdit.StatusAfiliasi // Properti 4
             };
 
             const response = await this.callAdminApi(payload);
@@ -183,7 +195,7 @@ function adminDashboardApp() {
 
             if (response.status === 'success' || response.status === 'sukses') {
                 this.closeUserModal();
-                await this.loadUsers(); // Refresh instan baris tabel data tanpa reload
+                await this.loadUsers(); // Refresh instan baris tabel data tanpa reload halaman browser
                 this.addToast('Berhasil! Parameter data pengguna telah diperbarui.', 'success');
             } else {
                 this.addToast(response.message || 'Gagal menyimpan perubahan data.', 'error');
