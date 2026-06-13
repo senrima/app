@@ -166,7 +166,7 @@ function app() {
                     sessionStorage.setItem('tempEmail', this.loginData.email);
                     
                     // Ambil string parameter URL untuk dioper ke halaman otp.html agar redirect tidak hilang
-                    window.location.href = 'otp.html' + window.location.search;
+                    window.location.href = 'otp.html';
                 } else {
                     this.status = { message: result.message || 'Login gagal, periksa email dan password.', success: false };
                     this.addToast(this.status.message, 'error');
@@ -209,7 +209,7 @@ function app() {
                     sessionStorage.setItem('tempEmail', this.registerData.email);
                     
                     // Oper sisa parameter URL ke halaman otp.html
-                    window.location.href = 'otp.html' + window.location.search;
+                    window.location.href = 'otp.html';
                 } else {
                     this.status = { message: result.message || 'Pendaftaran gagal', success: false };
                     this.addToast(this.status.message, 'error');
@@ -237,7 +237,7 @@ function otpApp() {
             const tempEmail = sessionStorage.getItem('tempEmail');
             if (!tempEmail) {
                 this.status = { message: 'Sesi pendaftaran hilang. Silakan daftar ulang.', success: false };
-                setTimeout(() => { window.location.href = 'daftar.html' + window.location.search; }, 3000);
+                setTimeout(() => { window.location.href = 'daftar.html'; }, 3000);
             }
         },
         
