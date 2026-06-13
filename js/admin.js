@@ -58,7 +58,7 @@ function adminDashboardApp() {
     return {
         isLoading: true,
         isSidebarOpen: false,
-        activeView: 'beranda', // Default view awal bersesuaian dengan HTML
+        activeView: 'beranda', 
         notifSubView: 'dashboard',
         adminData: { nama: 'Administrator' },
         darkMode: false, 
@@ -75,7 +75,7 @@ function adminDashboardApp() {
             setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 300);
         },
         
-        // Manajemen Pengguna
+        // Manajemen Pengguna State
         users: [],
         isUsersLoading: false,
         usersSearchQuery: '',
@@ -86,7 +86,7 @@ function adminDashboardApp() {
         isUserModalOpen: false,
         userToEdit: {},
         
-        // Broadcast
+        // Broadcast State
         templates: { dashboard: [], channel: [] },
         selectedTemplate: '',
         broadcast: {
@@ -125,7 +125,7 @@ function adminDashboardApp() {
             }
         },
 
-        // --- Logika Tabel Pengguna ---
+        // --- Ambil Data Tabel Pengguna ---
         async loadUsers() {
             this.isUsersLoading = true;
             const res = await this.callAdminApi({ action: 'getAdminUsers' });
@@ -146,16 +146,19 @@ function adminDashboardApp() {
         nextUsersPage() { if (this.usersCurrentPage < this.totalUsersPages) this.usersCurrentPage++; },
         prevUsersPage() { if (this.usersCurrentPage > 1) this.usersCurrentPage--; },
 
-        // --- Modal Edit ---
+        // --- Penanganan Modal Edit Pengguna ---
         openUserModal(user) {
             this.userToEdit = JSON.parse(JSON.stringify(user)); 
             this.isUserModalOpen = true;
         },
-        closeUserModal() { this.isUserModalOpen = false; },
+        closeUserModal() { 
+            this.isUserModalOpen = false; 
+        },
+        
+        // --- SIMPAN DATA PERUBAHAN BARU SINKRON KE backend ---
         async saveUserUpdate(e) {
-            // PERBAIKAN: Membaca target event pemicu secara aman
             const btn = e ? e.target : null;
-            let originalText = "";
+            let originalText = "Simpan Perubahan";
             if (btn) {
                 originalText = btn.innerText;
                 btn.innerText = 'Menyimpan...';
@@ -165,9 +168,10 @@ function adminDashboardApp() {
             const payload = {
                 action: 'updateAdminUser',
                 userId: this.userToEdit.ID,
-                newUsername: this.userToEdit.Username,
-                newStatus: this.userToEdit.Status,
-                newNotifPref: this.userToEdit.NotifReferensi
+                newNama: this.userToEdit.Nama,                   // Opsi 1: Nama Lengkap
+                newStatus: this.userToEdit.Status,               // Opsi 2: Status (Aktif / Diblokir)
+                newNotifPref: this.userToEdit.NotifReferensi,    // Opsi 3: NotifPreference (email / telegram)
+                newStatusAfiliasi: this.userToEdit.StatusAfiliasi // Opsi 4: StatusAfiliasi (Aktif / Tidak Aktif)
             };
 
             const response = await this.callAdminApi(payload);
@@ -177,16 +181,16 @@ function adminDashboardApp() {
                 btn.disabled = false;
             }
 
-            if (response.status === 'success') {
+            if (response.status === 'success' || response.status === 'sukses') {
                 this.closeUserModal();
-                this.loadUsers(); 
-                this.addToast('Berhasil! Data pengguna telah diperbarui.', 'success');
+                await this.loadUsers(); // Refresh instan baris tabel data tanpa reload
+                this.addToast('Berhasil! Parameter data pengguna telah diperbarui.', 'success');
             } else {
-                this.addToast(response.message || 'Gagal menyimpan perubahan.', 'error');
+                this.addToast(response.message || 'Gagal menyimpan perubahan data.', 'error');
             }
         },
 
-        // --- EKSEKUSI PENGIRIMAN BROADCAST AMAN ---
+        // --- Kirim Broadcast Notifikasi ---
         applyTemplate() {},
         async sendDashboardBroadcast(e) {
             if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
@@ -194,7 +198,6 @@ function adminDashboardApp() {
                 return;
             }
     
-            // PERBAIKAN: Membaca target form submit button lewat parameter event yang dilemparkan HTML
             const btn = e ? e.target.querySelector('button[type="submit"]') : null;
             let originalText = "Publikasikan Siaran";
             
