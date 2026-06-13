@@ -233,8 +233,8 @@ function otpApp() {
         otp: '',
         isLoading: false,
         status: { message: '', success: false },
-        isBlocked: false, // FLAG KHUSUS UNTUK MEMUNCULKAN TOMBOL REDIRECT
-        toasts: [],
+        isBlocked: false, // <-- INI WAJIB ADA
+        toasts: [],       // <-- INI WAJIB ADA
         
         init() {
             const tempEmail = sessionStorage.getItem('tempEmail');
