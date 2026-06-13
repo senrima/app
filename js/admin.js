@@ -36,7 +36,6 @@ function adminOtpApp() {
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // Beri penanda khusus di session browser bahwa admin ini sudah lolos OTP
                     sessionStorage.setItem('adminAkses', 'sah');
                     this.status = { message: 'Akses Diberikan! Mengalihkan...', success: true };
                     setTimeout(() => window.location.href = 'dashboard-admin.html', 1000);
@@ -59,26 +58,20 @@ function adminDashboardApp() {
     return {
         isLoading: true,
         isSidebarOpen: false,
-        activeView: 'beranda',
+        activeView: 'beranda', // Default view awal bersesuaian dengan HTML
         notifSubView: 'dashboard',
         adminData: { nama: 'Administrator' },
-
-        darkMode: false, // Menangani Status Dark Mode
+        darkMode: false, 
         
-        // --------------------------------------------------------
-        // MESIN TOAST NOTIFICATION (TAMBAHKAN BLOK INI)
-        // --------------------------------------------------------
         toasts: [],
         addToast(message, type = 'success') {
             const id = Date.now();
             this.toasts.push({ id, message, type, visible: true });
-            // Hilangkan otomatis setelah 3,5 detik
             setTimeout(() => this.removeToast(id), 3500);
         },
         removeToast(id) {
             const toast = this.toasts.find(t => t.id === id);
             if (toast) toast.visible = false;
-            // Beri waktu animasi menghilang selesai sebelum membuang data dari array
             setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 300);
         },
         
@@ -102,7 +95,6 @@ function adminDashboardApp() {
         },
 
         async init() {
-            // Cek Ganda: Harus punya token regular DAN tiket akses admin dari OTP
             const token = localStorage.getItem('sessionToken') || sessionStorage.getItem('sessionToken');
             const akses = sessionStorage.getItem('adminAkses');
             
@@ -156,15 +148,19 @@ function adminDashboardApp() {
 
         // --- Modal Edit ---
         openUserModal(user) {
-            this.userToEdit = JSON.parse(JSON.stringify(user)); // Copy data
+            this.userToEdit = JSON.parse(JSON.stringify(user)); 
             this.isUserModalOpen = true;
         },
         closeUserModal() { this.isUserModalOpen = false; },
-        async saveUserUpdate() {
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = 'Menyimpan...';
-            btn.disabled = true;
+        async saveUserUpdate(e) {
+            // PERBAIKAN: Membaca target event pemicu secara aman
+            const btn = e ? e.target : null;
+            let originalText = "";
+            if (btn) {
+                originalText = btn.innerText;
+                btn.innerText = 'Menyimpan...';
+                btn.disabled = true;
+            }
 
             const payload = {
                 action: 'updateAdminUser',
@@ -176,33 +172,38 @@ function adminDashboardApp() {
 
             const response = await this.callAdminApi(payload);
 
-            btn.innerText = originalText;
-            btn.disabled = false;
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
 
             if (response.status === 'success') {
                 this.closeUserModal();
-                this.loadUsers(); // Refresh tabel secara otomatis
-                alert('Berhasil! Data pengguna telah diperbarui.');
+                this.loadUsers(); 
+                this.addToast('Berhasil! Data pengguna telah diperbarui.', 'success');
             } else {
-                alert(response.message || 'Gagal menyimpan perubahan.');
+                this.addToast(response.message || 'Gagal menyimpan perubahan.', 'error');
             }
         },
 
-        // --- Broadcast Dummy ---
+        // --- EKSEKUSI PENGIRIMAN BROADCAST AMAN ---
         applyTemplate() {},
-        async sendDashboardBroadcast() {
-            // 1. Validasi Input
+        async sendDashboardBroadcast(e) {
             if (!this.broadcast.dashboard.judul || !this.broadcast.dashboard.pesan) {
-                return alert("Judul dan Pesan wajib diisi!");
+                this.addToast("Judul dan Pesan wajib diisi!", "error");
+                return;
             }
     
-            // 2. Tampilkan status loading
-            const btn = event.target; 
-            const originalText = btn.innerText;
-            btn.innerText = "Mengirim..."; 
-            btn.disabled = true;
+            // PERBAIKAN: Membaca target form submit button lewat parameter event yang dilemparkan HTML
+            const btn = e ? e.target.querySelector('button[type="submit"]') : null;
+            let originalText = "Publikasikan Siaran";
+            
+            if (btn) {
+                originalText = btn.innerText;
+                btn.innerText = "Mengirim..."; 
+                btn.disabled = true;
+            }
     
-            // 3. Kirim ke Backend GAS
             const payload = { 
                 action: 'sendBroadcast', 
                 type: 'dashboard', 
@@ -211,30 +212,45 @@ function adminDashboardApp() {
     
             const res = await this.callAdminApi(payload);
     
-            // 4. Reset tombol dan beri feedback
-            btn.innerText = originalText; 
-            btn.disabled = false;
+            if (btn) {
+                btn.innerText = originalText; 
+                btn.disabled = false;
+            }
     
             if (res.status === 'success') { 
-                alert('Notifikasi berhasil dipublikasikan ke dasbor semua pengguna!'); 
-                this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; // Reset form
+                this.addToast('Notifikasi berhasil dipublikasikan ke dasbor semua pengguna!', 'success');
+                this.broadcast.dashboard = { judul: '', pesan: '', link: '' }; 
             } else { 
-                alert('Gagal: ' + (res.message || 'Terjadi kesalahan sistem.')); 
+                this.addToast('Gagal: ' + (res.message || 'Terjadi kesalahan sistem.'), 'error'); 
             }
         },
 
-        async sendChannelBroadcast() {
+        async sendChannelBroadcast(e) {
             if (!this.broadcast.channel.subjek || !this.broadcast.channel.pesanHtml) {
-                return alert("Subjek dan Pesan HTML wajib diisi!");
+                this.addToast("Subjek dan Pesan HTML wajib diisi!", "error");
+                return;
             }
-            const btn = event.target; btn.innerText = "Mengirim Email..."; btn.disabled = true;
+            const btn = e ? e.target.querySelector('button[type="submit"]') : null;
+            let originalText = "Kirim Broadcast";
+            if (btn) {
+                originalText = btn.innerText;
+                btn.innerText = "Mengirim Email..."; 
+                btn.disabled = true;
+            }
             
             const payload = { action: 'sendBroadcast', type: 'channel', broadcastData: this.broadcast.channel };
             const res = await this.callAdminApi(payload);
             
-            btn.innerText = "Kirim Broadcast"; btn.disabled = false;
-            if (res.status === 'success') { alert(res.message); this.broadcast.channel = { subjek: '', pesanHtml: '', pesanTeks: '' }; } 
-            else alert(res.message);
+            if (btn) {
+                btn.innerText = originalText; 
+                btn.disabled = false;
+            }
+            if (res.status === 'success') { 
+                this.addToast(res.message, 'success'); 
+                this.broadcast.channel = { subjek: '', pesanHtml: '', pesanTeks: '' }; 
+            } else {
+                this.addToast(res.message, 'error');
+            }
         }
     };
 }
