@@ -22,7 +22,9 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex items-center justify-center p-3 sm:p-6" 
-      x-data="app()" x-init="init(); darkMode = localStorage.getItem('theme') === 'dark'; if(darkMode) document.documentElement.classList.add('dark');">
+      x-data="app()" 
+      x-init="init(); darkMode = localStorage.getItem('theme') === 'dark'; if(darkMode) document.documentElement.classList.add('dark');"
+      @show-toast.window="addToast($event.detail.message, $event.detail.type)">
 
     <script>if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
 
@@ -116,9 +118,6 @@
         </div>
     </div>
     
-    <script>
-        if(!window.appToasts) window.appToasts = [];
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <script src="js/main.js"></script>
 </body>
