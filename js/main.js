@@ -32,7 +32,7 @@ function jalankanRedirectSistem() {
 }
 
 // ===============================================================
-// 1. SISTEM GOOGLE SSO (HTML API KODE AWAL STABIL)
+// 1. SISTEM GOOGLE SSO (UPDATE: ALERT BROWSER DIHAPUS)
 // ===============================================================
 window.handleCredentialResponse = async function(response) {
     try {
@@ -52,20 +52,21 @@ window.handleCredentialResponse = async function(response) {
         const result = await res.json();
         
         if (result.status === 'success' || result.status === 'login_success') {
-            // Pengisian Absolut ke localStorage sesuai Kode Asli Bawaan Anda agar tidak ditendang
             localStorage.setItem('sessionToken', result.token);
-            
-            // Eksekusi Redirect Pintar
             jalankanRedirectSistem();
         } else {
-            alert(result.message || 'Gagal menyelaraskan akun dengan SSO.');
+            // MENGGUNAKAN TOAST CUSTOM, BUKAN ALERT BAWAAN BROWSER!
+            window.dispatchEvent(new CustomEvent('show-toast', { 
+                detail: { message: result.message || 'Gagal menyelaraskan akun dengan SSO.', type: 'error' } 
+            }));
         }
     } catch (error) {
         console.error("Error SSO:", error);
-        alert('Gagal terhubung ke server API Gateway.');
+        window.dispatchEvent(new CustomEvent('show-toast', { 
+            detail: { message: 'Gagal terhubung ke server API Gateway.', type: 'error' } 
+        }));
     }
 };
-
 function jwt_decode(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -225,19 +226,34 @@ function app() {
 }
 
 // ===============================================================
-// 3. KONTROLER SUB-SISTEM OTP (KODE AWAL STABIL DENGAN UPDATE REDIRECT)
+// 3. KONTROLER SUB-SISTEM OTP (UPDATE: DETEKSI AKUN DIBLOKIR)
 // ===============================================================
 function otpApp() {
     return {
         otp: '',
         isLoading: false,
         status: { message: '', success: false },
+        isBlocked: false, // FLAG KHUSUS UNTUK MEMUNCULKAN TOMBOL REDIRECT
+        toasts: [],
         
         init() {
             const tempEmail = sessionStorage.getItem('tempEmail');
             if (!tempEmail) {
                 this.status = { message: 'Sesi pendaftaran hilang. Silakan daftar ulang.', success: false };
-                setTimeout(() => { window.location.href = 'daftar.html'; }, 3000);
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+            }
+        },
+
+        addToast(message, type = 'error') {
+            const id = Date.now();
+            this.toasts.push({ id, message, type, visible: true });
+            setTimeout(() => this.removeToast(id), 4000);
+        },
+        removeToast(id) {
+            const index = this.toasts.findIndex(t => t.id === id);
+            if (index !== -1) {
+                this.toasts[index].visible = false;
+                setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 300);
             }
         },
         
@@ -252,7 +268,7 @@ function otpApp() {
             
             const tempEmail = sessionStorage.getItem('tempEmail');
             if (!tempEmail) {
-                this.status = { message: 'Sesi hilang. Silakan daftar ulang.', success: false };
+                this.status = { message: 'Sesi hilang. Silakan masuk ulang.', success: false };
                 this.isLoading = false;
                 return;
             }
@@ -263,28 +279,25 @@ function otpApp() {
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({
-                        kontrol: 'proteksi',
-                        action: 'verifyOTP',
-                        email: tempEmail,
-                        otp: this.otp
+                        kontrol: 'proteksi', action: 'verifyOTP', email: tempEmail, otp: this.otp
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.status === 'success' || result.status === 'sukses') {
-                    // PENGISIAN ABSOLUT KODE ASLI KE localStorage SUPAYA SEIRAMA DENGAN BACKEND & DASHBOARD
                     localStorage.setItem('sessionToken', result.token);
                     sessionStorage.removeItem('tempEmail'); 
-                    
                     this.status = { message: 'Verifikasi berhasil! Mengalihkan...', success: true };
                     
-                    setTimeout(() => {
-                        // Menggunakan pengalihan sistem pintar
-                        jalankanRedirectSistem();
-                    }, 1000);
+                    setTimeout(() => { jalankanRedirectSistem(); }, 1000);
                 } else {
                     this.status = { message: result.message || 'OTP salah atau sudah kedaluwarsa.', success: false };
+                    
+                    // JIKA PESAN ERROR MENGANDUNG KATA "DIBLOKIR" ATAU "DITOLAK"
+                    if (result.message && (result.message.toLowerCase().includes('diblokir') || result.message.toLowerCase().includes('ditolak'))) {
+                        this.isBlocked = true; // Sembunyikan form OTP, Munculkan tombol Kembali ke Login
+                    }
                 }
             } catch (error) {
                 this.status = { message: 'Terjadi kesalahan saat menghubungi server.', success: false };
