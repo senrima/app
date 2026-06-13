@@ -100,11 +100,11 @@ function adminDashboardApp() {
             const payload = {
                 action: 'updateAdminUser',
                 userId: this.userToEdit.ID,
-                newNama: this.userToEdit.Nama,                   
-                newUsername: this.userToEdit.Username,           // <--- INI KUNCINYA
+                newNama: this.userToEdit.Nama,                   // Wajib 'Nama', bukan newName
+                newUsername: this.userToEdit.Username,           
                 newStatus: this.userToEdit.Status,               
                 newNotifPref: this.userToEdit.NotifReferensi,    
-                newStatusAfiliasi: this.userToEdit.StatusAfiliasi 
+                newStatusAfiliasi: this.userToEdit.StatusAfiliasi // Wajib 'StatusAfiliasi'
             };
 
             const response = await this.callAdminApi(payload);
