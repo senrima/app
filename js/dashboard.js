@@ -44,11 +44,20 @@ function dashboardApp() {
                     this.loadAffiliateData()
                 ]);
             } catch (e) {
-                console.error("Gagal inisialisasi:", e);
-                window.location.href = 'index.html';
+                console.error("Gagal inisialisasi, membakar token dan logout:", e);
+                // 🛑 SOLUSI BUG INFINITE LOOP: HANCURKAN TOKEN SEBELUM KEMBALI KE LOGIN!
+                this.destroyTokenAndKick();
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        // 🛑 FUNGSI PEMBUNUH TOKEN (UTILITY)
+        destroyTokenAndKick() {
+            localStorage.removeItem('sessionToken');
+            sessionStorage.removeItem('sessionToken');
+            // Tendang kembali ke halaman login (index.html)
+            window.location.replace('index.html'); 
         },
 
         async callApi(payload) {
@@ -69,15 +78,17 @@ function dashboardApp() {
                 
                 const result = await response.json();
                 
+                // Jika server merespon dengan token error/kedaluwarsa
                 if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
-                    this.addToast('Sesi berakhir. Silakan login kembali.', 'error');
+                    this.addToast('Sesi berakhir atau tidak valid.', 'error');
+                    // Langsung eksekusi pemusnahan tanpa nunggu setTimeout lama-lama
                     setTimeout(() => {
-                        localStorage.removeItem('sessionToken');
-                        window.location.href = 'index.html';
-                    }, 1500);
+                        this.destroyTokenAndKick();
+                    }, 500); 
                 }
                 return result;
             } catch (e) {
+                console.error("API Call Exception:", e);
                 return { status: 'error', message: 'Koneksi API terputus.' };
             }
         },
@@ -88,7 +99,8 @@ function dashboardApp() {
                 this.userData = response.userData || {};
                 this.profileForm.nama = this.userData.nama;
             } else {
-                throw new Error("Sesi tidak valid");
+                // Sengaja nge-throw error biar ketangkep di init() dan tokennya dibakar
+                throw new Error("Sesi tidak valid / Ditolak Database");
             }
         },
 
@@ -149,6 +161,37 @@ function dashboardApp() {
             }
         },
 
+        // 🛑 FITUR BARU: GANTI PASSWORD
+        async changePassword() {
+            // Validasi input kosong
+            if (!this.passwordForm.oldPassword.trim() || !this.passwordForm.newPassword.trim()) {
+                return this.addToast('Sandi lama dan sandi baru wajib diisi.', 'error');
+            }
+            
+            // Validasi panjang password
+            if (this.passwordForm.newPassword.length < 6) {
+                return this.addToast('Sandi baru minimal 6 karakter.', 'error');
+            }
+
+            // Tembak ke API (GAS)
+            const res = await this.callApi({ 
+                action: 'changePassword', 
+                payload: { 
+                    oldPassword: this.passwordForm.oldPassword, 
+                    newPassword: this.passwordForm.newPassword 
+                } 
+            });
+            
+            if (res.status === 'success') {
+                this.addToast('Kata sandi berhasil diperbarui!', 'success');
+                // Kosongkan form setelah sukses
+                this.passwordForm.oldPassword = '';
+                this.passwordForm.newPassword = '';
+            } else {
+                this.addToast(res.message || 'Gagal mengubah kata sandi.', 'error');
+            }
+        },
+
         async requestAdminAccess() {
             const res = await this.callApi({ action: 'requestAdminAccess' });
             if (res.status === 'success') {
@@ -161,8 +204,8 @@ function dashboardApp() {
         async logout() {
             this.addToast('Keluar dari sesi aman...', 'success');
             await this.callApi({ action: 'logout' });
-            localStorage.removeItem('sessionToken');
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+            // Gunakan fungsi utility yang sama biar konsisten
+            setTimeout(() => { this.destroyTokenAndKick(); }, 500);
         }
     };
 }
