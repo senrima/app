@@ -20,7 +20,6 @@
         [x-cloak] { display: none !important; }
         .menu-active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 4px solid #2563eb; }
         .dark .menu-active { background-color: #1e3a8a; color: #60a5fa; border-right: 4px solid #60a5fa; }
-        /* Transisi halus agar popup tidak kaku */
         .toast-enter { transition: all 0.3s ease-out; transform: translateY(-1rem); opacity: 0; }
         .toast-enter-active { transform: translateY(0); opacity: 1; }
     </style>
@@ -94,6 +93,10 @@
                         <a href="#" @click.prevent="activeView = 'akun-keamanan'; if(window.innerWidth < 1024) isSidebarOpen = false;" :class="activeView === 'akun-keamanan' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'" class="block px-4 py-2.5 rounded-lg text-sm font-medium">Ganti Password</a>
                     </div>
                 </div>
+
+                <a href="#" @click.prevent="activeView = 'riwayat-transaksi'; loadRiwayatTransaksi(); if(window.innerWidth < 1024) isSidebarOpen = false;" 
+                   :class="activeView === 'riwayat-transaksi' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-sm">Riwayat Transaksi</a>
 
                 <a href="#" @click.prevent="activeView = 'afiliasi'; loadAffiliateData(); if(window.innerWidth < 1024) isSidebarOpen = false;" 
                    :class="activeView === 'afiliasi' ? 'menu-active' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50'" 
@@ -226,6 +229,52 @@
                     </form>
                 </div>
                 
+                <div x-show="activeView === 'riwayat-transaksi'" class="space-y-4 sm:space-y-6 w-full" style="display: none;">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100">Riwayat Pembelian</h3>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm w-full overflow-hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                <thead class="bg-gray-50 dark:bg-slate-900/50">
+                                    <tr>
+                                        <th class="px-4 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">ID Invoice</th>
+                                        <th class="px-4 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Produk</th>
+                                        <th class="px-4 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Kode Produk</th>
+                                        <th class="px-4 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Metode</th>
+                                        <th class="px-4 py-3 sm:py-4 text-right text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Jumlah</th>
+                                        <th class="px-4 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Status</th>
+                                        <th class="px-4 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase whitespace-nowrap">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <template x-for="trx in transaksiItems" :key="trx.orderId">
+                                        <tr class="hover:bg-gray-50/70 dark:hover:bg-slate-700/30">
+                                            <td class="px-4 py-4 text-[11px] sm:text-xs font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap" x-text="trx.orderId"></td>
+                                            <td class="px-4 py-4 text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-200 whitespace-nowrap" x-text="trx.product"></td>
+                                            <td class="px-4 py-4 text-[11px] sm:text-xs text-gray-600 dark:text-slate-400 whitespace-nowrap" x-text="trx.kodeApp"></td>
+                                            <td class="px-4 py-4 text-[11px] sm:text-xs font-medium text-gray-600 dark:text-slate-400 whitespace-nowrap" x-text="trx.method"></td>
+                                            <td class="px-4 py-4 text-xs sm:text-sm font-mono font-bold text-gray-800 dark:text-slate-200 text-right whitespace-nowrap" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(trx.amount)"></td>
+                                            <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                <span x-show="trx.status.toUpperCase() === 'SUCCESS' || trx.status.toUpperCase() === 'LUNAS'" class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-[10px]">LUNAS</span>
+                                                <span x-show="trx.status.toUpperCase() !== 'SUCCESS' && trx.status.toUpperCase() !== 'LUNAS'" class="px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-[10px]" x-text="trx.status.toUpperCase()"></span>
+                                            </td>
+                                            <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                <a :href="'https://s-tools.id/payment/invoice-payment.html?orderId=' + trx.orderId" target="_blank" class="inline-flex items-center gap-1.5 bg-slate-800 text-white hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-700 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition shadow-sm">
+                                                    📄 Invoice
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="transaksiItems.length === 0">
+                                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400 italic">Belum ada riwayat transaksi pembelian.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div x-show="activeView === 'afiliasi'" class="space-y-4 sm:space-y-6 max-w-2xl w-full" style="display: none;">
                     <div class="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm space-y-4">
                         <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100">S-Tools Mitra Afiliasi</h3>
