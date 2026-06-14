@@ -13,7 +13,7 @@ function dashboardApp() {
         addToast(message, type = 'success') {
             const id = Date.now();
             this.toasts.push({ id, message, type, visible: true });
-            setTimeout(() => this.removeToast(id), 3500); // Otomatis hilang 3.5 detik
+            setTimeout(() => this.removeToast(id), 3500); 
         },
         removeToast(id) {
             const toast = this.toasts.find(t => t.id === id);
@@ -26,6 +26,7 @@ function dashboardApp() {
         notifications: [],
         
         tableItems: [],
+        transaksiItems: [], // STATE BARU: RIWAYAT TRANSAKSI
         isTableLoading: false,
         
         voucherCode: '',
@@ -45,18 +46,15 @@ function dashboardApp() {
                 ]);
             } catch (e) {
                 console.error("Gagal inisialisasi, membakar token dan logout:", e);
-                // 🛑 SOLUSI BUG INFINITE LOOP: HANCURKAN TOKEN SEBELUM KEMBALI KE LOGIN!
                 this.destroyTokenAndKick();
             } finally {
                 this.isLoading = false;
             }
         },
 
-        // 🛑 FUNGSI PEMBUNUH TOKEN (UTILITY)
         destroyTokenAndKick() {
             localStorage.removeItem('sessionToken');
             sessionStorage.removeItem('sessionToken');
-            // Tendang kembali ke halaman login (index.html)
             window.location.replace('index.html'); 
         },
 
@@ -78,10 +76,8 @@ function dashboardApp() {
                 
                 const result = await response.json();
                 
-                // Jika server merespon dengan token error/kedaluwarsa
                 if (result.status === 'error' && (result.message.toLowerCase().includes('sesi') || result.message.toLowerCase().includes('token'))) {
                     this.addToast('Sesi berakhir atau tidak valid.', 'error');
-                    // Langsung eksekusi pemusnahan tanpa nunggu setTimeout lama-lama
                     setTimeout(() => {
                         this.destroyTokenAndKick();
                     }, 500); 
@@ -99,7 +95,6 @@ function dashboardApp() {
                 this.userData = response.userData || {};
                 this.profileForm.nama = this.userData.nama;
             } else {
-                // Sengaja nge-throw error biar ketangkep di init() dan tokennya dibakar
                 throw new Error("Sesi tidak valid / Ditolak Database");
             }
         },
@@ -118,6 +113,17 @@ function dashboardApp() {
             this.tableItems = [];
             const res = await this.callApi({ action: 'getBonus' });
             if (res.status === 'success') this.tableItems = res.data || [];
+        },
+
+        // FITUR BARU: LOAD RIWAYAT TRANSAKSI
+        async loadRiwayatTransaksi() {
+            this.transaksiItems = [];
+            const res = await this.callApi({ action: 'getRiwayatTransaksi' });
+            if (res.status === 'success') {
+                this.transaksiItems = res.data || [];
+            } else {
+                this.addToast(res.message || 'Gagal memuat riwayat transaksi.', 'error');
+            }
         },
 
         async claimProduct() {
@@ -161,30 +167,21 @@ function dashboardApp() {
             }
         },
 
-        // 🛑 FITUR BARU: GANTI PASSWORD
         async changePassword() {
-            // Validasi input kosong
             if (!this.passwordForm.oldPassword.trim() || !this.passwordForm.newPassword.trim()) {
                 return this.addToast('Sandi lama dan sandi baru wajib diisi.', 'error');
             }
-            
-            // Validasi panjang password
             if (this.passwordForm.newPassword.length < 6) {
                 return this.addToast('Sandi baru minimal 6 karakter.', 'error');
             }
 
-            // Tembak ke API (GAS)
             const res = await this.callApi({ 
                 action: 'changePassword', 
-                payload: { 
-                    oldPassword: this.passwordForm.oldPassword, 
-                    newPassword: this.passwordForm.newPassword 
-                } 
+                payload: { oldPassword: this.passwordForm.oldPassword, newPassword: this.passwordForm.newPassword } 
             });
             
             if (res.status === 'success') {
                 this.addToast('Kata sandi berhasil diperbarui!', 'success');
-                // Kosongkan form setelah sukses
                 this.passwordForm.oldPassword = '';
                 this.passwordForm.newPassword = '';
             } else {
@@ -204,7 +201,6 @@ function dashboardApp() {
         async logout() {
             this.addToast('Keluar dari sesi aman...', 'success');
             await this.callApi({ action: 'logout' });
-            // Gunakan fungsi utility yang sama biar konsisten
             setTimeout(() => { this.destroyTokenAndKick(); }, 500);
         }
     };
