@@ -26,8 +26,8 @@ function dashboardApp() {
         notifications: [],
         
         tableItems: [],
-        transaksiItems: [], // STATE BARU: RIWAYAT TRANSAKSI
-        isTableLoading: false,
+        transaksiItems: [], 
+        isTableLoading: false, // Digunakan untuk tombol Segarkan
         
         voucherCode: '',
         isClaiming: false,
@@ -115,14 +115,23 @@ function dashboardApp() {
             if (res.status === 'success') this.tableItems = res.data || [];
         },
 
-        // FITUR BARU: LOAD RIWAYAT TRANSAKSI
+        // FITUR BARU: LOAD RIWAYAT TRANSAKSI & TOMBOL SEGARKAN
         async loadRiwayatTransaksi() {
+            this.isTableLoading = true; // Nyalakan animasi loading
             this.transaksiItems = [];
-            const res = await this.callApi({ action: 'getRiwayatTransaksi' });
-            if (res.status === 'success') {
-                this.transaksiItems = res.data || [];
-            } else {
-                this.addToast(res.message || 'Gagal memuat riwayat transaksi.', 'error');
+            try {
+                const res = await this.callApi({ action: 'getRiwayatTransaksi' });
+                if (res.status === 'success') {
+                    this.transaksiItems = res.data || [];
+                    // Jika dipanggil oleh tombol segarkan secara manual (bukan pertama kali buka menu)
+                    if(this.activeView === 'riwayat-transaksi') {
+                        this.addToast('Data transaksi berhasil diperbarui', 'success');
+                    }
+                } else {
+                    this.addToast(res.message || 'Gagal memuat riwayat transaksi.', 'error');
+                }
+            } finally {
+                this.isTableLoading = false; // Matikan animasi
             }
         },
 
