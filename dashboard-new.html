@@ -232,7 +232,13 @@
                 <div x-show="activeView === 'riwayat-transaksi'" class="space-y-4 sm:space-y-6 w-full" style="display: none;">
                     <div class="flex justify-between items-center">
                         <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100">Riwayat Pembelian</h3>
+                        
+                        <button @click="loadRiwayatTransaksi()" :disabled="isTableLoading" class="flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition dark:bg-blue-900/40 dark:text-blue-400 disabled:opacity-50">
+                            <svg :class="{'animate-spin': isTableLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span x-text="isTableLoading ? 'Memuat...' : 'Segarkan Data'"></span>
+                        </button>
                     </div>
+                    
                     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm w-full overflow-hidden">
                         <div class="w-full overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
@@ -266,7 +272,14 @@
                                             </td>
                                         </tr>
                                     </template>
-                                    <tr x-show="transaksiItems.length === 0">
+                                    
+                                    <tr x-show="isTableLoading">
+                                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400">
+                                            Sedang menarik data dari server...
+                                        </td>
+                                    </tr>
+
+                                    <tr x-show="transaksiItems.length === 0 && !isTableLoading">
                                         <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400 italic">Belum ada riwayat transaksi pembelian.</td>
                                     </tr>
                                 </tbody>
