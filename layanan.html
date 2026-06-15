@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>Solusi Otomatisasi SenTools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .kartu-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .kartu-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+
+    <nav class="bg-white shadow-sm py-4 px-6 md:px-12 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span class="text-xl font-bold text-slate-800 tracking-tight">SenTools</span>
+        </div>
+        <div class="text-sm font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 hidden sm:block">
+            Akun Anda: <?= emailPelanggan ?>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 py-12">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Tingkatkan Efisiensi Bisnis Anda</h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Kami merancang sistem otomatisasi cerdas. Hemat waktu tim Anda dan fokus pada pertumbuhan skala bisnis.</p>
+            <div class="mt-4 text-sm font-medium bg-blue-50 text-blue-700 px-3 py-2 rounded-full border border-blue-100 inline-block sm:hidden">
+                <?= emailPelanggan ?>
+            </div>
+        </div>
+
+        <div id="notifikasi" class="hidden max-w-3xl mx-auto mb-10 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm transition-all duration-500">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700 font-medium">Pilihan berhasil dicatat. AI Gemini segera mengirimkan proposal detail ke email Anda.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Render produk secara dinamis menggunakan loop -->
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <? for (let i = 0; i < katalogProduk.length; i++) { ?>
+                <? let produk = katalogProduk[i]; ?>
+                
+                <div class="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm kartu-hover flex flex-col">
+                    <div class="h-48 overflow-hidden bg-slate-100 relative">
+                        <img src="<?= produk.gambar ?>" alt="<?= produk.nama ?>" class="w-full h-full object-cover">
+                        
+                        <? if (produk.label) { ?>
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm">
+                                <?= produk.label ?>
+                            </div>
+                        <? } ?>
+                    </div>
+                    
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2"><?= produk.nama ?></h3>
+                        <p class="text-slate-600 mb-6 flex-grow"><?= produk.deskripsi ?></p>
+                        
+                        <ul class="space-y-2 mb-8 text-sm text-slate-600">
+                            <? for (let j = 0; j < produk.fitur.length; j++) { ?>
+                                <li class="flex items-center">
+                                    <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 
+                                    <?= produk.fitur[j].trim() ?>
+                                </li>
+                            <? } ?>
+                        </ul>
+
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 flex justify-center items-center group" onclick="kirimMinat(this, '<?= produk.nama ?>')">
+                            <div class="loader"></div>
+                            <span class="teks-tombol">Saya Tertarik</span>
+                            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            <? } ?>
+            
+            <? if (katalogProduk.length === 0) { ?>
+                <div class="col-span-2 text-center text-slate-500 py-10">Belum ada data produk di database.</div>
+            <? } ?>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-500 text-sm border-t border-slate-200 mt-12">
+        <p>&copy; 2026 SenTools. Semua Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script>
+        const emailUser = "<?= emailPelanggan ?>";
+
+        function kirimMinat(tombol, namaProduk) {
+            const teksElement = tombol.querySelector('.teks-tombol');
+            const loaderElement = tombol.querySelector('.loader');
+            const svgElement = tombol.querySelector('svg');
+            
+            teksElement.innerText = "Memproses...";
+            loaderElement.style.display = "inline-block";
+            if(svgElement) svgElement.style.display = "none";
+            tombol.disabled = true;
+            tombol.classList.add('opacity-75', 'cursor-not-allowed');
+
+            google.script.run
+                .withSuccessHandler(function(respon) {
+                    const notif = document.getElementById('notifikasi');
+                    notif.classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    teksElement.innerText = "Berhasil Terkirim";
+                    loaderElement.style.display = "none";
+                    tombol.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    tombol.classList.add('bg-green-600');
+                })
+                .withFailureHandler(function(error) {
+                    alert("Terjadi masalah jaringan. Mohon coba klik kembali.");
+                    teksElement.innerText = "Saya Tertarik";
+                    loaderElement.style.display = "none";
+                    if(svgElement) svgElement.style.display = "inline-block";
+                    tombol.disabled = false;
+                    tombol.classList.remove('opacity-75', 'cursor-not-allowed');
+                })
+                .catatMinatProduk(emailUser, namaProduk);
+        }
+    </script>
+</body>
+</html>
