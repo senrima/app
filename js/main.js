@@ -307,3 +307,122 @@ function otpApp() {
         }
     };
 }
+
+// ==========================================
+// KONTROL HALAMAN LUPA PASSWORD
+// ==========================================
+function forgotPasswordApp() {
+    return {
+        email: '',
+        isLoading: false,
+        status: { message: '', success: false },
+
+        async submit() {
+            if (!this.email.trim()) return;
+            
+            this.isLoading = true;
+            this.status.message = '';
+            
+            try {
+                // Tembak ke API Utama (Kode.gs)
+                const response = await fetch("https://api.s-tools.id", { // Pastikan URL API ini benar
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        kontrol: 'proteksi', 
+                        action: 'forgotPassword', 
+                        email: this.email 
+                    })
+                });
+
+                const result = await response.json();
+                
+                this.status.success = result.status === 'success';
+                this.status.message = result.message;
+
+            } catch (error) {
+                this.status.success = false;
+                this.status.message = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    }
+}
+
+// ==========================================
+// KONTROL HALAMAN RESET PASSWORD (BUAT BARU)
+// ==========================================
+function resetPasswordApp() {
+    return {
+        email: '',
+        token: '',
+        newPassword: '',
+        confirmPassword: '',
+        invalidUrl: false,
+        isLoading: false,
+        status: { message: '', success: false },
+
+        init() {
+            // Ambil token dan email dari URL bar (contoh: ?token=XYZ&email=user@mail.com)
+            const urlParams = new URLSearchParams(window.location.search);
+            this.token = urlParams.get('token');
+            this.email = urlParams.get('email');
+
+            // Jika ada parameter yang kurang, langsung cegah user ngisi form
+            if (!this.token || !this.email) {
+                this.invalidUrl = true;
+            }
+        },
+
+        async submit() {
+            if (this.newPassword.length < 6) {
+                this.status.message = 'Kata sandi minimal 6 karakter!';
+                this.status.success = false;
+                return;
+            }
+
+            if (this.newPassword !== this.confirmPassword) {
+                this.status.message = 'Konfirmasi kata sandi tidak cocok!';
+                this.status.success = false;
+                return;
+            }
+            
+            this.isLoading = true;
+            this.status.message = '';
+            
+            try {
+                // Tembak ke API Utama (Kode.gs)
+                const response = await fetch("https://api.s-tools.id", { // Pastikan URL API BENAR
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        kontrol: 'proteksi', 
+                        action: 'resetPassword', 
+                        email: this.email,
+                        token: this.token,
+                        newPassword: this.newPassword
+                    })
+                });
+
+                const result = await response.json();
+                
+                this.status.success = result.status === 'success';
+                this.status.message = result.message;
+
+                // Jika sukses, lempar otomatis ke halaman login setelah 3 detik
+                if (this.status.success) {
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 3000);
+                }
+
+            } catch (error) {
+                this.status.success = false;
+                this.status.message = 'Koneksi ke server gagal.';
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    }
+}
