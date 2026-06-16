@@ -199,32 +199,57 @@
                             <button type="submit" :disabled="isClaiming" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-blue-700 transition flex justify-center items-center shrink-0">Klaim Kode</button>
                         </form>
                     </div>
-
-                    <div class="pt-4 border-t border-gray-200 dark:border-slate-700">
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Ruang Kerja (Aplikasi)</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             
-<!-- GANTI TOMBOL LAMA DI BAWAH KARTU EDULEARN DENGAN INI: -->
-<div class="grid grid-cols-2 gap-2 relative z-10">
-    <a href="edu/dashboard.html" target="_blank" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white dark:bg-slate-700 dark:hover:bg-indigo-500 dark:text-slate-200 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-center flex justify-center items-center gap-1.5 shadow-sm">
-        👨‍🏫 Instruktur
-    </a>
-    <a href="edu/siswa.html" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white dark:bg-slate-700 dark:hover:bg-emerald-500 dark:text-slate-200 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-center flex justify-center items-center gap-1.5 shadow-sm">
-        👨‍🎓 Siswa
-    </a>
+<!-- App Launcher Grid Ruang Kerja -->
+<div class="pt-4 border-t border-gray-200 dark:border-slate-700">
+    <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Ruang Kerja (Aplikasi)</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <!-- Card 1: EduLearn Instruktur -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-full -mr-4 -mt-4 z-0 transition-transform group-hover:scale-110"></div>
+            <div class="relative z-10 flex-1">
+                <div class="w-12 h-12 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 rounded-xl flex items-center justify-center mb-4">
+                    <!-- Icon Guru/Instruktur -->
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
+                </div>
+                <h4 class="font-bold text-gray-800 dark:text-slate-100 text-lg mb-1">EduLearn Instruktur</h4>
+                <p class="text-xs text-gray-500 dark:text-slate-400 leading-relaxed mb-6">Kelola ruang kelas, unggah materi pembelajaran, dan pantau perkembangan belajar siswa dengan sistem terpadu.</p>
+            </div>
+            <a href="edu/dashboard.html" target="_blank" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white dark:bg-slate-700 dark:hover:bg-indigo-500 dark:text-slate-200 py-2.5 rounded-xl text-sm font-semibold transition text-center flex justify-center items-center gap-2 relative z-10">
+                Buka Panel <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+        </div>
+
+        <!-- Card 2: EduLearn Siswa -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 rounded-bl-full -mr-4 -mt-4 z-0 transition-transform group-hover:scale-110"></div>
+            <div class="relative z-10 flex-1">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-4">
+                    <!-- Icon Buku/Siswa -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                </div>
+                <h4 class="font-bold text-gray-800 dark:text-slate-100 text-lg mb-1">EduLearn Siswa</h4>
+                <p class="text-xs text-gray-500 dark:text-slate-400 leading-relaxed mb-6">Akses ruang kelas private Anda. Pelajari materi, kerjakan kuis, dan raih sertifikasi dengan mudah di sini.</p>
+            </div>
+            <a href="edu/siswa.html" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white dark:bg-slate-700 dark:hover:bg-emerald-500 dark:text-slate-200 py-2.5 rounded-xl text-sm font-semibold transition text-center flex justify-center items-center gap-2 relative z-10">
+                Portal Siswa <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+        </div>
+        
+        <!-- Card 3: Placeholder Aplikasi Mendatang -->
+        <div class="bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-gray-300 dark:border-slate-600 p-5 flex flex-col items-center justify-center text-center opacity-70">
+            <div class="w-12 h-12 bg-gray-200 text-gray-400 dark:bg-slate-700 dark:text-slate-500 rounded-xl flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </div>
+            <h4 class="font-bold text-gray-600 dark:text-slate-300 text-sm">Aplikasi Mendatang</h4>
+            <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Ekosistem S-Tools terus berkembang.</p>
+        </div>
+
+    </div>
 </div>
                             
-                            <div class="bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-gray-300 dark:border-slate-600 p-5 flex flex-col items-center justify-center text-center opacity-70">
-                                <div class="w-12 h-12 bg-gray-200 text-gray-400 dark:bg-slate-700 dark:text-slate-500 rounded-xl flex items-center justify-center mb-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                </div>
-                                <h4 class="font-bold text-gray-600 dark:text-slate-300 text-sm">Aplikasi Mendatang</h4>
-                                <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Ekosistem S-Tools terus berkembang.</p>
-                            </div>
 
-                        </div>
-                    </div>
-                </div>
 
                 <div x-show="activeView === 'aset-produk'" class="space-y-4 sm:space-y-6 w-full" style="display: none;">
                     <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-slate-100">Brankas Aset Anda</h3>
